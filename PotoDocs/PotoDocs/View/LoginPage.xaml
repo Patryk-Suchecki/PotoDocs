@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:PotoDocs"
+             x:Class="PotoDocs.View.LoginPage">
+    <StackLayout Padding="30">
+        <Entry x:Name="UsernameEntry" Placeholder="Nazwa użytkownika" />
+        <Entry x:Name="PasswordEntry" Placeholder="Hasło" IsPassword="True" />
+        <Button Text="Logowanie" Clicked="OnLoginClicked" /> 
+    </StackLayout>
+</ContentPage>

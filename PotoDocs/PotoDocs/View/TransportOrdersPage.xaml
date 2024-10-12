@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="PotoDocs.View.TransportOrdersPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:PotoDocs.Model"
+    xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+    ios:Page.UseSafeArea="True"
+    Title="{Binding Title}"
+    x:DataType="viewmodel:TransportOrdersViewModel">
+
+    <Grid
+        ColumnDefinitions="*,*"
+        ColumnSpacing="5"
+        RowDefinitions="*,Auto"
+        RowSpacing="0">
+        
+        <!-- Odświeżanie -->
+        <RefreshView
+            Grid.ColumnSpan="2"
+            Command="{Binding GetTransportOrdersCommand}"
+            IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView
+                ItemsSource="{Binding TransportOrders}"
+                SelectionMode="None">
+
+                <!-- Szablon dla pustej listy -->
+                <CollectionView.EmptyView>
+                    <StackLayout Padding="100">
+                        <Image
+                            HorizontalOptions="Center"
+                            Source="nodata.png"
+                            HeightRequest="160"
+                            WidthRequest="160"
+                            VerticalOptions="Center" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+
+                <!-- Szablon danych -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:TransportOrder">
+                        <!-- SwipeView do obsługi gestów przesuwania -->
+                        <SwipeView>
+                            <!-- Lewa strona (opcje Swipe) -->
+                            <SwipeView.LeftItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Edytuj"
+                                               BackgroundColor="LightBlue"
+                                               IconImageSource="icon_edit.png"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:TransportOrdersViewModel}}, Path=GoToEditOrderCommand}"
+                                               CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Usuń"
+                                               BackgroundColor="LightCoral"
+                                               IconImageSource="icon_delete.png"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:TransportOrdersViewModel}}, Path=DeleteOrderCommand}"
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.LeftItems>
+
+                            <!-- Zawartość ramki (widoczna treść) -->
+                            <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                    <!-- Dane po lewej stronie -->
+                                    <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                        <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" />
+                                        <Label Text="{Binding LoadingDate, StringFormat='Załadunek {0:dd.MM.yyyy}'}" FontSize="14" TextColor="Gray" />
+                                        <Label Text="{Binding TotalAmount}" FontSize="14" />
+                                    </VerticalStackLayout>
+
+                                    <!-- Dane po prawej stronie -->
+                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
+                                        <Label Text="{Binding Driver}" FontSize="14" />
+                                        <Label Text="{Binding Status}" FontAttributes="Bold" TextColor="{Binding Status, Converter={StaticResource StatusColorConverter}}" FontSize="14" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                                <!-- TapGestureRecognizer do wyświetlenia szczegółów -->
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:TransportOrdersViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Przycisk odświeżania -->
+        <Button
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="8"
+            Command="{Binding GoToNewOrderCommand}"
+            IsEnabled="{Binding IsNotBusy}"
+            ImageSource="icon_add_order.png"
+            WidthRequest="80"
+            HeightRequest="80"
+            BackgroundColor="Transparent" />
+
+            <!-- Wskaźnik ładowania -->
+        <ActivityIndicator
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
+            HorizontalOptions="Fill"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{StaticResource Primary}"
+            VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

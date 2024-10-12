@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="PotoDocs.DetailsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+    Title="Szczegóły zlecenia"
+    x:DataType="viewmodel:TransportOrderDetailsViewModel">
+
+    <TableView Intent="Form">
+        <TableRoot>
+            <TableSection>
+
+                <!-- Numer faktury -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Numer faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Data wystawienia faktury -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Data wystawienia faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.InvoiceDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+                
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Adres załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.LoadingAddress.Location}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Button Text="Nawiguj" Command="{Binding OpenMapCommand}" CommandParameter="{Binding TransportOrder.LoadingAddress}" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Adres rozładunku -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Adres rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.UnloadingAddress.Location}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Button Text="Nawiguj" Command="{Binding OpenMapCommand}" CommandParameter="{Binding TransportOrder.UnloadingAddress}" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Kierowca -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Kierowca" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.Driver}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- NIP firmy -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="NIP firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.CompanyNIP}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Nazwa firmy -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Nazwa firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.CompanyName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Adres firmy -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Adres firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.CompanyAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Termin płatności -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Termin płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.PaymentDeadline}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Kwota -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Kwota" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.TotalAmount}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Status zamówienia -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Status zamówienia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.Status}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Data załadunku -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Data załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.LoadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Data rozładunku -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Data rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.UnloadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Uwagi -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Uwagi" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.Comments}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Numer zlecenia -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Numer zlecenia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.OrderNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- Status płatności -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="Status płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.PaymentStatus}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- PDF URL -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="PDF" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="{Binding TransportOrder.PdfUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+
+                <!-- CMR URL -->
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal" Padding="10">
+                        <Label Text="CMR" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <ListView ItemsSource="{Binding TransportOrder.CmrUrls}" HorizontalOptions="End">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <ViewCell>
+                                        <Label Text="{Binding .}" TextColor="Blue" />
+                                    </ViewCell>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackLayout>
+                </ViewCell>
+
+            </TableSection>
+        </TableRoot>
+    </TableView>
+</ContentPage>

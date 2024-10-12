@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs.Shared", "PotoDocs.Shared\PotoDocs.Shared.csproj", "{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs.API", "PotoDocs.API\PotoDocs.API\PotoDocs.API.csproj", "{D2638BE3-22E3-481A-80FB-C9DD3BB60037}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs", "PotoDocs\PotoDocs\PotoDocs.csproj", "{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E331738-2DD0-4F51-B126-07EA1F0CD964}
+	EndGlobalSection
+EndGlobal

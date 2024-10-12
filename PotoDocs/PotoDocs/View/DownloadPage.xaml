@@ -1,0 +1,32 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+             x:Class="PotoDocs.View.DownloadPage"
+             Title="Pobieranie"
+             x:DataType="viewmodel:DownloadViewModel">
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Wybierz miesiąc:" />
+
+        <!-- Picker do wyboru miesiąca -->
+        <Picker Title="Wybierz miesiąc"
+            ItemsSource="{Binding Months}"
+            ItemDisplayBinding="{Binding .}"
+            SelectedItem="{Binding DownloadDto.Month, Mode=TwoWay}"
+            HorizontalOptions="Fill"
+            VerticalOptions="Center"/>
+        <Picker Title="Wybierz rok"
+            ItemsSource="{Binding Years}"
+            ItemDisplayBinding="{Binding .}"
+            SelectedItem="{Binding DownloadDto.Year, Mode=TwoWay}"
+            HorizontalOptions="Fill"
+            VerticalOptions="Center"/>
+
+        <!-- Przycisk do pobierania -->
+        <Button Text="Pobierz zlecenia"
+                Command="{Binding GetTransportOrdersCommand}"
+                IsEnabled="{Binding IsNotBusy}" />
+
+        <!-- Wskaźnik ładowania -->
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+    </VerticalStackLayout>
+</ContentPage>

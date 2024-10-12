@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+    Title="{Binding Title}"
+    x:DataType="viewmodel:TransportOrderFormViewModel"
+    x:Class="PotoDocs.View.TransportOrderFormPage">
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,*">
+            <VerticalStackLayout Grid.Row="2" Padding="10" Spacing="10">
+
+                <Label Text="Numer faktury:" FontAttributes="Bold" />
+                <Entry Text="{Binding TransportOrder.InvoiceNumber, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź numer faktury" />
+
+                <Label Text="Data wystawienia faktury:" FontSize="18" />
+                <DatePicker x:Name="InvoiceDatePicker" Date="{Binding TransportOrder.InvoiceDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+
+                <Label Text="NIP:" FontAttributes="Bold" />
+                <Entry Text="{Binding TransportOrder.CompanyNIP, Mode=TwoWay}" Placeholder="Wprowadź NIP" />
+
+                <Label Text="Nazwa firmy:" FontAttributes="Bold" />
+                <Entry Text="{Binding TransportOrder.CompanyName, Mode=TwoWay}" Placeholder="Wprowadź nazwę firmy" />
+
+                <Label Text="Adres firmy:" FontAttributes="Bold" />
+                <Entry Text="{Binding TransportOrder.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy" />
+
+                <HorizontalStackLayout Spacing="10">
+                    <VerticalStackLayout>
+                        <Label Text="Data załadunku:" FontAttributes="Bold" />
+                        <DatePicker Date="{Binding TransportOrder.LoadingDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Data rozładunku:" FontAttributes="Bold" />
+                        <DatePicker Date="{Binding TransportOrder.UnloadingDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="10">
+                    <VerticalStackLayout>
+                        <Label Text="Kwota netto:" FontAttributes="Bold" />
+                        <Entry Text="{Binding TransportOrder.TotalAmount, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź kwotę netto" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Termin płatności w dniach:" FontAttributes="Bold" />
+                        <Entry Text="{Binding TransportOrder.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź termin płatności" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <Label Text="Uwagi:" FontAttributes="Bold" />
+                <Entry Text="{Binding TransportOrder.Comments, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
+
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

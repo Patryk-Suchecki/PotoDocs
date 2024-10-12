@@ -1,0 +1,76 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:PotoDocs.Model"
+             xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="True"
+             x:DataType="viewmodel:DriversViewModel"
+             x:Class="PotoDocs.View.DriversPage"
+             Title="Kierowcy">
+    <Grid
+        ColumnDefinitions="*,*"
+        ColumnSpacing="5"
+        RowDefinitions="*,Auto"
+        RowSpacing="0">
+
+        <!-- Odświeżanie -->
+        <RefreshView
+            Grid.ColumnSpan="2"
+            Command="{Binding GetDriversCommand}"
+            IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView
+                ItemsSource="{Binding Drivers}"
+                SelectionMode="None">
+
+                <!-- Szablon dla pustej listy -->
+                <CollectionView.EmptyView>
+                    <StackLayout Padding="100">
+                        <Image
+                            HorizontalOptions="Center"
+                            Source="nodata.png"
+                            HeightRequest="160"
+                            WidthRequest="160"
+                            VerticalOptions="Center" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:DriverDto">
+                        <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                <HorizontalStackLayout Grid.Column="0" Spacing="5">
+                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding Surname}" FontAttributes="Bold" FontSize="16" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:DriversViewModel}}, Path=GoToEditDriverCommand}" CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Button
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="8"
+            Command="{Binding GoToNewDriverCommand}"
+            IsEnabled="{Binding IsNotBusy}"
+            ImageSource="icon_add_driver.png"
+            WidthRequest="80"
+            HeightRequest="80"
+            BackgroundColor="Transparent" />
+
+        <!-- Wskaźnik ładowania -->
+        <ActivityIndicator
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
+            HorizontalOptions="Fill"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{StaticResource Primary}"
+            VerticalOptions="Center" />
+    </Grid>
+</ContentPage>
