@@ -6,6 +6,7 @@ using PotoDocs.API.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Services;
 

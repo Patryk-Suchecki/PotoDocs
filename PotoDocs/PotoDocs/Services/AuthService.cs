@@ -47,7 +47,7 @@ public class AuthService
 
         return null;
     }
-    public async Task<string?> RegisterAsync(DriverDto dto)
+    public async Task<string?> RegisterAsync(RegisterUserDto dto)
     {
         var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "/api/account/register", dto);
         if (result.IsSuccessStatusCode)

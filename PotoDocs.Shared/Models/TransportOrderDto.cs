@@ -1,40 +1,33 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace PotoDocs.Model;
-
-public class TransportOrder
+namespace PotoDocs.Shared.Models;
+public class TransportOrderDto
 {
-    public int InvoiceNumber { get; set; }
+    public int Id { get; set; }
+    public string InvoiceNumber { get; set; }
     public DateTime InvoiceDate { get; set; }
+    public string Comments { get; set; }
     public string Driver { get; set; }
-    public string CompanyNIP { get; set; }
+    public int CompanyNIP { get; set; }
     public string CompanyName { get; set; }
     public string CompanyAddress { get; set; }
     public string CompanyCountry { get; set; }
     public int PaymentDeadline { get; set; }
-    public Money TotalAmount { get; set; }
-    public OrderStatus Status { get; set; }
+    public Money Price { get; set; }
     public DateTime LoadingDate { get; set; }
-    public DateTime UnloadingDate { get; set; }
-    public string Comments { get; set; }
-    public string OrderNumber { get; set; }
-    public string PaymentStatus { get; set; }
     public Address LoadingAddress { get; set; }
+    public DateTime UnloadingDate { get; set; }
     public Address UnloadingAddress { get; set; }
-    public string PdfUrl { get; set; }
-    public List<string> CmrUrls { get; set; }
+    public string CompanyOrderNumber { get; set; }
+    public bool PaymentMade { get; set; }
+    public string PDFUrl { get; set; }
+    public List<string> CMRFiles { get; set; }
 }
 public class Address
 {
     public string Location { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-}
-public enum OrderStatus
-{
-    Zakonczono,
-    BrakCMR,
-    Niezaplacono
 }
 public class Money
 {
@@ -44,6 +37,5 @@ public class Money
     public override string ToString() => $"{Amount:N2} {Currency}";
 }
 
-
-[JsonSerializable(typeof(List<TransportOrder>))]
-internal sealed partial class TransportOrderContext : JsonSerializerContext {}
+[JsonSerializable(typeof(List<TransportOrderDto>))]
+internal sealed partial class TransportOrderDtoContext : JsonSerializerContext { }

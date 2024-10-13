@@ -6,6 +6,7 @@ using PotoDocs.API;
 using PotoDocs.API.Models;
 using PotoDocs.API.Models.Validators;
 using PotoDocs.API.Services;
+using PotoDocs.Shared.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);

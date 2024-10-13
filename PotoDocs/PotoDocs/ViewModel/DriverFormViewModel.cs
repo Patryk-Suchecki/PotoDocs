@@ -4,11 +4,11 @@ using PotoDocs.View;
 namespace PotoDocs.ViewModel;
 
 [QueryProperty(nameof(PageTitle), "title")]
-[QueryProperty(nameof(DriverDto), "Driver")]
+[QueryProperty(nameof(RegisterUserDto), "Driver")]
 public partial class DriverFormViewModel : BaseViewModel
 {
     [ObservableProperty]
-    DriverDto driverDto;
+    RegisterUserDto driverDto;
     DriverService driverService;
 
     string pageTitle;
@@ -26,13 +26,13 @@ public partial class DriverFormViewModel : BaseViewModel
         this.driverService = driverService;
     }
     [RelayCommand]
-    async Task SaveDriver(DriverDto driver)
+    async Task SaveDriver(RegisterUserDto driver)
     {
         if (driver == null)
             return;
     }
     [RelayCommand]
-    async Task GenerateNewPassword(DriverDto driver)
+    async Task GenerateNewPassword(RegisterUserDto driver)
     {
         if (driver == null)
             return;

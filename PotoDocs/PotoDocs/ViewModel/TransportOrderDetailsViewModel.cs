@@ -2,7 +2,7 @@
 
 namespace PotoDocs.ViewModel;
 
-[QueryProperty(nameof(TransportOrder), "Transport order")]
+[QueryProperty(nameof(TransportOrderDto), "Transport order")]
 public partial class TransportOrderDetailsViewModel : BaseViewModel
 {
     IMap map;
@@ -12,7 +12,7 @@ public partial class TransportOrderDetailsViewModel : BaseViewModel
     }
 
     [ObservableProperty]
-    TransportOrder transportOrder;
+    TransportOrderDto transportOrder;
 
     [RelayCommand]
     async Task OpenMap(Address address)

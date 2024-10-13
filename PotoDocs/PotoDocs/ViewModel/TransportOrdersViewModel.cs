@@ -7,7 +7,7 @@ namespace PotoDocs.ViewModel;
 
 public partial class TransportOrdersViewModel : BaseViewModel
 {
-    public ObservableCollection<TransportOrder> TransportOrders { get; } = new();
+    public ObservableCollection<TransportOrderDto> TransportOrders { get; } = new();
     TransportOrderService transportOrderService;
     OpenAIService openAIService;
     IConnectivity connectivity;
@@ -64,7 +64,7 @@ public partial class TransportOrdersViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    async Task GoToDetails(TransportOrder transportOrder)
+    async Task GoToDetails(TransportOrderDto transportOrder)
     {
         if (transportOrder == null)
             return;
@@ -100,8 +100,8 @@ public partial class TransportOrdersViewModel : BaseViewModel
                 transportOrderService.UploadFile(result.FullPath);
 
                 using var stream = File.OpenRead(result.FullPath);
-                TransportOrder transportOrder = await openAIService.GetInfoFromText(ExtractTextFromPdf(stream));
-                transportOrder.PdfUrl = result.FullPath;
+                TransportOrderDto transportOrder = await openAIService.GetInfoFromText(ExtractTextFromPdf(stream));
+                transportOrder.PDFUrl = result.FullPath;
 
                 await Shell.Current.GoToAsync(nameof(TransportOrderFormPage), true, new Dictionary<string, object>
                 {
@@ -124,7 +124,7 @@ public partial class TransportOrdersViewModel : BaseViewModel
         }
     }
     [RelayCommand]
-    async Task GoToEditOrder(TransportOrder transportOrder)
+    async Task GoToEditOrder(TransportOrderDto transportOrder)
     {
         if (transportOrder == null)
             return;
@@ -137,7 +137,7 @@ public partial class TransportOrdersViewModel : BaseViewModel
 
     }
     [RelayCommand]
-    async Task DeleteOrder(TransportOrder transportOrder)
+    async Task DeleteOrder(TransportOrderDto transportOrder)
     {
         if (transportOrder == null)
             return;

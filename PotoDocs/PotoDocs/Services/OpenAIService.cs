@@ -12,7 +12,7 @@ public class OpenAIService
     {
         _httpClient = httpClient;
     }
-    public async Task<TransportOrder> GetInfoFromText(string text)
+    public async Task<TransportOrderDto> GetInfoFromText(string text)
     {
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
@@ -61,7 +61,7 @@ public class OpenAIService
             extractedContent = extractedContent.Replace("```json", "").Replace("```", "").Trim();
 
             // Deserializacja odpowiedzi na obiekt OpenAIResponseDto
-            var openAIResponse = JsonConvert.DeserializeObject<TransportOrder>(extractedContent);
+            var openAIResponse = JsonConvert.DeserializeObject<TransportOrderDto>(extractedContent);
             return openAIResponse;
         }
         else

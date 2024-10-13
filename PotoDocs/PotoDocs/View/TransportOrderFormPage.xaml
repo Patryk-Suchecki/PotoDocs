@@ -41,7 +41,7 @@
                 <HorizontalStackLayout Spacing="10">
                     <VerticalStackLayout>
                         <Label Text="Kwota netto:" FontAttributes="Bold" />
-                        <Entry Text="{Binding TransportOrder.TotalAmount, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź kwotę netto" />
+                        <Entry Text="{Binding TransportOrder.Price, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź kwotę netto" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout>

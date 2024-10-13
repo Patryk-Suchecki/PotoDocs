@@ -5,7 +5,7 @@ namespace PotoDocs.ViewModel;
 
 public partial class DriversViewModel : BaseViewModel
 {
-    public ObservableCollection<DriverDto> Drivers { get; } = new();
+    public ObservableCollection<RegisterUserDto> Drivers { get; } = new();
     DriverService driverService;
     public DriversViewModel(DriverService driverService)
     {
@@ -51,12 +51,12 @@ public partial class DriversViewModel : BaseViewModel
     {
         await Shell.Current.GoToAsync(nameof(DriverFormPage), true, new Dictionary<string, object>
         {
-            {"Driver", new DriverDto() },
+            {"Driver", new RegisterUserDto() },
             {"title", "Dodaj kierowce" }
         });
     }
     [RelayCommand]
-    async Task GoToEditDriver(DriverDto driver)
+    async Task GoToEditDriver(RegisterUserDto driver)
     {
         if (driver == null)
             return;
@@ -69,7 +69,7 @@ public partial class DriversViewModel : BaseViewModel
 
     }
     [RelayCommand]
-    async Task DeleteDriver(DriverDto transportOrder)
+    async Task DeleteDriver(RegisterUserDto transportOrder)
     {
         if (transportOrder == null)
             return;

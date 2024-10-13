@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PotoDocs.API.Models;
 using PotoDocs.API.Services;
+using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Controllers;
 

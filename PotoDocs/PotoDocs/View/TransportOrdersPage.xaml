@@ -3,7 +3,7 @@
     x:Class="PotoDocs.View.TransportOrdersPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:model="clr-namespace:PotoDocs.Model"
+    xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
     xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     ios:Page.UseSafeArea="True"
@@ -39,7 +39,7 @@
 
                 <!-- Szablon danych -->
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:TransportOrder">
+                    <DataTemplate x:DataType="model:TransportOrderDto">
                         <!-- SwipeView do obsługi gestów przesuwania -->
                         <SwipeView>
                             <!-- Lewa strona (opcje Swipe) -->
@@ -65,13 +65,12 @@
                                     <VerticalStackLayout Grid.Column="0" Spacing="5">
                                         <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" />
                                         <Label Text="{Binding LoadingDate, StringFormat='Załadunek {0:dd.MM.yyyy}'}" FontSize="14" TextColor="Gray" />
-                                        <Label Text="{Binding TotalAmount}" FontSize="14" />
+                                        <Label Text="{Binding Price}" FontSize="14" />
                                     </VerticalStackLayout>
 
                                     <!-- Dane po prawej stronie -->
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
                                         <Label Text="{Binding Driver}" FontSize="14" />
-                                        <Label Text="{Binding Status}" FontAttributes="Bold" TextColor="{Binding Status, Converter={StaticResource StatusColorConverter}}" FontSize="14" />
                                     </VerticalStackLayout>
                                 </Grid>
                                 <!-- TapGestureRecognizer do wyświetlenia szczegółów -->

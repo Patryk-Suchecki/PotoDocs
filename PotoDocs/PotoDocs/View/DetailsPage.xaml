@@ -88,17 +88,19 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Kwota" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding TransportOrder.TotalAmount}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding TransportOrder.Price}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
-                <!-- Status zamówienia -->
-                <ViewCell>
+                <!-- Status zamówienia 
+                                <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Status zamówienia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
                         <Label Text="{Binding TransportOrder.Status}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
+                -->
+
 
                 <!-- Data załadunku -->
                 <ViewCell>
@@ -128,23 +130,25 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Numer zlecenia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding TransportOrder.OrderNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding TransportOrder.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
-                <!-- Status płatności -->
-                <ViewCell>
+                <!-- Status płatności 
+                                <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Status płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
                         <Label Text="{Binding TransportOrder.PaymentStatus}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
+                -->
+
 
                 <!-- PDF URL -->
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="PDF" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding TransportOrder.PdfUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding TransportOrder.PDFUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -152,7 +156,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="CMR" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <ListView ItemsSource="{Binding TransportOrder.CmrUrls}" HorizontalOptions="End">
+                        <ListView ItemsSource="{Binding TransportOrder.CMRFiles}" HorizontalOptions="End">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <ViewCell>

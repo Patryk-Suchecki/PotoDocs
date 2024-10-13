@@ -1,6 +1,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:model="clr-namespace:PotoDocs.Model"
+             xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
              xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="True"
@@ -35,12 +35,12 @@
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:DriverDto">
+                    <DataTemplate x:DataType="model:RegisterUserDto">
                         <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                 <HorizontalStackLayout Grid.Column="0" Spacing="5">
-                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
-                                    <Label Text="{Binding Surname}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding FirstName}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding LastName}" FontAttributes="Bold" FontSize="16" />
                                 </HorizontalStackLayout>
                             </Grid>
                             <Frame.GestureRecognizers>

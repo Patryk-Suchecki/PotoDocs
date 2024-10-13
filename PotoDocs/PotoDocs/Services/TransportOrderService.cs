@@ -8,7 +8,7 @@ namespace PotoDocs.Services;
 public class TransportOrderService
 {
     private readonly HttpClient _httpClient;
-    private List<TransportOrder> _transportOrderList;
+    private List<TransportOrderDto> _transportOrderList;
 
 
     public TransportOrderService(HttpClient httpClient)
@@ -16,7 +16,7 @@ public class TransportOrderService
         _httpClient = httpClient;
     }
 
-    public async Task<List<TransportOrder>> GetTransportOrders(bool isOnline = false)
+    public async Task<List<TransportOrderDto>> GetTransportOrders(bool isOnline = false)
     {
         if (_transportOrderList?.Count > 0)
             return _transportOrderList;
@@ -34,7 +34,7 @@ public class TransportOrderService
                 var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "/TransportOrders/all");
                 if (response.IsSuccessStatusCode)
                 {
-                    _transportOrderList = await response.Content.ReadFromJsonAsync<List<TransportOrder>>(jsonOptions);
+                    _transportOrderList = await response.Content.ReadFromJsonAsync<List<TransportOrderDto>>(jsonOptions);
                     return _transportOrderList;
                 }
             }
@@ -50,12 +50,12 @@ public class TransportOrderService
             using var reader = new StreamReader(stream);
             var contents = await reader.ReadToEndAsync();
 
-            _transportOrderList = JsonSerializer.Deserialize<List<TransportOrder>>(contents, jsonOptions);
+            _transportOrderList = JsonSerializer.Deserialize<List<TransportOrderDto>>(contents, jsonOptions);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Błąd podczas odczytu danych offline: {ex.Message}");
-            return new List<TransportOrder>();
+            return new List<TransportOrderDto>();
         }
 
         return _transportOrderList;

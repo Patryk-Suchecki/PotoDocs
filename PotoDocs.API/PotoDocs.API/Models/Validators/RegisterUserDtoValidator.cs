@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-
+using PotoDocs.Shared.Models;
 namespace PotoDocs.API.Models.Validators;
 
 public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>

@@ -1,4 +1,4 @@
-﻿namespace PotoDocs.API.Models;
+﻿namespace PotoDocs.Shared.Models;
 
 public class LoginDto
 {

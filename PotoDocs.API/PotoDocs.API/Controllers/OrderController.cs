@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Models;
+using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Controllers;
 
@@ -20,7 +21,7 @@ public class OrderController : ControllerBase
     {
         var orders = _dbContext.Orders.ToList();
 
-        var adminOrderDtos = _mapper.Map<List<AdminOrderDto>>(orders);
+        var adminOrderDtos = _mapper.Map<List<TransportOrderDto>>(orders);
 
         return Ok(adminOrderDtos);
     }
@@ -30,9 +31,9 @@ public class OrderController : ControllerBase
     {
         var orders = _dbContext.Orders.ToList();
 
-        var driverOrderDtos = _mapper.Map<List<DriverOrderDto>>(orders);
+        var transportOrdersDto = _mapper.Map<List<TransportOrderDto>>(orders);
 
-        return Ok(driverOrderDtos);
+        return Ok(transportOrdersDto);
     }
 
     [HttpGet("admin/{id}")]
@@ -45,9 +46,9 @@ public class OrderController : ControllerBase
             return NotFound();
         }
 
-        var adminOrderDto = _mapper.Map<AdminOrderDto>(order);
+        var transportOrderDto = _mapper.Map<TransportOrderDto>(order);
 
-        return Ok(adminOrderDto);
+        return Ok(transportOrderDto);
     }
 
     [HttpGet("driver/{id}")]
@@ -60,9 +61,9 @@ public class OrderController : ControllerBase
             return NotFound();
         }
 
-        var driverOrderDto = _mapper.Map<DriverOrderDto>(order);
+        var transportOrderDto = _mapper.Map<TransportOrderDto>(order);
 
-        return Ok(driverOrderDto);
+        return Ok(transportOrderDto);
     }
 
     [HttpPost]

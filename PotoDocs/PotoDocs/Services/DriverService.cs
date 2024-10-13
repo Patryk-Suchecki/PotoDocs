@@ -8,7 +8,7 @@ namespace PotoDocs.Services;
 public class DriverService
 {
     private readonly HttpClient _httpClient;
-    private List<DriverDto> _driverList;
+    private List<RegisterUserDto> _driverList;
 
 
     public DriverService(HttpClient httpClient)
@@ -16,7 +16,7 @@ public class DriverService
         _httpClient = httpClient;
     }
 
-    public async Task<List<DriverDto>> GetDrivers(bool isOnline = false)
+    public async Task<List<RegisterUserDto>> GetDrivers(bool isOnline = false)
     {
         if (_driverList?.Count > 0)
             return _driverList;
@@ -34,7 +34,7 @@ public class DriverService
                 var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "/drivers/all");
                 if (response.IsSuccessStatusCode)
                 {
-                    _driverList = await response.Content.ReadFromJsonAsync<List<DriverDto>>(jsonOptions);
+                    _driverList = await response.Content.ReadFromJsonAsync<List<RegisterUserDto>>(jsonOptions);
                     return _driverList;
                 }
             }
@@ -50,12 +50,12 @@ public class DriverService
             using var reader = new StreamReader(stream);
             var contents = await reader.ReadToEndAsync();
 
-            _driverList = JsonSerializer.Deserialize<List<DriverDto>>(contents, jsonOptions);
+            _driverList = JsonSerializer.Deserialize<List<RegisterUserDto>>(contents, jsonOptions);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Błąd podczas odczytu danych offline: {ex.Message}");
-            return new List<DriverDto>();
+            return new List<RegisterUserDto>();
         }
 
         return _driverList;

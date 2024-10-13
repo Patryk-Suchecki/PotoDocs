@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Text.Json.Serialization;
+using PotoDocs.Shared.Models;
 
-namespace PotoDocs.API.Models;
+namespace PotoDocs.Shared.Models;
 
 public class RegisterUserDto
 {
@@ -11,3 +12,5 @@ public class RegisterUserDto
     public string ConfirmPassword { get; set; }
     public Role Role { get; set; } = Role.Driver;
 }
+[JsonSerializable(typeof(List<RegisterUserDto>))]
+internal sealed partial class RegisterUserDtoContext : JsonSerializerContext { }
