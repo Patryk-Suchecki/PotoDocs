@@ -4,7 +4,7 @@ namespace PotoDocs.Shared.Models;
 public class TransportOrderDto
 {
     public int Id { get; set; }
-    public string InvoiceNumber { get; set; }
+    public int InvoiceNumber { get; set; }
     public DateTime InvoiceDate { get; set; }
     public string Comments { get; set; }
     public string Driver { get; set; }

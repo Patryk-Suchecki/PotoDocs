@@ -1,4 +1,4 @@
-﻿namespace PotoDocs.Model;
+﻿namespace PotoDocs.API.Model;
 
 public class InvoiceDto
 {
@@ -12,7 +12,7 @@ public class InvoiceDto
     public int InvoiceNumber { get; set; } // NUMER_FAKTURY
     public string CompanyName { get; set; } // NAZWA_FIRMY
     public string CompanyAddress { get; set; } // ADRES_FIRMY
-    public string CompanyNIP { get; set; } // NIP_FIRMY
+    public int CompanyNIP { get; set; } // NIP_FIRMY
     public DateTime SaleDate { get; set; } // DATA_SPRZEDAZY
     public DateTime IssueDate { get; set; } // DATA_WYSTAWIENIA
     public int PaymentDueDate { get; set; } // TERMIN_ZAPLATY
