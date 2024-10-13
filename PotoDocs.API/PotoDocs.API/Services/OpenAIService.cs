@@ -1,19 +1,32 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
 using PotoDocs.Shared.Models;
+using PdfPigPage = UglyToad.PdfPig.Content.Page;
 
 namespace PotoDocs.API.Services;
-public class OpenAIService
+public interface IOpenAIService
+{
+    Task<TransportOrderDto> GetInfoFromText(IFormFile file);
+}
+public class OpenAIService : IOpenAIService
 {
     private readonly HttpClient _httpClient;
     private readonly string _openAIKey;
     public OpenAIService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _openAIKey = configuration["ApiSettings:OpenAIKey"];
+        _openAIKey = configuration["OpenAIKey"];
     }
-    public async Task<TransportOrderDto> GetInfoFromText(string text)
+    public async Task<TransportOrderDto> GetInfoFromText(IFormFile file)
     {
+        string text;
+
+        // Użycie pliku bez zapisywania go na serwerze - wczytanie do strumienia
+        using (var stream = file.OpenReadStream())
+        {
+            // Wywołanie metody do ekstrakcji tekstu z pliku PDF
+            text = ExtractTextFromPdf(stream);
+        }
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_openAIKey}");
 
         var systemMessage = new
@@ -27,7 +40,7 @@ public class OpenAIService
             role = "user",
             content = $"Proszę wyodrębnij z poniższego tekstu następujące informacje i zwróć je w formacie JSON:\n\n" +
                       "{\n" +
-                      "    \"CompanyNIP\": \"nip zleceniodawcy (string)\",\n" +
+                      "    \"CompanyNIP\": \"nip zleceniodawcy (int)\",\n" +
                       "    \"CompanyName\": \"nazwa firmy zleceniodawcy (string)\",\n" +
                       "    \"CompanyAddress\": \"adres firmy zleceniodawcy (string)\",\n" +
                       "    \"CompanyCountry\": \"kraj z jakiego jest firma zleceniodawcy\",\n" +
@@ -68,5 +81,26 @@ public class OpenAIService
         {
             throw new Exception($"Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
         }
+    }
+    private string ExtractTextFromPdf(Stream pdfStream)
+    {
+        StringBuilder textBuilder = new StringBuilder();
+        var tempFile = Path.GetTempFileName();
+
+        using (var fileStream = File.Create(tempFile))
+        {
+            pdfStream.CopyTo(fileStream);
+        }
+
+        using (var document = UglyToad.PdfPig.PdfDocument.Open(tempFile))
+        {
+            foreach (PdfPigPage page in document.GetPages())
+            {
+                textBuilder.Append(page.Text);
+            }
+        }
+
+        File.Delete(tempFile);
+        return textBuilder.ToString();
     }
 }

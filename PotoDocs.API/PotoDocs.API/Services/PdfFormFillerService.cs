@@ -3,8 +3,11 @@ using iTextSharp.text.pdf;
 using PotoDocs.API.Model;
 
 namespace PotoDocs.API.Services;
-
-public class PdfFormFillerService
+public interface IPdfFormFillerService
+{
+    Task FillPdfFormAsync(InvoiceDto model);
+}
+public class PdfFormFillerService : IPdfFormFillerService
 {
     private readonly IWebHostEnvironment _env;
     private readonly string templateFileName = "template.pdf";

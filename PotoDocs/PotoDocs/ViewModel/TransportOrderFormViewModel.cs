@@ -3,13 +3,12 @@
 namespace PotoDocs.ViewModel;
 
 [QueryProperty(nameof(PageTitle), "title")]
-[QueryProperty(nameof(TransportOrderDto), "Transport order")]
+[QueryProperty(nameof(TransportOrder), "Transport order")]
 public partial class TransportOrderFormViewModel : BaseViewModel
 {
     [ObservableProperty]
     TransportOrderDto transportOrder;
     TransportOrderService transportOrderService;
-    OpenAIService openAIService;
 
     string pageTitle;
     public string PageTitle
@@ -21,9 +20,8 @@ public partial class TransportOrderFormViewModel : BaseViewModel
             Title = pageTitle;
         }
     }
-    public TransportOrderFormViewModel(TransportOrderService transportOrderService, OpenAIService openAIService)
+    public TransportOrderFormViewModel(TransportOrderService transportOrderService)
     {
         this.transportOrderService = transportOrderService;
-        this.openAIService = openAIService;
     }
 }

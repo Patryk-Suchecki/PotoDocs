@@ -8,7 +8,7 @@ public class TransportOrderDto
     public DateTime InvoiceDate { get; set; }
     public string Comments { get; set; }
     public string Driver { get; set; }
-    public int CompanyNIP { get; set; }
+    public long CompanyNIP { get; set; }
     public string CompanyName { get; set; }
     public string CompanyAddress { get; set; }
     public string CompanyCountry { get; set; }

@@ -60,28 +60,27 @@ public class TransportOrderService
 
         return _transportOrderList;
     }
-    public async Task UploadFile(string filePath, bool isOnline = false)
+    public async Task<TransportOrderDto> UploadFile(string filePath)
     {
-        if (isOnline)
+        using (var multipartFormContent = new MultipartFormDataContent())
         {
-            using (var multipartFormContent = new MultipartFormDataContent())
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            var streamContent = new StreamContent(fileStream);
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+            multipartFormContent.Add(streamContent, "file", Path.GetFileName(filePath));
+
+            var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "api/transportorder/datafromai", multipartFormContent);
+
+            if (response.IsSuccessStatusCode)
             {
-                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                var streamContent = new StreamContent(fileStream);
-                streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                TransportOrderDto transportOrder = await response.Content.ReadFromJsonAsync<TransportOrderDto>();
 
-                multipartFormContent.Add(streamContent, "file", Path.GetFileName(filePath));
-
-                var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "/transportOrder/create", multipartFormContent);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Plik został pomyślnie przesłany.");
-                }
-                else
-                {
-                    Console.WriteLine($"Błąd przesyłania pliku: {response.StatusCode}");
-                }
+                return transportOrder;
+            }
+            else
+            {
+                return null;
             }
         }
     }

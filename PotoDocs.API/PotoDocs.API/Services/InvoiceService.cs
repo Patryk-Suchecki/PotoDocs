@@ -2,10 +2,14 @@
 using PotoDocs.API.Model;
 
 namespace PotoDocs.API.Services;
-public class InvoiceService
+public interface IInvoiceService
 {
-    PdfFormFillerService _pdfFormFillerService;
-    public InvoiceService(PdfFormFillerService pdfFormFillerService)
+    Task<InvoiceDto> ConvertOpenAiToInvoice(TransportOrderDto transportOrder);
+}
+public class InvoiceService : IInvoiceService
+{
+    IPdfFormFillerService _pdfFormFillerService;
+    public InvoiceService(IPdfFormFillerService pdfFormFillerService)
     {
         _pdfFormFillerService = pdfFormFillerService;
     }

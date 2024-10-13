@@ -1,23 +1,30 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Models;
+using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Controllers;
 
-public class OrderController : ControllerBase
+[Route("api/transportorder")]
+[ApiController]
+[Authorize]
+public class TransportOrderController : ControllerBase
 {
     private readonly PotodocsDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly IOpenAIService _openAIService;
 
-    public OrderController(PotodocsDbContext dbContext, IMapper mapper)
+    public TransportOrderController(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _openAIService = openAIService;
     }
 
-    [HttpGet("admin")]
-    public ActionResult<IEnumerable<Order>> GetAllForAdmin()
+    [HttpGet("all")]
+    public ActionResult<IEnumerable<TransportOrderDto>> GetAll()
     {
         var orders = _dbContext.Orders.ToList();
 
@@ -26,33 +33,8 @@ public class OrderController : ControllerBase
         return Ok(adminOrderDtos);
     }
 
-    [HttpGet("driver")]
-    public ActionResult<IEnumerable<Order>> GetAllForDriver()
-    {
-        var orders = _dbContext.Orders.ToList();
-
-        var transportOrdersDto = _mapper.Map<List<TransportOrderDto>>(orders);
-
-        return Ok(transportOrdersDto);
-    }
-
-    [HttpGet("admin/{id}")]
-    public ActionResult<Order> AdminGet([FromRoute] int id)
-    {
-        var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
-
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        var transportOrderDto = _mapper.Map<TransportOrderDto>(order);
-
-        return Ok(transportOrderDto);
-    }
-
-    [HttpGet("driver/{id}")]
-    public ActionResult<Order> DriverGet([FromRoute] int id)
+    [HttpGet("{id}")]
+    public ActionResult<Order> GetById([FromRoute] int id)
     {
         var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
 
@@ -67,10 +49,10 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult CreateOrder([FromBody] Order dto)
+    public ActionResult Create([FromBody] TransportOrderDto dto)
     {
-        _dbContext.Orders.Add(dto);
-        _dbContext.SaveChanges();
+        //_dbContext.Orders.Add(dto);
+        //_dbContext.SaveChanges();
         return Created("api/order/{dto.Id}", null);
     }
 
@@ -103,6 +85,24 @@ public class OrderController : ControllerBase
         order.InvoiceIssueDate  = dto.InvoiceIssueDate;
 
         return Ok();
+    }
+
+    [HttpPost("datafromai")]
+    public async Task<ActionResult<TransportOrderDto>> UploadPdf([FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded.");
+        }
+
+        if (file.ContentType != "application/pdf")
+        {
+            return BadRequest("Only PDF files are allowed.");
+        }
+
+        var transportOrder = await _openAIService.GetInfoFromText(file);
+
+        return Ok(transportOrder);
     }
 }
 

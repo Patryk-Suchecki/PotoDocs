@@ -9,14 +9,12 @@ public partial class TransportOrdersViewModel : BaseViewModel
 {
     public ObservableCollection<TransportOrderDto> TransportOrders { get; } = new();
     TransportOrderService transportOrderService;
-    OpenAIService openAIService;
     IConnectivity connectivity;
     IGeolocation geolocation;
-    public TransportOrdersViewModel(TransportOrderService transportOrderService, OpenAIService openAIService, IConnectivity connectivity, IGeolocation geolocation)
+    public TransportOrdersViewModel(TransportOrderService transportOrderService, IConnectivity connectivity, IGeolocation geolocation)
     {
         Title = "Zlecenia";
         this.transportOrderService = transportOrderService;
-        this.openAIService = openAIService;
         this.connectivity = connectivity;
         this.geolocation = geolocation;
         GetTransportOrdersAsync();
@@ -97,10 +95,7 @@ public partial class TransportOrdersViewModel : BaseViewModel
             if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 IsBusy = true;
-                transportOrderService.UploadFile(result.FullPath);
-
-                using var stream = File.OpenRead(result.FullPath);
-                TransportOrderDto transportOrder = await openAIService.GetInfoFromText(ExtractTextFromPdf(stream));
+                TransportOrderDto transportOrder = await transportOrderService.UploadFile(result.FullPath);
                 transportOrder.PDFUrl = result.FullPath;
 
                 await Shell.Current.GoToAsync(nameof(TransportOrderFormPage), true, new Dictionary<string, object>
