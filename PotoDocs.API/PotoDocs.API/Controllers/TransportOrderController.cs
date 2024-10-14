@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.X509;
 using PotoDocs.API.Models;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
@@ -51,9 +52,10 @@ public class TransportOrderController : ControllerBase
     [HttpPost]
     public ActionResult Create([FromBody] TransportOrderDto dto)
     {
-        //_dbContext.Orders.Add(dto);
-        //_dbContext.SaveChanges();
-        return Created("api/order/{dto.Id}", null);
+        var order = _mapper.Map<Order>(dto);
+        _dbContext.Orders.Add(order);
+        _dbContext.SaveChanges();
+        return Created($"api/order/{order.Id}", null);
     }
 
     [HttpDelete("{id}")]

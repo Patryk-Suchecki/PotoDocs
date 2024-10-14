@@ -24,4 +24,11 @@ public partial class TransportOrderFormViewModel : BaseViewModel
     {
         this.transportOrderService = transportOrderService;
     }
+    [RelayCommand]
+    async Task SaveTransportOrder(TransportOrderDto transportOrder)
+    {
+        if (transportOrder == null)
+            return;
+        transportOrderService.CreateTransportOrder(transportOrder);
+    }
 }

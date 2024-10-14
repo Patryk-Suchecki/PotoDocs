@@ -84,6 +84,21 @@ public class TransportOrderService
             }
         }
     }
+    public async Task<string?> CreateTransportOrder(TransportOrderDto dto)
+    {
+        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "api/transportorder", dto);
+
+        if (result.IsSuccessStatusCode)
+        {
+            int transportOrderId = await result.Content.ReadFromJsonAsync<int>();
+
+            return "transportOrderId";
+        }
+        else
+        {
+            return null;
+        }
+    }
     public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto, bool isOnline = false)
     {
         string archiveFileName = $"Zlecenia_{downloadRequestDto.Month}-{downloadRequestDto.Year}.rar";

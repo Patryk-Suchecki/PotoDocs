@@ -53,6 +53,8 @@
                 <Label Text="Uwagi:" FontAttributes="Bold" />
                 <Entry Text="{Binding TransportOrder.Comments, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
 
+                <Button Command="{Binding SaveTransportOrderCommand}" IsEnabled="{Binding IsNotBusy}" Text="Zapisz" />
+
             </VerticalStackLayout>
         </Grid>
     </ScrollView>
