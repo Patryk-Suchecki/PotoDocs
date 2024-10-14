@@ -16,7 +16,7 @@ public class TransportOrderService
         _httpClient = httpClient;
     }
 
-    public async Task<List<TransportOrderDto>> GetTransportOrders(bool isOnline = false)
+    public async Task<List<TransportOrderDto>> GetTransportOrders()
     {
         if (_transportOrderList?.Count > 0)
             return _transportOrderList;
@@ -27,35 +27,18 @@ public class TransportOrderService
             PropertyNameCaseInsensitive = true
         };
 
-        if (isOnline)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "/TransportOrders/all");
-                if (response.IsSuccessStatusCode)
-                {
-                    _transportOrderList = await response.Content.ReadFromJsonAsync<List<TransportOrderDto>>(jsonOptions);
-                    return _transportOrderList;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Błąd podczas pobierania danych online: {ex.Message}");
-            }
-        }
-
         try
         {
-            using var stream = await FileSystem.OpenAppPackageFileAsync("transportorderdata.json");
-            using var reader = new StreamReader(stream);
-            var contents = await reader.ReadToEndAsync();
-
-            _transportOrderList = JsonSerializer.Deserialize<List<TransportOrderDto>>(contents, jsonOptions);
+            var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "api/transportorder/all");
+            if (response.IsSuccessStatusCode)
+            {
+                _transportOrderList = await response.Content.ReadFromJsonAsync<List<TransportOrderDto>>(jsonOptions);
+                return _transportOrderList;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas odczytu danych offline: {ex.Message}");
-            return new List<TransportOrderDto>();
+            Console.WriteLine($"Błąd podczas pobierania danych online: {ex.Message}");
         }
 
         return _transportOrderList;
@@ -99,31 +82,21 @@ public class TransportOrderService
             return null;
         }
     }
-    public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto, bool isOnline = false)
+    public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto)
     {
         string archiveFileName = $"Zlecenia_{downloadRequestDto.Month}-{downloadRequestDto.Year}.rar";
         string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
 
-        if (isOnline)
-        {
-            var response = await _httpClient.GetAsync($"{AppConstants.ApiUrl}/invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
+        var response = await _httpClient.GetAsync($"{AppConstants.ApiUrl}/invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
 
-            if (response.IsSuccessStatusCode)
-            {
-                var rarData = await response.Content.ReadAsByteArrayAsync();
-                await File.WriteAllBytesAsync(outputPath, rarData);
-            }
-            else
-            {
-                throw new Exception("Nie udało się pobrać archiwum RAR.");
-            }
+        if (response.IsSuccessStatusCode)
+        {
+            var rarData = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(outputPath, rarData);
         }
         else
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                await File.WriteAllBytesAsync(outputPath, memoryStream.ToArray());
-            }
+            throw new Exception("Nie udało się pobrać archiwum RAR.");
         }
 
         return outputPath;

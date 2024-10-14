@@ -16,7 +16,7 @@ public class DriverService
         _httpClient = httpClient;
     }
 
-    public async Task<List<RegisterUserDto>> GetDrivers(bool isOnline = false)
+    public async Task<List<RegisterUserDto>> GetDrivers()
     {
         if (_driverList?.Count > 0)
             return _driverList;
@@ -27,35 +27,18 @@ public class DriverService
             PropertyNameCaseInsensitive = true
         };
 
-        if (isOnline)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "/drivers/all");
-                if (response.IsSuccessStatusCode)
-                {
-                    _driverList = await response.Content.ReadFromJsonAsync<List<RegisterUserDto>>(jsonOptions);
-                    return _driverList;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Błąd podczas pobierania danych online: {ex.Message}");
-            }
-        }
-
         try
         {
-            using var stream = await FileSystem.OpenAppPackageFileAsync("drivers.json");
-            using var reader = new StreamReader(stream);
-            var contents = await reader.ReadToEndAsync();
-
-            _driverList = JsonSerializer.Deserialize<List<RegisterUserDto>>(contents, jsonOptions);
+            var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "/drivers/all");
+            if (response.IsSuccessStatusCode)
+            {
+                _driverList = await response.Content.ReadFromJsonAsync<List<RegisterUserDto>>(jsonOptions);
+                return _driverList;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas odczytu danych offline: {ex.Message}");
-            return new List<RegisterUserDto>();
+            Console.WriteLine($"Błąd podczas pobierania danych online: {ex.Message}");
         }
 
         return _driverList;
