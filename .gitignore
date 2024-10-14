@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/PotoDocs.API/PotoDocs.API/appsettings.json
+/PotoDocs.API/PotoDocs.API/appsettings.json
