@@ -28,4 +28,11 @@ public class AccountController : ControllerBase
         var loginResponse = _accountService.GenerateJwt(dto);
         return Ok(loginResponse);
     }
+
+    [HttpPost("change-password")]
+    public ActionResult ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        _accountService.ChangePassword(dto);
+        return Ok();
+    }
 }

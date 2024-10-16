@@ -13,79 +13,47 @@ namespace PotoDocs.API.Controllers;
 [Authorize]
 public class TransportOrderController : ControllerBase
 {
-    private readonly PotodocsDbContext _dbContext;
-    private readonly IMapper _mapper;
-    private readonly IOpenAIService _openAIService;
+    private readonly ITransportOrderService _transportOrderService;
 
-    public TransportOrderController(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService)
+    public TransportOrderController(ITransportOrderService transportOrderService)
     {
-        _dbContext = dbContext;
-        _mapper = mapper;
-        _openAIService = openAIService;
+        _transportOrderService = transportOrderService;
     }
 
     [HttpGet("all")]
     public ActionResult<IEnumerable<TransportOrderDto>> GetAll()
     {
-        var orders = _dbContext.Orders.ToList();
-
-        var adminOrderDtos = _mapper.Map<List<TransportOrderDto>>(orders);
-
-        return Ok(adminOrderDtos);
+        var orders = _transportOrderService.GetAll();
+        return Ok(orders);
     }
 
     [HttpGet("{id}")]
-    public ActionResult<Order> GetById([FromRoute] int id)
+    public ActionResult<TransportOrderDto> GetById([FromRoute] int id)
     {
-        var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
+        var order = _transportOrderService.GetById(id);
+        if (order == null) return NotFound();
 
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        var transportOrderDto = _mapper.Map<TransportOrderDto>(order);
-
-        return Ok(transportOrderDto);
+        return Ok(order);
     }
 
     [HttpPost]
     public ActionResult Create([FromBody] TransportOrderDto dto)
     {
-        var order = _mapper.Map<Order>(dto);
-        _dbContext.Orders.Add(order);
-        _dbContext.SaveChanges();
-        return Created($"api/order/{order.Id}", null);
+        _transportOrderService.Create(dto);
+        return Created($"api/transportorder/{dto.Id}", null);
     }
 
     [HttpDelete("{id}")]
     public ActionResult Delete([FromRoute] int id)
     {
-        var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
-        if (order is null) return NotFound();
-        _dbContext.Orders.Remove(order);
-        _dbContext.SaveChanges();
+        _transportOrderService.Delete(id);
         return NoContent();
     }
 
     [HttpPut("{id}")]
-    public ActionResult Update([FromBody] Order dto, [FromRoute] int id)
+    public ActionResult Update([FromBody] TransportOrderDto dto, [FromRoute] int id)
     {
-        var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
-        if (order is null) return NotFound();
-
-        order.PDFUrl = dto.PDFUrl;
-        order.InvoiceNumber = dto.InvoiceNumber;
-        order.LoadingAddress = dto.LoadingAddress;
-        order.UnloadingAddress = dto.UnloadingAddress;
-        order.CMRFiles = dto.CMRFiles;
-        order.CompanyOrderNumber = dto.CompanyOrderNumber;
-        order.CompanyName = dto.CompanyName;
-        order.CompanyNIP = dto.CompanyNIP;
-        order.Driver = dto.Driver;
-        order.DaysToPayment = dto.DaysToPayment;
-        order.InvoiceIssueDate  = dto.InvoiceIssueDate;
-
+        _transportOrderService.Update(id, dto);
         return Ok();
     }
 
@@ -102,8 +70,7 @@ public class TransportOrderController : ControllerBase
             return BadRequest("Only PDF files are allowed.");
         }
 
-        var transportOrder = await _openAIService.GetInfoFromText(file);
-
+        var transportOrder = await _transportOrderService.ExtractDataFromPdf(file);
         return Ok(transportOrder);
     }
 }

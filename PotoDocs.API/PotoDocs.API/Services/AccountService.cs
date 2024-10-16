@@ -14,6 +14,7 @@ public interface IAccountService
 {
     LoginResponseDto GenerateJwt(LoginDto dto);
     void RegisterUser(RegisterUserDto dto);
+    void ChangePassword(ChangePasswordDto dto);
 }
 
 public class AccountService : IAccountService
@@ -35,10 +36,11 @@ public class AccountService : IAccountService
             Email = dto.Email,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
-            PasswordHash = dto.Password,
             Role = dto.Role
         };
-        var hashedPassword = _hasher.HashPassword(newUser, dto.Password);
+        string randomPassword = GenerateRandomPassword(12);
+
+        var hashedPassword = _hasher.HashPassword(newUser, randomPassword);
         newUser.PasswordHash = hashedPassword;
         _context.Users.Add(newUser);
         _context.SaveChanges();
@@ -82,5 +84,38 @@ public class AccountService : IAccountService
             Role = user.Role
         };
         
+    }
+
+    public string GenerateRandomPassword(int length)
+    {
+        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        var random = new Random();
+        var chars = new char[length];
+
+        for (int i = 0; i < length; i++)
+        {
+            chars[i] = validChars[random.Next(0, validChars.Length)];
+        }
+
+        return new string(chars);
+    }
+
+    public void ChangePassword(ChangePasswordDto dto)
+    {
+        var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+        if (user is null)
+        {
+            throw new BadRequestException("User not found");
+        }
+
+        var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.OldPassword);
+        if (result == PasswordVerificationResult.Failed)
+        {
+            throw new BadRequestException("Old password is incorrect");
+        }
+
+        var newPasswordHash = _hasher.HashPassword(user, dto.NewPassword);
+        user.PasswordHash = newPasswordHash;
+        _context.SaveChanges();
     }
 }
