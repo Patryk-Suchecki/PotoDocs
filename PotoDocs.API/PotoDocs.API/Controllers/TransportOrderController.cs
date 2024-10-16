@@ -37,10 +37,15 @@ public class TransportOrderController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Create([FromBody] TransportOrderDto dto)
+    public async Task<ActionResult<TransportOrderDto>> Create([FromForm] IFormFile file)
     {
-        _transportOrderService.Create(dto);
-        return Created($"api/transportorder/{dto.Id}", null);
+        var transportOrder = await _transportOrderService.ProcessAndCreateOrderFromPdf(file);
+        if (transportOrder == null)
+        {
+            return BadRequest("Failed to process and create order.");
+        }
+
+        return Created($"api/transportorder/{transportOrder.Id}", transportOrder);
     }
 
     [HttpDelete("{id}")]
@@ -55,23 +60,6 @@ public class TransportOrderController : ControllerBase
     {
         _transportOrderService.Update(id, dto);
         return Ok();
-    }
-
-    [HttpPost("datafromai")]
-    public async Task<ActionResult<TransportOrderDto>> UploadPdf([FromForm] IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-        {
-            return BadRequest("No file uploaded.");
-        }
-
-        if (file.ContentType != "application/pdf")
-        {
-            return BadRequest("Only PDF files are allowed.");
-        }
-
-        var transportOrder = await _transportOrderService.ExtractDataFromPdf(file);
-        return Ok(transportOrder);
     }
 }
 

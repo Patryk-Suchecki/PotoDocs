@@ -12,7 +12,7 @@ namespace PotoDocs.API.Services
         void Create(TransportOrderDto dto);
         void Delete(int id);
         void Update(int id, TransportOrderDto dto);
-        Task<TransportOrderDto> ExtractDataFromPdf(IFormFile file);
+        Task<TransportOrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
     }
 
     public class TransportOrderService : ITransportOrderService
@@ -68,9 +68,24 @@ namespace PotoDocs.API.Services
             _dbContext.SaveChanges();
         }
 
-        public async Task<TransportOrderDto> ExtractDataFromPdf(IFormFile file)
+        public async Task<TransportOrderDto> ProcessAndCreateOrderFromPdf(IFormFile file)
         {
-            return await _openAIService.GetInfoFromText(file);
+            if (file == null || file.Length == 0 || file.ContentType != "application/pdf")
+            {
+                return null;
+            }
+
+            // Ekstrakcja danych z pliku PDF za pomocą usługi OpenAI
+            var extractedData = await _openAIService.GetInfoFromText(file);
+            if (extractedData == null)
+            {
+                return null;
+            }
+
+            // Stworzenie encji zamówienia na podstawie wyciągniętych danych
+            Create(extractedData);
+
+            return extractedData;
         }
     }
 }
