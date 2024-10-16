@@ -1,6 +1,6 @@
-﻿using PotoDocs.Shared.Models;
+﻿using PotoDocs.API.Entities;
 
-namespace PotoDocs.API.Models;
+namespace PotoDocs.API.Entities;
 public class Order
 {
     public int Id { get; set; }

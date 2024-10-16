@@ -18,12 +18,6 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
                 }
             });
 
-        RuleFor(x => x.Password)
-            .MinimumLength(8);
-
-        RuleFor(x => x.ConfirmPassword)
-            .Equal(e => e.Password);
-
 
     }
 }

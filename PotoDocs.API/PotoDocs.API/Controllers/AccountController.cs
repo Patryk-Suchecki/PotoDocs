@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 
@@ -6,6 +7,7 @@ namespace PotoDocs.API.Controllers;
 
 [Route("api/account")]
 [ApiController]
+
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
@@ -30,6 +32,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("change-password")]
+    [Authorize]
     public ActionResult ChangePassword([FromBody] ChangePasswordDto dto)
     {
         _accountService.ChangePassword(dto);

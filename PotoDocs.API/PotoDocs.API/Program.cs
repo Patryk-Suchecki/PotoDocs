@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PotoDocs.API;
+using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.API.Models.Validators;
 using PotoDocs.API.Services;

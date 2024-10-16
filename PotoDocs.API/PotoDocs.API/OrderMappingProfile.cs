@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
 
