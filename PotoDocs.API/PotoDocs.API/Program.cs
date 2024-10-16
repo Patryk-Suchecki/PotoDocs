@@ -40,7 +40,7 @@ builder.Services.AddScoped<ErrorHandlingMiddleware>();
 
 builder.Services.AddDbContext<PotodocsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddScoped<DBSeeder>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
@@ -51,6 +51,12 @@ builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 builder.Services.AddSingleton<IPdfFormFillerService, PdfFormFillerService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DBSeeder>();
+    seeder.Seed();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
