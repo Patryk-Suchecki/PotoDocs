@@ -53,7 +53,7 @@ public class TransportOrderService
 
             multipartFormContent.Add(streamContent, "file", Path.GetFileName(filePath));
 
-            var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "api/transportorder/datafromai", multipartFormContent);
+            var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "api/transportorder", multipartFormContent);
 
             if (response.IsSuccessStatusCode)
             {
