@@ -14,7 +14,7 @@ public class InvoiceDto
     public string CompanyAddress { get; set; } // ADRES_FIRMY
     public long CompanyNIP { get; set; } // NIP_FIRMY
     public DateTime SaleDate { get; set; } // DATA_SPRZEDAZY
-    public DateTime IssueDate { get; set; } // DATA_WYSTAWIENIA
+    public DateOnly IssueDate { get; set; } // DATA_WYSTAWIENIA
     public int PaymentDueDate { get; set; } // TERMIN_ZAPLATY
     public decimal EuroAmount { get; set; } // CENA_EURO
     public decimal VATAmountPln { get; set; } // KWOTA_VAT_PLN

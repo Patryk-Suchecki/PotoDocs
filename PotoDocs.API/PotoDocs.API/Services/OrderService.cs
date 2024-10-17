@@ -30,17 +30,9 @@ namespace PotoDocs.API.Services
 
         public IEnumerable<OrderDto> GetAll()
         {
-            
-            try
-            {
-                var orders = _dbContext.Orders.ToList();
-                var ordersDto = _mapper.Map<List<OrderDto>>(orders);
-                return ordersDto;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
+            var orders = _dbContext.Orders.ToList();
+            var ordersDto = _mapper.Map<List<OrderDto>>(orders);
+            return ordersDto;
         }
 
         public OrderDto GetById(int id)

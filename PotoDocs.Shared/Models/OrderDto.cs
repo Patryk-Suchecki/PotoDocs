@@ -8,7 +8,7 @@ public class OrderDto
     Dane o zleceniu
 */
     public int InvoiceNumber { get; set; }
-    public DateTime InvoiceIssueDate { get; set; }
+    public DateOnly InvoiceIssueDate { get; set; }
     public string DriverId { get; set; }
 /*
     Dane o zleceniodawcy

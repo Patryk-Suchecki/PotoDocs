@@ -2,7 +2,7 @@
 public class Order
 {
     public int Id { get; set; }
-    public string? InvoiceNumber { get; set; }
+    public int? InvoiceNumber { get; set; }
     public DateOnly InvoiceIssueDate { get; set; }
     public virtual User? Driver { get; set; }
 
@@ -11,7 +11,7 @@ public class Order
     public string? CompanyAddress { get; set; }
     public string? CompanyCountry { get; set; }
 
-    public float? Price { get; set; }
+    public decimal? Price { get; set; }
     public string? Currency { get; set; }
     public int? PaymentDeadline { get; set; }
     public bool? HasPaid { get; set; }
