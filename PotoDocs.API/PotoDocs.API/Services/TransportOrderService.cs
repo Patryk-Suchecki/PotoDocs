@@ -44,9 +44,16 @@ namespace PotoDocs.API.Services
 
         public void Create(TransportOrderDto dto)
         {
-            var order = _mapper.Map<Order>(dto);
-            _dbContext.Orders.Add(order);
-            _dbContext.SaveChanges();
+            try
+            {
+                var order = _mapper.Map<Order>(dto);
+                _dbContext.Orders.Add(order);
+                _dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public void Delete(int id)
