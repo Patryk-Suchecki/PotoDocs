@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="PotoDocs.View.TransportOrdersPage"
+    x:Class="PotoDocs.View.OrdersPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
@@ -8,7 +8,7 @@
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     ios:Page.UseSafeArea="True"
     Title="{Binding Title}"
-    x:DataType="viewmodel:TransportOrdersViewModel">
+    x:DataType="viewmodel:OrdersViewModel">
 
     <Grid
         ColumnDefinitions="*,*"
@@ -19,10 +19,10 @@
         <!-- Odświeżanie -->
         <RefreshView
             Grid.ColumnSpan="2"
-            Command="{Binding GetTransportOrdersCommand}"
+            Command="{Binding GetOrdersCommand}"
             IsRefreshing="{Binding IsRefreshing}">
             <CollectionView
-                ItemsSource="{Binding TransportOrders}"
+                ItemsSource="{Binding Orders}"
                 SelectionMode="None">
 
                 <!-- Szablon dla pustej listy -->
@@ -39,7 +39,7 @@
 
                 <!-- Szablon danych -->
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:TransportOrderDto">
+                    <DataTemplate x:DataType="model:OrderDto">
                         <!-- SwipeView do obsługi gestów przesuwania -->
                         <SwipeView>
                             <!-- Lewa strona (opcje Swipe) -->
@@ -48,12 +48,12 @@
                                     <SwipeItem Text="Edytuj"
                                                BackgroundColor="LightBlue"
                                                IconImageSource="icon_edit.png"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:TransportOrdersViewModel}}, Path=GoToEditOrderCommand}"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=GoToEditOrderCommand}"
                                                CommandParameter="{Binding .}" />
                                     <SwipeItem Text="Usuń"
                                                BackgroundColor="LightCoral"
                                                IconImageSource="icon_delete.png"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:TransportOrdersViewModel}}, Path=DeleteOrderCommand}"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteOrderCommand}"
                                                CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.LeftItems>
@@ -70,12 +70,12 @@
 
                                     <!-- Dane po prawej stronie -->
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
-                                        <Label Text="{Binding Driver}" FontSize="14" />
+                                        <Label Text="{Binding DriverId}" FontSize="14" />
                                     </VerticalStackLayout>
                                 </Grid>
                                 <!-- TapGestureRecognizer do wyświetlenia szczegółów -->
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:TransportOrdersViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
                                 </Frame.GestureRecognizers>
                             </Frame>
                         </SwipeView>

@@ -2,26 +2,26 @@
 
 namespace PotoDocs.ViewModel;
 
-[QueryProperty(nameof(TransportOrderDto), "Transport order")]
-public partial class TransportOrderDetailsViewModel : BaseViewModel
+[QueryProperty(nameof(OrderDto), "Order")]
+public partial class OrderDetailsViewModel : BaseViewModel
 {
     IMap map;
-    public TransportOrderDetailsViewModel(IMap map)
+    public OrderDetailsViewModel(IMap map)
     {
         this.map = map;
     }
 
     [ObservableProperty]
-    TransportOrderDto transportOrder;
+    OrderDto order;
 
-    [RelayCommand]
-    async Task OpenMap(Address address)
+/*    [RelayCommand]
+    async Task OpenMap(double latitude, double longitude)
     {
         try
         {
-            await map.OpenAsync(address.Latitude, address.Longitude, new MapLaunchOptions
+            await map.OpenAsync(latitude, longitude, new MapLaunchOptions
             {
-                Name = TransportOrder.CompanyName,
+                Name = Order.CompanyName,
                 NavigationMode = NavigationMode.None
             });
         }
@@ -30,9 +30,9 @@ public partial class TransportOrderDetailsViewModel : BaseViewModel
             Debug.WriteLine($"Unable to launch maps: {ex.Message}");
             await Shell.Current.DisplayAlert("Error, no Maps app!", ex.Message, "OK");
         }
-    }
+    }*/
     [RelayCommand]
-    async Task GetDataFromAiAsync(Address address)
+    async Task GetDataFromAiAsync()
     {
         try
         {

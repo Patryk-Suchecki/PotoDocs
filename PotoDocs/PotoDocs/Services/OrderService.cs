@@ -1,25 +1,23 @@
-﻿using System.IO.Compression;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
 namespace PotoDocs.Services;
 
-public class TransportOrderService
+public class OrderService
 {
     private readonly HttpClient _httpClient;
-    private List<TransportOrderDto> _transportOrderList;
+    private List<OrderDto> _orderList;
 
-
-    public TransportOrderService(HttpClient httpClient)
+    public OrderService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
 
-    public async Task<List<TransportOrderDto>> GetTransportOrders()
+    public async Task<List<OrderDto>> GetOrders()
     {
-        if (_transportOrderList?.Count > 0)
-            return _transportOrderList;
+        if (_orderList?.Count > 0)
+            return _orderList;
 
         var jsonOptions = new JsonSerializerOptions
         {
@@ -29,11 +27,11 @@ public class TransportOrderService
 
         try
         {
-            var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "api/transportorder/all");
+            var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "api/order/all");
             if (response.IsSuccessStatusCode)
             {
-                _transportOrderList = await response.Content.ReadFromJsonAsync<List<TransportOrderDto>>(jsonOptions);
-                return _transportOrderList;
+                _orderList = await response.Content.ReadFromJsonAsync<List<OrderDto>>(jsonOptions);
+                return _orderList;
             }
         }
         catch (Exception ex)
@@ -41,9 +39,9 @@ public class TransportOrderService
             Console.WriteLine($"Błąd podczas pobierania danych online: {ex.Message}");
         }
 
-        return _transportOrderList;
+        return _orderList;
     }
-    public async Task<TransportOrderDto> UploadFile(string filePath)
+    public async Task<OrderDto> UploadFile(string filePath)
     {
         using (var multipartFormContent = new MultipartFormDataContent())
         {
@@ -53,13 +51,13 @@ public class TransportOrderService
 
             multipartFormContent.Add(streamContent, "file", Path.GetFileName(filePath));
 
-            var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "api/transportorder", multipartFormContent);
+            var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "api/order", multipartFormContent);
 
             if (response.IsSuccessStatusCode)
             {
-                TransportOrderDto transportOrder = await response.Content.ReadFromJsonAsync<TransportOrderDto>();
+                OrderDto order = await response.Content.ReadFromJsonAsync<OrderDto>();
 
-                return transportOrder;
+                return order;
             }
             else
             {
@@ -67,15 +65,15 @@ public class TransportOrderService
             }
         }
     }
-    public async Task<string?> CreateTransportOrder(TransportOrderDto dto)
+    public async Task<string?> CreateOrder(OrderDto dto)
     {
-        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "api/transportorder", dto);
+        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "api/order", dto);
 
         if (result.IsSuccessStatusCode)
         {
-            int transportOrderId = await result.Content.ReadFromJsonAsync<int>();
+            int orderId = await result.Content.ReadFromJsonAsync<int>();
 
-            return "transportOrderId";
+            return "orderId";
         }
         else
         {

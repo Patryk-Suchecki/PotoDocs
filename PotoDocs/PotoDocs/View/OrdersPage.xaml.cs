@@ -1,8 +1,8 @@
 namespace PotoDocs.View;
 
-public partial class TransportOrdersPage : ContentPage
+public partial class OrdersPage : ContentPage
 {
-	public TransportOrdersPage(TransportOrdersViewModel viewModel)
+	public OrdersPage(OrdersViewModel viewModel)
 	{
         InitializeComponent();
         BindingContext = viewModel;

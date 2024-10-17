@@ -47,7 +47,7 @@ builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator
 
 //nie wiem czy tak jest git
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
-builder.Services.AddScoped<ITransportOrderService, TransportOrderService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddSingleton<IInvoiceService, InvoiceService>();
 builder.Services.AddSingleton<IPdfFormFillerService, PdfFormFillerService>();
 

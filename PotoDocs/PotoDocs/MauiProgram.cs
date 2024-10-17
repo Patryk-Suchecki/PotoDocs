@@ -25,7 +25,7 @@ public static class MauiProgram
         builder.Services.AddHttpClient<AuthService>();
         builder.Services.AddTransient<AuthHttpClientHandler>();
 
-        builder.Services.AddHttpClient<TransportOrderService>()
+        builder.Services.AddHttpClient<OrderService>()
             .AddHttpMessageHandler<AuthHttpClientHandler>();
 
         builder.Services.AddHttpClient<DriverService>()
@@ -34,16 +34,16 @@ public static class MauiProgram
         builder.Services.AddSingleton<MainPage>();
         builder.Services.AddSingleton<LoginPage>();
 
-        builder.Services.AddSingleton<TransportOrdersViewModel>();
-        builder.Services.AddSingleton<TransportOrdersPage>();
+        builder.Services.AddSingleton<OrdersViewModel>();
+        builder.Services.AddSingleton<OrdersPage>();
 
 
 
-        builder.Services.AddTransient<TransportOrderDetailsViewModel>();
+        builder.Services.AddTransient<OrderDetailsViewModel>();
         builder.Services.AddTransient<DetailsPage>();
 
-        builder.Services.AddTransient<TransportOrderFormViewModel>();
-        builder.Services.AddTransient<TransportOrderFormPage>();
+        builder.Services.AddTransient<OrderFormViewModel>();
+        builder.Services.AddTransient<OrderFormPage>();
 
         builder.Services.AddTransient<DownloadViewModel>();
         builder.Services.AddTransient<DownloadPage>();

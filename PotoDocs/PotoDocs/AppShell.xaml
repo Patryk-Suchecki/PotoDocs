@@ -7,7 +7,7 @@
     <!-- Definicja Flyout (szuflady) -->
     <FlyoutItem Title="Menu" FlyoutDisplayOptions="AsMultipleItems">
         <ShellContent Title="Strona główna" Icon="icon_home.png" ContentTemplate="{DataTemplate local:MainPage}" />
-        <ShellContent Title="Zlecenia" Icon="icon_orders.png" ContentTemplate="{DataTemplate local:TransportOrdersPage}" />
+        <ShellContent Title="Zlecenia" Icon="icon_orders.png" ContentTemplate="{DataTemplate local:OrdersPage}" />
         <ShellContent Title="Kierowcy" Icon="icon_drivers.png" ContentTemplate="{DataTemplate local:DriversPage}" />
         <ShellContent Title="Pobieranie" Icon="icon_download.png" ContentTemplate="{DataTemplate local:DownloadPage}" />
     </FlyoutItem>

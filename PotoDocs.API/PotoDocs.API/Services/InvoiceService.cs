@@ -4,7 +4,7 @@ using PotoDocs.API.Model;
 namespace PotoDocs.API.Services;
 public interface IInvoiceService
 {
-    Task<InvoiceDto> ConvertOpenAiToInvoice(TransportOrderDto transportOrder);
+    Task<InvoiceDto> ConvertOpenAiToInvoice(OrderDto transportOrder);
 }
 public class InvoiceService : IInvoiceService
 {
@@ -13,7 +13,7 @@ public class InvoiceService : IInvoiceService
     {
         _pdfFormFillerService = pdfFormFillerService;
     }
-    public async Task<InvoiceDto> ConvertOpenAiToInvoice(TransportOrderDto transportOrder)
+    public async Task<InvoiceDto> ConvertOpenAiToInvoice(OrderDto transportOrder)
     {
         EuroRateResult ruroRateResult = await EuroRateFetcherService.GetEuroRateAsync(transportOrder.UnloadingDate);
 
@@ -27,27 +27,27 @@ public class InvoiceService : IInvoiceService
             CompanyName = transportOrder.CompanyName,
             CompanyAddress = transportOrder.CompanyAddress,
             SaleDate = transportOrder.UnloadingDate,
-            IssueDate = transportOrder.InvoiceDate,
+            IssueDate = transportOrder.InvoiceIssueDate,
             PaymentDueDate = transportOrder.PaymentDeadline,
-            NetAmount = transportOrder.Price.Amount,
-            Remarks = transportOrder.Comments,
+            NetAmount = transportOrder.Price,
+            Remarks = transportOrder.CompanyOrderNumber,
 
             // Obliczenia kwoty brutto i VAT
-            GrossAmount = transportOrder.Price.Amount * (vatRate + 1), // Przykład 23% VAT
+            GrossAmount = transportOrder.Price * (vatRate + 1), // Przykład 23% VAT
             VATRate = vatRate, // Stawka VAT 23%
-            VATAmount = transportOrder.Price.Amount * vatRate,
-            VATAmountPln = transportOrder.Price.Amount * vatRate * ruroRateResult.Rate, // Kwota VAT w PLN
+            VATAmount = transportOrder.Price * vatRate,
+            VATAmountPln = transportOrder.Price * vatRate * ruroRateResult.Rate, // Kwota VAT w PLN
 
             // Kwota w Euro na podstawie kursu
             EuroAmount = ruroRateResult.Rate,
 
             // Całkowite kwoty
-            TotalAmountPln = transportOrder.Price.Amount * (vatRate + 1) * ruroRateResult.Rate, // Kwota brutto w PLN
+            TotalAmountPln = transportOrder.Price * (vatRate + 1) * ruroRateResult.Rate, // Kwota brutto w PLN
 
             // Kwoty słownie
-            TotalAmountInWordsEuro = NumberToWordsConverter.AmountInWords(transportOrder.Price.Amount * 1.23m, "EUR"),
-            VATAmountInWordsPln = NumberToWordsConverter.AmountInWords(transportOrder.Price.Amount * 0.23m * ruroRateResult.Rate, "PLN"),
-            TotalAmountInWordsPln = NumberToWordsConverter.AmountInWords(transportOrder.Price.Amount * 1.23m * ruroRateResult.Rate, "PLN"),
+            TotalAmountInWordsEuro = NumberToWordsConverter.AmountInWords(transportOrder.Price * 1.23m, "EUR"),
+            VATAmountInWordsPln = NumberToWordsConverter.AmountInWords(transportOrder.Price * 0.23m * ruroRateResult.Rate, "PLN"),
+            TotalAmountInWordsPln = NumberToWordsConverter.AmountInWords(transportOrder.Price * 1.23m * ruroRateResult.Rate, "PLN"),
 
             // Informacje o kursie euro
             CurrencyExchangeInfo = ruroRateResult.Message
@@ -55,7 +55,7 @@ public class InvoiceService : IInvoiceService
         return invoice;
     }
 
-    public async Task GenerateInvoicePdf(TransportOrderDto transportOrder)
+    public async Task GenerateInvoicePdf(OrderDto transportOrder)
     {
         var invoiceDto = await ConvertOpenAiToInvoice(transportOrder);
 

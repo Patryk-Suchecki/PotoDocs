@@ -5,26 +5,26 @@ using PdfPigPage = UglyToad.PdfPig.Content.Page;
 
 namespace PotoDocs.ViewModel;
 
-public partial class TransportOrdersViewModel : BaseViewModel
+public partial class OrdersViewModel : BaseViewModel
 {
-    public ObservableCollection<TransportOrderDto> TransportOrders { get; } = new();
-    TransportOrderService transportOrderService;
+    public ObservableCollection<OrderDto> Orders { get; } = new();
+    OrderService orderService;
     IConnectivity connectivity;
     IGeolocation geolocation;
-    public TransportOrdersViewModel(TransportOrderService transportOrderService, IConnectivity connectivity, IGeolocation geolocation)
+    public OrdersViewModel(OrderService orderService, IConnectivity connectivity, IGeolocation geolocation)
     {
         Title = "Zlecenia";
-        this.transportOrderService = transportOrderService;
+        this.orderService = orderService;
         this.connectivity = connectivity;
         this.geolocation = geolocation;
-        GetTransportOrdersAsync();
+        GetOrdersAsync();
     }
 
     [ObservableProperty]
     bool isRefreshing;
 
     [RelayCommand]
-    async Task GetTransportOrdersAsync()
+    async Task GetOrdersAsync()
     {
         if (IsBusy)
             return;
@@ -39,13 +39,13 @@ public partial class TransportOrdersViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var transportOrders = await transportOrderService.GetTransportOrders();
+            var orders = await orderService.GetOrders();
 
-            if (TransportOrders.Count != 0)
-                TransportOrders.Clear();
+            if (Orders.Count != 0)
+                Orders.Clear();
 
-            foreach (var transportOrder in transportOrders)
-                TransportOrders.Add(transportOrder);
+            foreach (var order in orders)
+                Orders.Add(order);
 
         }
         catch (Exception ex)
@@ -62,14 +62,14 @@ public partial class TransportOrdersViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    async Task GoToDetails(TransportOrderDto transportOrder)
+    async Task GoToDetails(OrderDto order)
     {
-        if (transportOrder == null)
+        if (order == null)
             return;
 
         await Shell.Current.GoToAsync(nameof(DetailsPage), true, new Dictionary<string, object>
         {
-            {"Transport order", transportOrder }
+            {"Order", order }
         });
     }
     [RelayCommand]
@@ -95,12 +95,12 @@ public partial class TransportOrdersViewModel : BaseViewModel
             if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 IsBusy = true;
-                TransportOrderDto transportOrder = await transportOrderService.UploadFile(result.FullPath);
-                transportOrder.PDFUrl = result.FullPath;
+                OrderDto order = await orderService.UploadFile(result.FullPath);
+                order.PDFUrl = result.FullPath;
 
-                await Shell.Current.GoToAsync(nameof(TransportOrderFormPage), true, new Dictionary<string, object>
+                await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
-                    {"Transport order", transportOrder },
+                    {"Order", order },
                     {"title", "Dodaj nowe zlecenie" }
                 });
             }
@@ -119,22 +119,22 @@ public partial class TransportOrdersViewModel : BaseViewModel
         }
     }
     [RelayCommand]
-    async Task GoToEditOrder(TransportOrderDto transportOrder)
+    async Task GoToEditOrder(OrderDto order)
     {
-        if (transportOrder == null)
+        if (order == null)
             return;
 
-        await Shell.Current.GoToAsync(nameof(TransportOrderFormPage), true, new Dictionary<string, object>
+        await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
-                    {"Transport order", transportOrder },
+                    {"Transport order", order },
                     { "title", "Edytuj zlecenie" }
                 });
 
     }
     [RelayCommand]
-    async Task DeleteOrder(TransportOrderDto transportOrder)
+    async Task DeleteOrder(OrderDto order)
     {
-        if (transportOrder == null)
+        if (order == null)
             return;
     }
     

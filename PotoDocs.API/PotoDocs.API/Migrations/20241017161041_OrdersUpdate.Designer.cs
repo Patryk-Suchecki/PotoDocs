@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PotoDocs.API.Models;
 
@@ -11,9 +12,11 @@ using PotoDocs.API.Models;
 namespace PotoDocs.API.Migrations
 {
     [DbContext(typeof(PotodocsDbContext))]
-    partial class PotodocsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241017161041_OrdersUpdate")]
+    partial class OrdersUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,55 +55,64 @@ namespace PotoDocs.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CompanyAddress")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyCountry")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("CompanyNIP")
+                    b.Property<long>("CompanyNIP")
                         .HasColumnType("bigint");
 
                     b.Property<string>("CompanyName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CompanyOrderNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Currency")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DriverId")
+                    b.Property<int>("DaysToPayment")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("HasPaid")
-                        .HasColumnType("bit");
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
 
                     b.Property<DateOnly>("InvoiceIssueDate")
                         .HasColumnType("date");
 
                     b.Property<string>("InvoiceNumber")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LoadingAddress")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("LoadingDate")
+                    b.Property<DateTime>("LoadingDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PDFUrl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PaymentDeadline")
-                        .HasColumnType("int");
+                    b.Property<bool>("PaymentMade")
+                        .HasColumnType("bit");
 
-                    b.Property<float?>("Price")
+                    b.Property<float>("PriceAmount")
                         .HasColumnType("real");
 
-                    b.Property<string>("UnloadingAddress")
+                    b.Property<string>("PriceCurrency")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("UnloadingDate")
+                    b.Property<string>("UnloadingAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UnloadingDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -176,7 +188,9 @@ namespace PotoDocs.API.Migrations
                 {
                     b.HasOne("PotoDocs.API.Entities.User", "Driver")
                         .WithMany()
-                        .HasForeignKey("DriverId");
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Driver");
                 });

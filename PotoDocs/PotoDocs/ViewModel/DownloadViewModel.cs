@@ -4,7 +4,7 @@ namespace PotoDocs.ViewModel;
 
 public partial class DownloadViewModel : BaseViewModel
 {
-    TransportOrderService transportOrderService;
+    OrderService transportOrderService;
     public List<string> Months { get; } = new List<string>
         {
             "Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
@@ -15,7 +15,7 @@ public partial class DownloadViewModel : BaseViewModel
     [ObservableProperty]
     DownloadDto downloadDto;
 
-    public DownloadViewModel(TransportOrderService transportOrderService)
+    public DownloadViewModel(OrderService transportOrderService)
     {
         this.transportOrderService = transportOrderService;
 

@@ -5,44 +5,53 @@ using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Services
 {
-    public interface ITransportOrderService
+    public interface IOrderService
     {
-        IEnumerable<TransportOrderDto> GetAll();
-        TransportOrderDto GetById(int id);
-        void Create(TransportOrderDto dto);
+        IEnumerable<OrderDto> GetAll();
+        OrderDto GetById(int id);
+        void Create(OrderDto dto);
         void Delete(int id);
-        void Update(int id, TransportOrderDto dto);
-        Task<TransportOrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
+        void Update(int id, OrderDto dto);
+        Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
     }
 
-    public class TransportOrderService : ITransportOrderService
+    public class OrderService : IOrderService
     {
         private readonly PotodocsDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IOpenAIService _openAIService;
 
-        public TransportOrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService)
+        public OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _openAIService = openAIService;
         }
 
-        public IEnumerable<TransportOrderDto> GetAll()
+        public IEnumerable<OrderDto> GetAll()
         {
-            var orders = _dbContext.Orders.ToList();
-            return _mapper.Map<List<TransportOrderDto>>(orders);
+            
+            try
+            {
+                var orders = _dbContext.Orders.ToList();
+                var ordersDto = _mapper.Map<List<OrderDto>>(orders);
+                return ordersDto;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
-        public TransportOrderDto GetById(int id)
+        public OrderDto GetById(int id)
         {
             var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
             if (order == null) return null;
 
-            return _mapper.Map<TransportOrderDto>(order);
+            return _mapper.Map<OrderDto>(order);
         }
 
-        public void Create(TransportOrderDto dto)
+        public void Create(OrderDto dto)
         {
             try
             {
@@ -65,7 +74,7 @@ namespace PotoDocs.API.Services
             _dbContext.SaveChanges();
         }
 
-        public void Update(int id, TransportOrderDto dto)
+        public void Update(int id, OrderDto dto)
         {
             var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
             if (order == null) return;
@@ -75,7 +84,7 @@ namespace PotoDocs.API.Services
             _dbContext.SaveChanges();
         }
 
-        public async Task<TransportOrderDto> ProcessAndCreateOrderFromPdf(IFormFile file)
+        public async Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file)
         {
             if (file == null || file.Length == 0 || file.ContentType != "application/pdf")
             {

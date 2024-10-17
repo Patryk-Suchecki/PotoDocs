@@ -83,6 +83,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="View\OrderFormPage.xaml.cs">
+	    <DependentUpon>OrderFormPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="View\OrdersPage.xaml.cs">
+	    <DependentUpon>OrdersPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Update="View\DetailsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -101,10 +110,10 @@
 	  <MauiXaml Update="View\MainPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="View\TransportOrderFormPage.xaml">
+	  <MauiXaml Update="View\OrderFormPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="View\TransportOrdersPage.xaml">
+	  <MauiXaml Update="View\OrdersPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

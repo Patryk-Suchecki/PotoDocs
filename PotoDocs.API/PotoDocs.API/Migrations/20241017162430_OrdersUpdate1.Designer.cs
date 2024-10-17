@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PotoDocs.API.Models;
 
@@ -11,9 +12,11 @@ using PotoDocs.API.Models;
 namespace PotoDocs.API.Migrations
 {
     [DbContext(typeof(PotodocsDbContext))]
-    partial class PotodocsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241017162430_OrdersUpdate1")]
+    partial class OrdersUpdate1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,11 +49,14 @@ namespace PotoDocs.API.Migrations
 
             modelBuilder.Entity("PotoDocs.API.Entities.Order", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int?>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyAddress")
                         .HasColumnType("nvarchar(max)");
@@ -64,17 +70,11 @@ namespace PotoDocs.API.Migrations
                     b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CompanyOrderNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Currency")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("DaysToPayment")
+                        .HasColumnType("int");
 
                     b.Property<int?>("DriverId")
                         .HasColumnType("int");
-
-                    b.Property<bool?>("HasPaid")
-                        .HasColumnType("bit");
 
                     b.Property<DateOnly>("InvoiceIssueDate")
                         .HasColumnType("date");
@@ -91,11 +91,14 @@ namespace PotoDocs.API.Migrations
                     b.Property<string>("PDFUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PaymentDeadline")
-                        .HasColumnType("int");
+                    b.Property<bool?>("PaymentMade")
+                        .HasColumnType("bit");
 
-                    b.Property<float?>("Price")
+                    b.Property<float?>("PriceAmount")
                         .HasColumnType("real");
+
+                    b.Property<string>("PriceCurrency")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UnloadingAddress")
                         .HasColumnType("nvarchar(max)");

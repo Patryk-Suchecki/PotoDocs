@@ -6,7 +6,7 @@ using PdfPigPage = UglyToad.PdfPig.Content.Page;
 namespace PotoDocs.API.Services;
 public interface IOpenAIService
 {
-    Task<TransportOrderDto> GetInfoFromText(IFormFile file);
+    Task<OrderDto> GetInfoFromText(IFormFile file);
 }
 public class OpenAIService : IOpenAIService
 {
@@ -17,7 +17,7 @@ public class OpenAIService : IOpenAIService
         _httpClient = httpClient;
         _openAIKey = configuration["OpenAIKey"];
     }
-    public async Task<TransportOrderDto> GetInfoFromText(IFormFile file)
+    public async Task<OrderDto> GetInfoFromText(IFormFile file)
     {
         string text;
 
@@ -40,17 +40,16 @@ public class OpenAIService : IOpenAIService
             role = "user",
             content = $"Proszę wyodrębnij z poniższego tekstu następujące informacje i zwróć je w formacie JSON:\n\n" +
                       "{\n" +
-                      "    \"CompanyNIP\": \"nip zleceniodawcy (int)\",\n" +
+                      "    \"CompanyNIP\": \"nip zleceniodawcy (long to musi być numeryczne nie wysyłaj mi tego jako string)\",\n" +
                       "    \"CompanyName\": \"nazwa firmy zleceniodawcy (string)\",\n" +
                       "    \"CompanyAddress\": \"adres firmy zleceniodawcy (string)\",\n" +
                       "    \"CompanyCountry\": \"kraj z jakiego jest firma zleceniodawcy\",\n" +
                       "    \"LoadingDate\": \"data załadunku (date w formacie yyyy-MM-dd)\",\n" +
                       "    \"UnloadingDate\": \"ostatnia data rozładunku (date w formacie yyyy-MM-dd)\",\n" +
                       "    \"PaymentDeadline\": \"termin płatności w dniach (int)\",\n" +
-                      "    \"TotalAmount\": {" +
-                      "        \"Amount\": \"kwota netto (decimal)\",\n" +
-                      "        \"Currency\": \"waluta (np PLN, EUR)\"},\n" +
-                      "    \"Comments\": \"numer zlecenia (np ZLECENIE PRZEWOZU NR T08747/2024, zlecenie transportowe nr 123/435/sdf3, transport order number 123-1231, ORDER FOR THE CARRIER) (string)\"\n" +
+                      "    \"Price\": \"kwota netto (decimal)\",\n" +
+                      "    \"Currency\": \"waluta (np PLN, EUR)\",\n" +
+                      "    \"CompanyOrderNumber\": \"numer zlecenia (np ZLECENIE PRZEWOZU NR T08747/2024, zlecenie transportowe nr 123/435/sdf3, transport order number 123-1231, ORDER FOR THE CARRIER) (string)\"\n" +
                       "}\n\n" +
                       $"Tekst do analizy: {text}"
         };
@@ -74,8 +73,16 @@ public class OpenAIService : IOpenAIService
             extractedContent = extractedContent.Replace("```json", "").Replace("```", "").Trim();
 
             // Deserializacja odpowiedzi na obiekt OpenAIResponseDto
-            var openAIResponse = JsonConvert.DeserializeObject<TransportOrderDto>(extractedContent);
-            return openAIResponse;
+            try
+            {
+                var openAIResponse = JsonConvert.DeserializeObject<OrderDto>(extractedContent);
+                return openAIResponse;
+            }
+            catch
+            {
+                return null;
+            }
+            
         }
         else
         {
