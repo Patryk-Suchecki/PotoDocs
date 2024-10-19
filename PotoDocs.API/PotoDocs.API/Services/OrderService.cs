@@ -9,7 +9,6 @@ namespace PotoDocs.API.Services
     {
         IEnumerable<OrderDto> GetAll();
         OrderDto GetById(int id);
-        void Create(OrderDto dto);
         void Delete(int id);
         void Update(int id, OrderDto dto);
         Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
@@ -44,20 +43,6 @@ namespace PotoDocs.API.Services
             return _mapper.Map<OrderDto>(order);
         }
 
-        public void Create(OrderDto dto)
-        {
-            try
-            {
-                var order = _mapper.Map<Order>(dto);
-                _dbContext.Orders.Add(order);
-                _dbContext.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
-
         public void Delete(int id)
         {
             var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
@@ -86,15 +71,21 @@ namespace PotoDocs.API.Services
 
             // Ekstrakcja danych z pliku PDF za pomocą usługi OpenAI
             var extractedData = await _openAIService.GetInfoFromText(file);
-            if (extractedData == null)
-            {
-                return null;
-            }
+            extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate);
+            var order = _mapper.Map<Order>(extractedData);
+            _dbContext.Orders.Add(order);
+            _dbContext.SaveChanges();
 
-            // Stworzenie encji zamówienia na podstawie wyciągniętych danych
-            Create(extractedData);
 
             return extractedData;
+        }
+        private int GetInvoiceNumber(DateTime date)
+        {
+            return _dbContext.Orders
+                .Where(o => date.Month == date.Month && o.InvoiceIssueDate.Year == date.Year)
+                .OrderByDescending(o => o.InvoiceNumber)
+                .ToList()
+                .FirstOrDefault()?.InvoiceNumber ?? 1;
         }
 
         public void AddCMRFile(CMRFile cmrFile)

@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using PotoDocs.Shared.Models;
 using PotoDocs.API.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace PotoDocs.API.Services;
 
@@ -49,7 +50,7 @@ public class AccountService : IAccountService
 
     public LoginResponseDto GenerateJwt(LoginDto dto)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Email);
 
         if (user is null)
         {
@@ -66,7 +67,7 @@ public class AccountService : IAccountService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim(ClaimTypes.Role, $"{user.Role}"),
+            new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
 
         };
 
