@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PotoDocs.API.Models;
 
@@ -11,9 +12,11 @@ using PotoDocs.API.Models;
 namespace PotoDocs.API.Migrations
 {
     [DbContext(typeof(PotodocsDbContext))]
-    partial class PotodocsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241018161807_OrderUpdate5")]
+    partial class OrderUpdate5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

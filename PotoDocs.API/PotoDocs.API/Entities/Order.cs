@@ -1,4 +1,5 @@
-﻿namespace PotoDocs.API.Entities;
+﻿using PotoDocs.API.Entities;
+namespace PotoDocs.API.Entities;
 public class Order
 {
     public int Id { get; set; }
