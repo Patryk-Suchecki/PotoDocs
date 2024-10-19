@@ -11,7 +11,7 @@ namespace PotoDocs.API.Controllers;
 
 [Route("api/order")]
 [ApiController]
-[Authorize]
+[Authorize(Roles = "admin,manager")]
 public class OrderController : ControllerBase
 {
     private readonly IOrderService _orderService;
@@ -61,6 +61,48 @@ public class OrderController : ControllerBase
     {
         _orderService.Update(id, dto);
         return Ok();
+    }
+
+    [HttpPost("{id}/cmr")]
+    [Authorize]
+    public async Task<ActionResult> UploadCMR(int id, [FromForm] List<IFormFile> cmrFiles)
+    {
+        var order = _orderService.GetById(id);
+        if (order == null)
+        {
+            return NotFound($"Order with ID {id} not found.");
+        }
+
+        if (cmrFiles == null || cmrFiles.Count == 0)
+        {
+            return BadRequest("No files uploaded.");
+        }
+
+        var cmrFileUrls = new List<string>();
+        foreach (var file in cmrFiles)
+        {
+            // Zapis pliku do folderu wwwroot/pdfs
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/pdfs", fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Dodanie do listy URLi
+            var relativePath = Path.Combine("/pdfs", fileName); // Ścieżka względna do pliku
+            cmrFileUrls.Add(relativePath);
+
+            // Zapis danych pliku CMR w bazie danych
+            var cmrFile = new CMRFile
+            {
+                Url = relativePath,
+                OrderId = id
+            };
+            _orderService.AddCMRFile(cmrFile); // Dodanie pliku CMR do zamówienia
+        }
+
+        return Ok(new { cmrFileUrls });
     }
 }
 

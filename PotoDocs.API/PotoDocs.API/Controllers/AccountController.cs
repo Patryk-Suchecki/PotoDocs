@@ -18,6 +18,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("register")]
+    [Authorize(Roles = "admin,manager")]
     public ActionResult RegisterUser([FromBody]RegisterUserDto dto)
     {
         _accountService.RegisterUser(dto);

@@ -13,6 +13,7 @@ namespace PotoDocs.API.Services
         void Delete(int id);
         void Update(int id, OrderDto dto);
         Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
+        public void AddCMRFile(CMRFile cmrFile);
     }
 
     public class OrderService : IOrderService
@@ -94,6 +95,12 @@ namespace PotoDocs.API.Services
             Create(extractedData);
 
             return extractedData;
+        }
+
+        public void AddCMRFile(CMRFile cmrFile)
+        {
+            _dbContext.CMRFiles.Add(cmrFile);
+            _dbContext.SaveChanges();
         }
     }
 }
