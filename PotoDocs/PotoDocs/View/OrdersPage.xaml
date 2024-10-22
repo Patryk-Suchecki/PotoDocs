@@ -70,12 +70,12 @@
 
                                     <!-- Dane po prawej stronie -->
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
-                                        <Label Text="{Binding DriverId}" FontSize="14" />
+                                        <Label Text="{Binding Driver.FirstAndLastName}" FontSize="14" />
                                     </VerticalStackLayout>
                                 </Grid>
                                 <!-- TapGestureRecognizer do wyświetlenia szczegółów -->
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=GoToEditOrderCommand}" CommandParameter="{Binding .}" />
                                 </Frame.GestureRecognizers>
                             </Frame>
                         </SwipeView>
@@ -85,6 +85,16 @@
         </RefreshView>
 
         <!-- Przycisk odświeżania -->
+        <Button
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="8"
+            Command="{Binding GetOrdersCommand}"
+            IsEnabled="{Binding IsNotBusy}"
+            ImageSource="icon_refresh.png"
+            WidthRequest="80"
+            HeightRequest="80"
+            BackgroundColor="Transparent" />
         <Button
             Grid.Row="1"
             Grid.Column="1"

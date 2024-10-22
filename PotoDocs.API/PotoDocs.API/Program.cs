@@ -43,7 +43,7 @@ builder.Services.AddDbContext<PotodocsDbContext>(options =>
 builder.Services.AddScoped<DBSeeder>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
+builder.Services.AddScoped<IValidator<UserDto>, RegisterUserDtoValidator>();
 
 //nie wiem czy tak jest git
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();

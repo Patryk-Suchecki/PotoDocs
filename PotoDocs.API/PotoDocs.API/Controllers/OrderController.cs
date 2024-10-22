@@ -43,10 +43,10 @@ public class OrderController : ControllerBase
         var order = await _orderService.ProcessAndCreateOrderFromPdf(file);
         if (order == null)
         {
-            return BadRequest("Failed to process and create order.");
+            return BadRequest("Nie udało się przetworzyć i stworzyć zamówienia.");
         }
 
-        return Created($"api/order/{order.Id}", order);
+        return CreatedAtAction(nameof(GetById), new { id = order.InvoiceNumber }, order);
     }
 
     [HttpDelete("{id}")]

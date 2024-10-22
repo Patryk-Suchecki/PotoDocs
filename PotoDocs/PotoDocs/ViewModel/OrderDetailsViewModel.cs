@@ -2,7 +2,7 @@
 
 namespace PotoDocs.ViewModel;
 
-[QueryProperty(nameof(OrderDto), "Order")]
+[QueryProperty(nameof(OrderDto), "OrderDto")]
 public partial class OrderDetailsViewModel : BaseViewModel
 {
     IMap map;
@@ -12,7 +12,7 @@ public partial class OrderDetailsViewModel : BaseViewModel
     }
 
     [ObservableProperty]
-    OrderDto order;
+    OrderDto orderDto;
 
 /*    [RelayCommand]
     async Task OpenMap(double latitude, double longitude)

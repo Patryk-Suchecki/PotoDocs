@@ -16,10 +16,10 @@
         <!-- Odświeżanie -->
         <RefreshView
             Grid.ColumnSpan="2"
-            Command="{Binding GetDriversCommand}"
+            Command="{Binding GetUsersCommand}"
             IsRefreshing="{Binding IsRefreshing}">
             <CollectionView
-                ItemsSource="{Binding Drivers}"
+                ItemsSource="{Binding Users}"
                 SelectionMode="None">
 
                 <!-- Szablon dla pustej listy -->
@@ -35,7 +35,7 @@
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:RegisterUserDto">
+                    <DataTemplate x:DataType="model:UserDto">
                         <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                 <HorizontalStackLayout Grid.Column="0" Spacing="5">
@@ -44,7 +44,7 @@
                                 </HorizontalStackLayout>
                             </Grid>
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:DriversViewModel}}, Path=GoToEditDriverCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:DriversViewModel}}, Path=GoToEditUserCommand}" CommandParameter="{Binding .}" />
                             </Frame.GestureRecognizers>
                         </Frame>
                     </DataTemplate>
@@ -56,7 +56,7 @@
             Grid.Row="1"
             Grid.Column="1"
             Margin="8"
-            Command="{Binding GoToNewDriverCommand}"
+            Command="{Binding GoToNewUserCommand}"
             IsEnabled="{Binding IsNotBusy}"
             ImageSource="icon_add_driver.png"
             WidthRequest="80"

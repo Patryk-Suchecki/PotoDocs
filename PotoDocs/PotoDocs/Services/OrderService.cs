@@ -16,9 +16,6 @@ public class OrderService
 
     public async Task<List<OrderDto>> GetOrders()
     {
-        if (_orderList?.Count > 0)
-            return _orderList;
-
         var jsonOptions = new JsonSerializerOptions
         {
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
@@ -43,6 +40,11 @@ public class OrderService
     }
     public async Task<OrderDto> UploadFile(string filePath)
     {
+        var jsonOptions = new JsonSerializerOptions
+        {
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+            PropertyNameCaseInsensitive = true
+        };
         using (var multipartFormContent = new MultipartFormDataContent())
         {
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
@@ -55,7 +57,7 @@ public class OrderService
 
             if (response.IsSuccessStatusCode)
             {
-                OrderDto order = await response.Content.ReadFromJsonAsync<OrderDto>();
+                OrderDto order = await response.Content.ReadFromJsonAsync<OrderDto>(jsonOptions);
 
                 return order;
             }
@@ -65,20 +67,20 @@ public class OrderService
             }
         }
     }
-    public async Task<string?> CreateOrder(OrderDto dto)
+    public async Task<string?> UpdateOrderAsync(OrderDto dto, int invoiceNumber)
     {
-        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "api/order", dto);
-
+        var result = await _httpClient.PutAsJsonAsync(AppConstants.ApiUrl + $"api/order/{invoiceNumber}", dto);
         if (result.IsSuccessStatusCode)
         {
-            int orderId = await result.Content.ReadFromJsonAsync<int>();
-
-            return "orderId";
         }
-        else
+        if (!result.IsSuccessStatusCode)
         {
-            return null;
+            var errorContent = await result.Content.ReadAsStringAsync();
+            Console.WriteLine($"Błąd: {errorContent}");
+            return "Błąd w aktualizacji zamówienia";
         }
+
+        return null;
     }
     public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto)
     {

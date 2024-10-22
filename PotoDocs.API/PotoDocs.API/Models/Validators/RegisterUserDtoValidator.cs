@@ -2,7 +2,7 @@
 using PotoDocs.Shared.Models;
 namespace PotoDocs.API.Models.Validators;
 
-public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
+public class RegisterUserDtoValidator : AbstractValidator<UserDto>
 {
     public RegisterUserDtoValidator(PotodocsDbContext dbContext)
     {

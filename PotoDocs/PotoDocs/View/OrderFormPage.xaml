@@ -12,46 +12,52 @@
             <VerticalStackLayout Grid.Row="2" Padding="10" Spacing="10">
 
                 <Label Text="Numer faktury:" FontAttributes="Bold" />
-                <Entry Text="{Binding Order.InvoiceNumber, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź numer faktury" />
+                <Entry Text="{Binding OrderDto.InvoiceNumber, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź numer faktury" />
 
                 <Label Text="Data wystawienia faktury:" FontSize="18" />
-                <DatePicker x:Name="InvoiceDatePicker" Date="{Binding Order.InvoiceIssueDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+                <DatePicker x:Name="InvoiceDatePicker" Date="{Binding OrderDto.InvoiceIssueDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
 
                 <Label Text="NIP:" FontAttributes="Bold" />
-                <Entry Text="{Binding Order.CompanyNIP, Mode=TwoWay}" Placeholder="Wprowadź NIP" />
+                <Entry Text="{Binding OrderDto.CompanyNIP, Mode=TwoWay}" Placeholder="Wprowadź NIP" />
 
                 <Label Text="Nazwa firmy:" FontAttributes="Bold" />
-                <Entry Text="{Binding Order.CompanyName, Mode=TwoWay}" Placeholder="Wprowadź nazwę firmy" />
+                <Entry Text="{Binding OrderDto.CompanyName, Mode=TwoWay}" Placeholder="Wprowadź nazwę firmy" />
+
+                <Label Text="Kierowca:" FontAttributes="Bold" />
+                <Picker ItemsSource="{Binding Users}" 
+                    SelectedItem="{Binding SelectedDriver, Mode=TwoWay}" 
+                    ItemDisplayBinding="{Binding FirstAndLastName}" 
+                    Title="Wybierz kierowcę" />
 
                 <Label Text="Adres firmy:" FontAttributes="Bold" />
-                <Entry Text="{Binding Order.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy" />
+                <Entry Text="{Binding OrderDto.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy" />
 
                 <HorizontalStackLayout Spacing="10">
                     <VerticalStackLayout>
                         <Label Text="Data załadunku:" FontAttributes="Bold" />
-                        <DatePicker Date="{Binding Order.LoadingDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+                        <DatePicker Date="{Binding OrderDto.LoadingDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout>
                         <Label Text="Data rozładunku:" FontAttributes="Bold" />
-                        <DatePicker Date="{Binding Order.UnloadingDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+                        <DatePicker Date="{Binding OrderDto.UnloadingDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
 
                 <HorizontalStackLayout Spacing="10">
                     <VerticalStackLayout>
                         <Label Text="Kwota netto:" FontAttributes="Bold" />
-                        <Entry Text="{Binding Order.Price, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź kwotę netto" />
+                        <Entry Text="{Binding OrderDto.Price, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź kwotę netto" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout>
                         <Label Text="Termin płatności w dniach:" FontAttributes="Bold" />
-                        <Entry Text="{Binding Order.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź termin płatności" />
+                        <Entry Text="{Binding OrderDto.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź termin płatności" />
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
 
                 <Label Text="Uwagi:" FontAttributes="Bold" />
-                <Entry Text="{Binding Order.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
+                <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
 
                 <Button Command="{Binding SaveOrderCommand}" IsEnabled="{Binding IsNotBusy}" Text="Zapisz" />
 

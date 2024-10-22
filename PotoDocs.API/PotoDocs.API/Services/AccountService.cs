@@ -8,14 +8,17 @@ using System.Security.Claims;
 using System.Text;
 using PotoDocs.Shared.Models;
 using PotoDocs.API.Entities;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace PotoDocs.API.Services;
 
 public interface IAccountService
 {
     LoginResponseDto GenerateJwt(LoginDto dto);
-    void RegisterUser(RegisterUserDto dto);
+    void RegisterUser(UserDto dto);
     void ChangePassword(ChangePasswordDto dto);
+    IEnumerable<UserDto> GetAll();
 }
 
 public class AccountService : IAccountService
@@ -23,14 +26,16 @@ public class AccountService : IAccountService
     private readonly AuthenticationSettings _authSettings;
     private readonly PotodocsDbContext _context;
     private readonly IPasswordHasher<User> _hasher;
+    private readonly IMapper _mapper;
 
-    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings)
+    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings, IMapper mapper)
     {
         _authSettings = authenticationSettings;
         _context = context;
         _hasher = hasher;
+        _mapper = mapper;
     }
-    public void RegisterUser(RegisterUserDto dto)
+    public void RegisterUser(UserDto dto)
     {
         var newUser = new User()
         {
@@ -49,7 +54,7 @@ public class AccountService : IAccountService
 
     public LoginResponseDto GenerateJwt(LoginDto dto)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Email);
 
         if (user is null)
         {
@@ -66,7 +71,7 @@ public class AccountService : IAccountService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim(ClaimTypes.Role, $"{user.Role}"),
+            new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
 
         };
 
@@ -118,5 +123,11 @@ public class AccountService : IAccountService
         var newPasswordHash = _hasher.HashPassword(user, dto.NewPassword);
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();
+    }
+    public IEnumerable<UserDto> GetAll()
+    {
+        var users = _context.Users.Include(u => u.Role).ToList();
+        var usersDto = _mapper.Map<List<UserDto>>(users);
+        return usersDto;
     }
 }

@@ -47,34 +47,6 @@ public class AuthService
 
         return null;
     }
-    public async Task<string?> RegisterAsync(RegisterUserDto dto)
-    {
-        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "/api/account/register", dto);
-        if (result.IsSuccessStatusCode)
-        {
-            var response = await result.Content.ReadFromJsonAsync<LoginResponseDto>();
-        }
-        else
-        {
-            return "Error in logging in";
-        }
-
-        return null;
-    }
-    public async Task<string?> ResetPassword(int userId)
-    {
-        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "/api/account/resetpassword", userId);
-        if (result.IsSuccessStatusCode)
-        {
-            
-        }
-        else
-        {
-            return "Error in logging in";
-        }
-
-        return null;
-    }
 
     public void Logout() => SecureStorage.Default.Remove(AppConstants.AuthStorageKeyName);
 }

@@ -50,7 +50,7 @@ public partial class OrdersViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unable to get monkeys: {ex.Message}");
+            Debug.WriteLine($"Unable to get orders: {ex.Message}");
             await Shell.Current.DisplayAlert("Error!", ex.Message, "OK");
         }
         finally
@@ -69,7 +69,7 @@ public partial class OrdersViewModel : BaseViewModel
 
         await Shell.Current.GoToAsync(nameof(DetailsPage), true, new Dictionary<string, object>
         {
-            {"Order", order }
+            {"OrderDto", order }
         });
     }
     [RelayCommand]
@@ -100,8 +100,9 @@ public partial class OrdersViewModel : BaseViewModel
 
                 await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
-                    {"Order", order },
-                    {"title", "Dodaj nowe zlecenie" }
+                    {"OrderDto", order },
+                    {"title", "Dodaj nowe zlecenie" },
+                    { "InvoiceNumber", order.InvoiceNumber}
                 });
             }
             else
@@ -126,8 +127,9 @@ public partial class OrdersViewModel : BaseViewModel
 
         await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
-                    {"Transport order", order },
-                    { "title", "Edytuj zlecenie" }
+                    {"OrderDto", order },
+                    { "title", "Edytuj zlecenie" },
+                    { "InvoiceNumber", order.InvoiceNumber}
                 });
 
     }
