@@ -15,7 +15,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Numer faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -23,20 +23,20 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Data wystawienia faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.InvoiceIssueDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.InvoiceIssueDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
                 <!--
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Adres załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.LoadingAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.LoadingAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                         <Button Text="Nawiguj" Command="{Binding OpenMapCommand}">
                             <Button.CommandParameter>
                                 <x:Arguments>
                                     <x:Tuple x:TypeArguments="x:Double, x:Double">
-                                        <x:Double>{Binding Order.LoadingLatitude}</x:Double>
-                                        <x:Double>{Binding Order.LoadingLongitude}</x:Double>
+                                        <x:Double>{Binding OrderDto.LoadingLatitude}</x:Double>
+                                        <x:Double>{Binding OrderDto.LoadingLongitude}</x:Double>
                                     </x:Tuple>
                                 </x:Arguments>
                             </Button.CommandParameter>
@@ -48,13 +48,13 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Adres rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.UnloadingAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.UnloadingAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                         <Button Text="Nawiguj" Command="{Binding OpenMapCommand}">
                             <Button.CommandParameter>
                                 <x:Arguments>
                                     <x:Tuple x:TypeArguments="x:Double, x:Double">
-                                        <x:Double>{Binding Order.UnloadingLatitude}</x:Double>
-                                        <x:Double>{Binding Order.UnloadingLongitude}</x:Double>
+                                        <x:Double>{Binding OrderDto.UnloadingLatitude}</x:Double>
+                                        <x:Double>{Binding OrderDto.UnloadingLongitude}</x:Double>
                                     </x:Tuple>
                                 </x:Arguments>
                             </Button.CommandParameter>
@@ -66,7 +66,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Kierowca" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.DriverId}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.Driver.FirstAndLastName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -74,7 +74,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="NIP firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.CompanyNIP}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.CompanyNIP}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -82,7 +82,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Nazwa firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.CompanyName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.CompanyName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -90,7 +90,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Adres firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.CompanyAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.CompanyAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -98,7 +98,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Termin płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.PaymentDeadline}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.PaymentDeadline}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -106,7 +106,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Kwota" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.Price}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.Price}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -114,7 +114,7 @@
                                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Status zamówienia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding TransportOrder.Status}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding TransportOrderDto.Status}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
                 -->
@@ -124,7 +124,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Data załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.LoadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.LoadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -132,7 +132,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Data rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.UnloadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.UnloadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -140,7 +140,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Uwagi" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.CompanyOrderNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.CompanyOrderNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -148,7 +148,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Numer zlecenia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -156,7 +156,7 @@
                                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Status płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding TransportOrder.PaymentStatus}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding TransportOrderDto.PaymentStatus}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
                 -->
@@ -166,7 +166,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="PDF" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding Order.PDFUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        <Label Text="{Binding OrderDto.PDFUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
                 </ViewCell>
 
@@ -174,7 +174,7 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="CMR" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <ListView ItemsSource="{Binding Order.CMRFiles}" HorizontalOptions="End">
+                        <ListView ItemsSource="{Binding OrderDto.CMRFiles}" HorizontalOptions="End">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <ViewCell>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
@@ -19,7 +20,7 @@ public class AccountController : ControllerBase
 
     [HttpPost("register")]
     [Authorize(Roles = "admin,manager")]
-    public ActionResult RegisterUser([FromBody]RegisterUserDto dto)
+    public ActionResult RegisterUser([FromBody]UserDto dto)
     {
         _accountService.RegisterUser(dto);
         return Ok();
@@ -38,5 +39,12 @@ public class AccountController : ControllerBase
     {
         _accountService.ChangePassword(dto);
         return Ok();
+    }
+    [HttpGet("all")]
+    [Authorize]
+    public ActionResult<IEnumerable<UserDto>> GetUsers()
+    {
+        var users = _accountService.GetAll();
+        return Ok(users);
     }
 }

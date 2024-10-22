@@ -9,14 +9,16 @@ using System.Text;
 using PotoDocs.Shared.Models;
 using PotoDocs.API.Entities;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace PotoDocs.API.Services;
 
 public interface IAccountService
 {
     LoginResponseDto GenerateJwt(LoginDto dto);
-    void RegisterUser(RegisterUserDto dto);
+    void RegisterUser(UserDto dto);
     void ChangePassword(ChangePasswordDto dto);
+    IEnumerable<UserDto> GetAll();
 }
 
 public class AccountService : IAccountService
@@ -24,14 +26,16 @@ public class AccountService : IAccountService
     private readonly AuthenticationSettings _authSettings;
     private readonly PotodocsDbContext _context;
     private readonly IPasswordHasher<User> _hasher;
+    private readonly IMapper _mapper;
 
-    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings)
+    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings, IMapper mapper)
     {
         _authSettings = authenticationSettings;
         _context = context;
         _hasher = hasher;
+        _mapper = mapper;
     }
-    public void RegisterUser(RegisterUserDto dto)
+    public void RegisterUser(UserDto dto)
     {
         var newUser = new User()
         {
@@ -119,5 +123,11 @@ public class AccountService : IAccountService
         var newPasswordHash = _hasher.HashPassword(user, dto.NewPassword);
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();
+    }
+    public IEnumerable<UserDto> GetAll()
+    {
+        var users = _context.Users.Include(u => u.Role).ToList();
+        var usersDto = _mapper.Map<List<UserDto>>(users);
+        return usersDto;
     }
 }

@@ -28,7 +28,7 @@ public static class MauiProgram
         builder.Services.AddHttpClient<OrderService>()
             .AddHttpMessageHandler<AuthHttpClientHandler>();
 
-        builder.Services.AddHttpClient<DriverService>()
+        builder.Services.AddHttpClient<UserService>()
             .AddHttpMessageHandler<AuthHttpClientHandler>();
 
         builder.Services.AddSingleton<MainPage>();

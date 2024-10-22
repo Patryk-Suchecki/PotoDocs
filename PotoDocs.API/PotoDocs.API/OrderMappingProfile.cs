@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
@@ -9,11 +10,22 @@ public class OrderMappingProfile : Profile
 {
     public OrderMappingProfile()
     {
-        // Mapowanie z Order na TransportOrderDto
         CreateMap<Order, OrderDto>()
-            .ForMember(dto => dto.CMRFiles, opt => opt.MapFrom(src => src.CMRFiles.Select(cmr => cmr.Url).ToList()));
+            .ForMember(dto => dto.CMRFiles, opt => opt.MapFrom(src => src.CMRFiles.Select(cmr => cmr.Url).ToList()))
+            .ForMember(dest => dest.Driver, opt => opt.MapFrom(src => src.Driver != null ? new UserDto
+            {
+                Email = src.Driver.Email,
+                FirstName = src.Driver.FirstName,
+                LastName = src.Driver.LastName
+            } : null));
 
-        // Mapowanie z TransportOrderDto na Order
-        CreateMap<OrderDto, Order>();
+
+
+
+        CreateMap<OrderDto, Order>()
+            .ForMember(dest => dest.Driver, opt => opt.Ignore());
+
+        CreateMap<User, UserDto>();
+        CreateMap<UserDto, User>();
     }
 }

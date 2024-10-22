@@ -4,7 +4,7 @@ public class Order
 {
     public int Id { get; set; }
     public int? InvoiceNumber { get; set; }
-    public DateOnly InvoiceIssueDate { get; set; }
+    public DateTime? InvoiceIssueDate { get; set; }
     public virtual User? Driver { get; set; }
 
     public long? CompanyNIP { get; set; }

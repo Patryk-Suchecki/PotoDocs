@@ -5,19 +5,19 @@ namespace PotoDocs.ViewModel;
 
 public partial class DriversViewModel : BaseViewModel
 {
-    public ObservableCollection<RegisterUserDto> Drivers { get; } = new();
-    DriverService driverService;
-    public DriversViewModel(DriverService driverService)
+    public ObservableCollection<UserDto> Users { get; } = new();
+    UserService userService;
+    public DriversViewModel(UserService userService)
     {
-        this.driverService = driverService;
-        GetDriversAsync();
+        this.userService = userService;
+        GetUsersAsync();
     }
 
     [ObservableProperty]
     bool isRefreshing;
 
     [RelayCommand]
-    async Task GetDriversAsync()
+    async Task GetUsersAsync()
     {
         if (IsBusy)
             return;
@@ -25,18 +25,18 @@ public partial class DriversViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            var drivers = await driverService.GetDrivers();
+            var users = await userService.GetUsers();
 
-            if (Drivers.Count != 0)
-                Drivers.Clear();
+            if (Users.Count != 0)
+                Users.Clear();
 
-            foreach (var driver in drivers)
-                Drivers.Add(driver);
+            foreach (var user in users)
+                Users.Add(user);
 
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unable to get drivers: {ex.Message}");
+            Debug.WriteLine($"Unable to get users: {ex.Message}");
             await Shell.Current.DisplayAlert("Error!", ex.Message, "OK");
         }
         finally
@@ -47,29 +47,29 @@ public partial class DriversViewModel : BaseViewModel
 
     }
     [RelayCommand]
-    async Task GoToNewDriver()
+    async Task GoToNewUser()
     {
         await Shell.Current.GoToAsync(nameof(DriverFormPage), true, new Dictionary<string, object>
         {
-            {"Driver", new RegisterUserDto() },
+            {"User", new UserDto() },
             {"title", "Dodaj kierowce" }
         });
     }
     [RelayCommand]
-    async Task GoToEditDriver(RegisterUserDto driver)
+    async Task GoToEditUser(UserDto user)
     {
-        if (driver == null)
+        if (user == null)
             return;
 
         await Shell.Current.GoToAsync(nameof(DriverFormPage), true, new Dictionary<string, object>
         {
-            {"Driver", driver },
+            {"UserDto", user },
             {"title", "Edytuj kierowce" }
         });
 
     }
     [RelayCommand]
-    async Task DeleteDriver(RegisterUserDto transportOrder)
+    async Task DeleteUser(UserDto transportOrder)
     {
         if (transportOrder == null)
             return;

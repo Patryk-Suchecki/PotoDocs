@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
@@ -10,7 +11,7 @@ namespace PotoDocs.API.Services
         IEnumerable<OrderDto> GetAll();
         OrderDto GetById(int id);
         void Delete(int id);
-        void Update(int id, OrderDto dto);
+        void Update(int invoiceNumber, OrderDto dto);
         Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
         public void AddCMRFile(CMRFile cmrFile);
     }
@@ -30,7 +31,7 @@ namespace PotoDocs.API.Services
 
         public IEnumerable<OrderDto> GetAll()
         {
-            var orders = _dbContext.Orders.ToList();
+            var orders = _dbContext.Orders.Include(o => o.Driver).ToList();
             var ordersDto = _mapper.Map<List<OrderDto>>(orders);
             return ordersDto;
         }
@@ -52,13 +53,15 @@ namespace PotoDocs.API.Services
             _dbContext.SaveChanges();
         }
 
-        public void Update(int id, OrderDto dto)
+        public void Update(int invoiceNumber, OrderDto dto)
         {
-            var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
+            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
             if (order == null) return;
 
             // Mapowanie dto na istniejące zamówienie
             _mapper.Map(dto, order);
+            if(dto.Driver != null)
+                order.Driver = _dbContext.Users.FirstOrDefault(u => u.Email == dto.Driver.Email);
             _dbContext.SaveChanges();
         }
 
@@ -71,6 +74,7 @@ namespace PotoDocs.API.Services
 
             // Ekstrakcja danych z pliku PDF za pomocą usługi OpenAI
             var extractedData = await _openAIService.GetInfoFromText(file);
+            extractedData.InvoiceIssueDate = DateTime.Now;
             extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate);
             var order = _mapper.Map<Order>(extractedData);
             _dbContext.Orders.Add(order);
@@ -81,11 +85,9 @@ namespace PotoDocs.API.Services
         }
         private int GetInvoiceNumber(DateTime date)
         {
-            return _dbContext.Orders
-                .Where(o => date.Month == date.Month && o.InvoiceIssueDate.Year == date.Year)
-                .OrderByDescending(o => o.InvoiceNumber)
-                .ToList()
-                .FirstOrDefault()?.InvoiceNumber ?? 1;
+            int invoiceNumber = _dbContext.Orders.Where(o => o.InvoiceIssueDate.Value.Month == date.Month
+                                                          && o.InvoiceIssueDate.Value.Year == date.Year).Count() + 1;
+            return int.Parse($"{invoiceNumber}{date.Month}{date.Year}");
         }
 
         public void AddCMRFile(CMRFile cmrFile)
