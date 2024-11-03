@@ -5,11 +5,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
     xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+    xmlns:converter="clr-namespace:PotoDocs.Converters"
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     ios:Page.UseSafeArea="True"
     Title="{Binding Title}"
     x:DataType="viewmodel:OrdersViewModel">
-
+    
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:OrderStatusConverter x:Key="OrderStatusConverter" />
+            <converter:OrderStatusColorConverter x:Key="OrderStatusColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    
     <Grid
         ColumnDefinitions="*,*"
         ColumnSpacing="5"
@@ -71,6 +79,7 @@
                                     <!-- Dane po prawej stronie -->
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
                                         <Label Text="{Binding Driver.FirstAndLastName}" FontSize="14" />
+                                        <Label Text="{Binding ., Converter={StaticResource OrderStatusConverter}}" FontSize="14" TextColor="{Binding ., Converter={StaticResource OrderStatusColorConverter}}" />
                                     </VerticalStackLayout>
                                 </Grid>
                                 <!-- TapGestureRecognizer do wyświetlenia szczegółów -->

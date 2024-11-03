@@ -55,10 +55,46 @@
                         <Entry Text="{Binding OrderDto.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź termin płatności" />
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
-
+                <Label Text="Zlecenie:" FontAttributes="Bold" />
+                <Label Text="{Binding OrderDto.PDFUrl}" TextColor="Blue" FontAttributes="Bold">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding NavigateToPdfCommand}" CommandParameter="{Binding OrderDto.PDFUrl}" />
+                    </Label.GestureRecognizers>
+                </Label>
                 <Label Text="Uwagi:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
+                
+                <!-- Sekcja CMR -->
+                <Label Text="Lista CMR:" FontAttributes="Bold" />
+                <CollectionView ItemsSource="{Binding OrderDto.CMRFiles}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="5" ColumnDefinitions="*,Auto">
+                                <!-- Nazwa pliku -->
+                                <Label Text="{Binding .}" TextColor="Blue" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrderFormViewModel}}, Path=NavigateToPdfCommand}" CommandParameter="{Binding .}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
 
+                                <!-- Przycisk usuń z ikoną -->
+                                <ImageButton Source="icon_delete.png"
+                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrderFormViewModel}}, Path=RemoveCMRCommand}"
+                             CommandParameter="{Binding .}"
+                             BackgroundColor="BLACK"
+                             WidthRequest="30"
+                             HeightRequest="30"
+                             HorizontalOptions="End"
+                             VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Button Text="Dodaj CMR"
+                        Command="{Binding AddCMRsCommand}"
+                        BackgroundColor="Green"
+                        TextColor="White" />
                 <Button Command="{Binding SaveOrderCommand}" IsEnabled="{Binding IsNotBusy}" Text="Zapisz" />
 
             </VerticalStackLayout>

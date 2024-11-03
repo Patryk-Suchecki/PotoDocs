@@ -7,6 +7,7 @@ using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
+using System.Collections.Generic;
 
 namespace PotoDocs.API.Controllers;
 
@@ -41,13 +42,8 @@ public class OrderController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<OrderDto>> Create([FromForm] IFormFile file)
     {
-        var order = await _orderService.ProcessAndCreateOrderFromPdf(file);
-        if (order == null)
-        {
-            return BadRequest("Nie udało się przetworzyć i stworzyć zamówienia.");
-        }
-
-        return CreatedAtAction(nameof(GetById), new { id = order.Data.InvoiceNumber }, order);
+        var response = await _orderService.ProcessAndCreateOrderFromPdf(file);
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpDelete("{id}")]
@@ -65,45 +61,29 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost("{id}/cmr")]
-    [Authorize]
-    public async Task<ActionResult> UploadCMR(int id, [FromForm] List<IFormFile> cmrFiles)
+    public async Task<ActionResult> UploadCMR(int id, [FromForm] List<IFormFile> files)
     {
-        var order = _orderService.GetById(id);
-        if (order == null)
+        await _orderService.AddCMRFileAsync(files, id);
+        return Ok();
+    }
+    [HttpGet("pdf/{fileName}")]
+    public IActionResult GetPdf(string fileName)
+    {
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs", fileName);
+        if (!System.IO.File.Exists(filePath))
         {
-            return NotFound($"Order with ID {id} not found.");
+            return NotFound("File not found");
         }
 
-        if (cmrFiles == null || cmrFiles.Count == 0)
-        {
-            return BadRequest("No files uploaded.");
-        }
-
-        var cmrFileUrls = new List<string>();
-        foreach (var file in cmrFiles)
-        {
-            // Zapis pliku do folderu wwwroot/pdfs
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/pdfs", fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Dodanie do listy URLi
-            var relativePath = Path.Combine("/pdfs", fileName); // Ścieżka względna do pliku
-            cmrFileUrls.Add(relativePath);
-
-            // Zapis danych pliku CMR w bazie danych
-            var cmrFile = new CMRFile
-            {
-                Url = relativePath,
-                OrderId = id
-            };
-            _orderService.AddCMRFile(cmrFile); // Dodanie pliku CMR do zamówienia
-        }
-
-        return Ok(new { cmrFileUrls });
+        var mimeType = "application/pdf";
+        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        return File(fileStream, mimeType, fileName);
+    }
+    [HttpDelete("pdf/{fileName}")]
+    public ActionResult DeleteCMR([FromRoute] string fileName)
+    {
+        _orderService.DeleteCMR(fileName);
+        return NoContent();
     }
 }
 

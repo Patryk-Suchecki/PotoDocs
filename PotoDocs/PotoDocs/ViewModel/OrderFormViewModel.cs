@@ -97,7 +97,82 @@ public partial class OrderFormViewModel : BaseViewModel
         if (orderDto == null)
             return;
         IsBusy = true;
-        await orderService.UpdateOrderAsync(orderDto, invoiceNumber);
+        await orderService.Update(orderDto, invoiceNumber);
         IsBusy = false;
+    }
+    [RelayCommand]
+    async Task NavigateToPdf(string pdfname)
+    {
+        if (pdfname == null)
+            return;
+        IsBusy = true;
+        string outputPath = await orderService.DownloadInvoice(pdfname);
+        await Share.RequestAsync(new ShareFileRequest
+        {
+            Title = "Zapisz pdf",
+            File = new ShareFile(outputPath)
+        });
+        IsBusy = false;
+    }
+    [RelayCommand]
+    async Task RemoveCMR(string pdfname)
+    {
+        if (pdfname == null)
+            return;
+        IsBusy = true;
+        await orderService.RemoveCMR(pdfname);
+        IsBusy = false;
+    }
+    [RelayCommand]
+    async Task AddCMRs()
+    {
+        try
+        {
+            var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+        {
+            { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
+            { DevicePlatform.Android, new[] { "application/pdf" } },
+            { DevicePlatform.WinUI, new[] { ".pdf" } },
+            { DevicePlatform.MacCatalyst, new[] { "pdf" } }
+        });
+
+            var pickOptions = new PickOptions
+            {
+                PickerTitle = "Wybierz pliki PDF",
+                FileTypes = pdfFileType
+            };
+
+            var results = await FilePicker.Default.PickMultipleAsync(pickOptions);
+            if (results != null && results.Any())
+            {
+                IsBusy = true;
+
+                var filePaths = results
+                    .Where(result => result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    .Select(result => result.FullPath)
+                    .ToList();
+
+                if (filePaths.Any())
+                {
+                    await orderService.UploadCMR(filePaths, invoiceNumber);
+                }
+                else
+                {
+                    Debug.WriteLine("Nie wybrano żadnych plików PDF.");
+                }
+            }
+            else
+            {
+                Debug.WriteLine("Nie wybrano żadnych plików.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

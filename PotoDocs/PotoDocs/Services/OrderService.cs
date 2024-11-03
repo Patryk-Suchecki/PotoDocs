@@ -36,15 +36,25 @@ public class OrderService
         }
         return null;
     }
-    public async Task<OrderDto> UploadFile(string filePath)
+    public async Task<string?> Delete(int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var jsonOptions = new JsonSerializerOptions
+        var response = await httpClient.DeleteAsync($"api/order/{invoiceNumber}");
+        if (response.IsSuccessStatusCode)
         {
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-            PropertyNameCaseInsensitive = true
-        };
+            return "Ok";
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return null;
+    }
+    public async Task<OrderDto> Create(string filePath)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
         using (var multipartFormContent = new MultipartFormDataContent())
         {
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
@@ -71,7 +81,7 @@ public class OrderService
             }
         }
     }
-    public async Task<string?> UpdateOrderAsync(OrderDto dto, int invoiceNumber)
+    public async Task<string?> Update(OrderDto dto, int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{invoiceNumber}", dto);
@@ -104,5 +114,64 @@ public class OrderService
         }
         return outputPath;
     }
+    public async Task<string> DownloadInvoice(string fileName)
+    {
+        string archiveFileName = $"{fileName}";
+        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
 
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/order/pdf/{fileName}");
+        if (response.IsSuccessStatusCode)
+        {
+            var rarData = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(outputPath, rarData);
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return outputPath;
+    }
+    public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        using (var multipartFormContent = new MultipartFormDataContent())
+        {
+            foreach (var filePath in filePaths)
+            {
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                var streamContent = new StreamContent(fileStream);
+                streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+                multipartFormContent.Add(streamContent, "files", Path.GetFileName(filePath));
+            }
+
+            var response = await httpClient.PostAsync($"api/order/{invoiceNumber}/cmr", multipartFormContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return apiResponse.Data;
+            }
+            else
+            {
+                var statusCode = response.StatusCode;
+                Debug.WriteLine($"Błąd przesyłania plików: {statusCode}");
+                return null;
+            }
+        }
+    }
+
+    public async Task RemoveCMR(string pdfname)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.DeleteAsync($"api/order/pdf/{pdfname}");
+    }
 }

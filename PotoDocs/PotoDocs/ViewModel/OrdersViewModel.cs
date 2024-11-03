@@ -95,8 +95,7 @@ public partial class OrdersViewModel : BaseViewModel
             if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 IsBusy = true;
-                OrderDto order = await orderService.UploadFile(result.FullPath);
-                order.PDFUrl = result.FullPath;
+                OrderDto order = await orderService.Create(result.FullPath);
 
                 await Shell.Current.GoToAsync($"//{nameof(OrderFormPage)}", true, new Dictionary<string, object>
                 {
@@ -138,6 +137,8 @@ public partial class OrdersViewModel : BaseViewModel
     {
         if (order == null)
             return;
+        await orderService.Delete(order.InvoiceNumber);
+        GetOrdersAsync();
     }
     
     private string ExtractTextFromPdf(Stream pdfStream)
