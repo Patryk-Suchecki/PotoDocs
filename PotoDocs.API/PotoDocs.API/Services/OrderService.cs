@@ -8,11 +8,11 @@ namespace PotoDocs.API.Services
 {
     public interface IOrderService
     {
-        IEnumerable<OrderDto> GetAll();
-        OrderDto GetById(int id);
+        ApiResponse<IEnumerable<OrderDto>> GetAll();
+        ApiResponse<OrderDto> GetById(int id);
         void Delete(int id);
         void Update(int invoiceNumber, OrderDto dto);
-        Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file);
+        Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file);
         public void AddCMRFile(CMRFile cmrFile);
     }
 
@@ -29,19 +29,19 @@ namespace PotoDocs.API.Services
             _openAIService = openAIService;
         }
 
-        public IEnumerable<OrderDto> GetAll()
+        public ApiResponse<IEnumerable<OrderDto>> GetAll()
         {
             var orders = _dbContext.Orders.Include(o => o.Driver).ToList();
             var ordersDto = _mapper.Map<List<OrderDto>>(orders);
-            return ordersDto;
+            return ApiResponse<IEnumerable<OrderDto>>.Success(ordersDto);
         }
 
-        public OrderDto GetById(int id)
+        public ApiResponse<OrderDto> GetById(int id)
         {
             var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
             if (order == null) return null;
 
-            return _mapper.Map<OrderDto>(order);
+            return ApiResponse<OrderDto>.Success(_mapper.Map<OrderDto>(order));
         }
 
         public void Delete(int id)
@@ -65,7 +65,7 @@ namespace PotoDocs.API.Services
             _dbContext.SaveChanges();
         }
 
-        public async Task<OrderDto> ProcessAndCreateOrderFromPdf(IFormFile file)
+        public async Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file)
         {
             if (file == null || file.Length == 0 || file.ContentType != "application/pdf")
             {
@@ -80,8 +80,7 @@ namespace PotoDocs.API.Services
             _dbContext.Orders.Add(order);
             _dbContext.SaveChanges();
 
-
-            return extractedData;
+            return ApiResponse<OrderDto>.Success(extractedData);
         }
         private int GetInvoiceNumber(DateTime date)
         {

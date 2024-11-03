@@ -3,13 +3,22 @@ using System.Net.Http.Json;
 
 namespace PotoDocs.Services;
 
-public class AuthService
+public interface IAuthService
 {
-    HttpClient _httpClient;
+    Task<bool> IsUserAuthenticated();
+    Task<string?> LoginAsync(LoginRequestDto dto);
+    Task<LoginResponseDto?> GetAuthenticatedUserAsync();
+    Task<HttpClient> GetAuthenticatedHttpClientAsync();
+    void Logout();
+}
 
-    public AuthService(HttpClient httpClient)
+public class AuthService : IAuthService
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public AuthService(IHttpClientFactory httpClientFactory)
     {
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task<bool> IsUserAuthenticated()
@@ -28,25 +37,47 @@ public class AuthService
         return null;
     }
 
-    public async Task<string?> LoginAsync(LoginDto dto)
+    public async Task<string?> LoginAsync(LoginRequestDto dto)
     {
-        var result = await _httpClient.PostAsJsonAsync(AppConstants.ApiUrl + "api/account/login", dto);
-        if (result.IsSuccessStatusCode)
+        var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
+        var response = await httpClient.PostAsJsonAsync< LoginRequestDto> ("api/account/login", dto);
+        if (response.IsSuccessStatusCode)
         {
-            var response = await result.Content.ReadFromJsonAsync<LoginResponseDto>();
-            if (response != null)
+            var content = await response.Content.ReadAsStringAsync();
+            ApiResponse<LoginResponseDto> authResponse =
+                JsonSerializer.Deserialize<ApiResponse<LoginResponseDto>>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            if (authResponse.Status)
             {
-                var serializeResponse = JsonSerializer.Serialize(response);
-                await SecureStorage.Default.SetAsync(AppConstants.AuthStorageKeyName, serializeResponse);
+                var serializedData = JsonSerializer.Serialize(authResponse.Data);
+                await SecureStorage.Default.SetAsync(AppConstants.AuthStorageKeyName, serializedData);
+            }
+            else
+            {
+                return authResponse.Errors.FirstOrDefault();
             }
         }
         else
         {
             return "Error in logging in";
         }
-
         return null;
     }
 
     public void Logout() => SecureStorage.Default.Remove(AppConstants.AuthStorageKeyName);
+
+    public async Task<HttpClient> GetAuthenticatedHttpClientAsync()
+    {
+        var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
+
+        var authenticatedUser = await GetAuthenticatedUserAsync();
+
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authenticatedUser.Token);
+
+        return httpClient;
+    }
 }
+

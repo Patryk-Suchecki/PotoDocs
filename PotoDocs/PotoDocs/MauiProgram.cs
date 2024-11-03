@@ -17,27 +17,23 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
+        builder.Services.AddCustomApiHttpClient();
 
         builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
         builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
         builder.Services.AddSingleton<IMap>(Map.Default);
 
-        builder.Services.AddHttpClient<AuthService>();
-        builder.Services.AddTransient<AuthHttpClientHandler>();
+        builder.Services.AddSingleton<IAuthService, AuthService>();
 
-        builder.Services.AddHttpClient<OrderService>()
-            .AddHttpMessageHandler<AuthHttpClientHandler>();
+        builder.Services.AddTransient<OrderService>();
 
-        builder.Services.AddHttpClient<UserService>()
-            .AddHttpMessageHandler<AuthHttpClientHandler>();
+        builder.Services.AddTransient<UserService>();
 
         builder.Services.AddSingleton<MainPage>();
-        builder.Services.AddSingleton<LoginPage>();
+        builder.Services.AddTransient<LoginPage>();
 
         builder.Services.AddSingleton<OrdersViewModel>();
         builder.Services.AddSingleton<OrdersPage>();
-
-
 
         builder.Services.AddTransient<OrderDetailsViewModel>();
         builder.Services.AddTransient<DetailsPage>();
@@ -60,5 +56,40 @@ public static class MauiProgram
 #endif
 
         return builder.Build();
+    }
+}
+public static class MauiProgramExtensions
+{
+    public static IServiceCollection AddCustomApiHttpClient(this IServiceCollection services)
+    {
+        // Rejestracja platformowego handlera HTTP
+        services.AddSingleton<IPlatformHttpMessageHandler>(sp =>
+        {
+#if ANDROID
+            return new AndroidHttpMessageHandler();
+#elif IOS
+            return new IosHttpMessageHandler();
+#else
+            throw new NotSupportedException("This platform is not supported.");
+#endif
+        });
+
+        // Rejestracja HttpClient z platformowym handlerem
+        services.AddHttpClient(AppConstants.HttpClientName, httpClient =>
+        {
+            var baseAddress = DeviceInfo.Platform == DevicePlatform.Android
+                ? "https://10.0.2.2:7157" // Android (emulator)
+                : "https://localhost:7157"; // Inne platformy
+
+            httpClient.BaseAddress = new Uri(baseAddress);
+        })
+        .ConfigurePrimaryHttpMessageHandler(sp =>
+        {
+            // Użyj platformowego handlera jako PrimaryHandler
+            var platformHttpMessageHandler = sp.GetRequiredService<IPlatformHttpMessageHandler>();
+            return platformHttpMessageHandler.GetHttpMessageHandler();
+        });
+
+        return services;
     }
 }

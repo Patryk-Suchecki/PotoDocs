@@ -69,7 +69,7 @@ public partial class OrderFormViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var users = await userService.GetUsers();
+            var users = await userService.GetAll();
 
 
             if (Users.Count != 0)

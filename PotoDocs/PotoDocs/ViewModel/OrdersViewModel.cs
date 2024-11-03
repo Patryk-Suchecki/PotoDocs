@@ -39,7 +39,7 @@ public partial class OrdersViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var orders = await orderService.GetOrders();
+            var orders = await orderService.GetAll();
 
             if (Orders.Count != 0)
                 Orders.Clear();
@@ -67,7 +67,7 @@ public partial class OrdersViewModel : BaseViewModel
         if (order == null)
             return;
 
-        await Shell.Current.GoToAsync(nameof(DetailsPage), true, new Dictionary<string, object>
+        await Shell.Current.GoToAsync($"//{nameof(DetailsPage)}", true, new Dictionary<string, object>
         {
             {"OrderDto", order }
         });
@@ -98,7 +98,7 @@ public partial class OrdersViewModel : BaseViewModel
                 OrderDto order = await orderService.UploadFile(result.FullPath);
                 order.PDFUrl = result.FullPath;
 
-                await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
+                await Shell.Current.GoToAsync($"//{nameof(OrderFormPage)}", true, new Dictionary<string, object>
                 {
                     {"OrderDto", order },
                     {"title", "Dodaj nowe zlecenie" },
@@ -125,7 +125,7 @@ public partial class OrdersViewModel : BaseViewModel
         if (order == null)
             return;
 
-        await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
+        await Shell.Current.GoToAsync($"//{nameof(OrderFormPage)}", true, new Dictionary<string, object>
                 {
                     {"OrderDto", order },
                     { "title", "Edytuj zlecenie" },

@@ -6,13 +6,13 @@ using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Controllers;
 
-[Route("api/account")]
+[Route("api/[controller]")]
 [ApiController]
 
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
-
+    
     public AccountController(IAccountService accountService)
     {
         _accountService = accountService;
@@ -27,10 +27,10 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("login")]
-    public ActionResult Login([FromBody]LoginDto dto)
+    public async Task<IActionResult> Login(LoginRequestDto dto, CancellationToken cancellationToken = default)
     {
-        var loginResponse = _accountService.GenerateJwt(dto);
-        return Ok(loginResponse);
+        var response = await _accountService.LoginAsync(dto, cancellationToken);
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpPost("change-password")]
@@ -44,7 +44,7 @@ public class AccountController : ControllerBase
     [Authorize]
     public ActionResult<IEnumerable<UserDto>> GetUsers()
     {
-        var users = _accountService.GetAll();
-        return Ok(users);
+        var response = _accountService.GetAll();
+        return StatusCode(response.StatusCode, response);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Asn1.X509;
@@ -9,7 +10,7 @@ using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API.Controllers;
 
-[Route("api/order")]
+[Route("api/[controller]")]
 [ApiController]
 [Authorize(Roles = "admin,manager")]
 public class OrderController : ControllerBase
@@ -24,8 +25,8 @@ public class OrderController : ControllerBase
     [HttpGet("all")]
     public ActionResult<IEnumerable<OrderDto>> GetAll()
     {
-        var orders = _orderService.GetAll();
-        return Ok(orders);
+        var response = _orderService.GetAll();
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpGet("{id}")]
@@ -46,7 +47,7 @@ public class OrderController : ControllerBase
             return BadRequest("Nie udało się przetworzyć i stworzyć zamówienia.");
         }
 
-        return CreatedAtAction(nameof(GetById), new { id = order.InvoiceNumber }, order);
+        return CreatedAtAction(nameof(GetById), new { id = order.Data.InvoiceNumber }, order);
     }
 
     [HttpDelete("{id}")]
