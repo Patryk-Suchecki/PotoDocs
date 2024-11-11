@@ -63,6 +63,11 @@
                                                IconImageSource="icon_delete.png"
                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteOrderCommand}"
                                                CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Pobierz fakturę"
+                                               BackgroundColor="LightGreen"
+                                               IconImageSource="download.svg"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DownloadInvoiceCommand}"
+                                               CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.LeftItems>
 

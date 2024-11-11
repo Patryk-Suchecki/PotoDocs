@@ -106,7 +106,7 @@ public partial class OrderFormViewModel : BaseViewModel
         if (pdfname == null)
             return;
         IsBusy = true;
-        string outputPath = await orderService.DownloadInvoice(pdfname);
+        string outputPath = await orderService.DownloadFile(pdfname);
         await Share.RequestAsync(new ShareFileRequest
         {
             Title = "Zapisz pdf",
@@ -120,9 +120,23 @@ public partial class OrderFormViewModel : BaseViewModel
         if (pdfname == null)
             return;
         IsBusy = true;
-        await orderService.RemoveCMR(pdfname);
-        IsBusy = false;
+        try
+        {
+            await orderService.RemoveCMR(pdfname);
+            orderDto = await orderService.GetById(invoiceNumber);
+            OnPropertyChanged(nameof(OrderDto));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Błąd podczas usuwania CMR: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+            IsRefreshing = false;
+        }
     }
+
     [RelayCommand]
     async Task AddCMRs()
     {
@@ -155,6 +169,7 @@ public partial class OrderFormViewModel : BaseViewModel
                 if (filePaths.Any())
                 {
                     await orderService.UploadCMR(filePaths, invoiceNumber);
+                    OnPropertyChanged(nameof(OrderDto));
                 }
                 else
                 {
@@ -173,6 +188,7 @@ public partial class OrderFormViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+            IsRefreshing = false;
         }
     }
 }

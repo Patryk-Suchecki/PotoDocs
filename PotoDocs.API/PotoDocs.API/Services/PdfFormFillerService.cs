@@ -1,12 +1,12 @@
-﻿using System.Globalization;
-using iTextSharp.text.pdf;
+﻿using iTextSharp.text.pdf;
 using PotoDocs.API.Model;
+using System.Globalization;
 
-namespace PotoDocs.API.Services;
 public interface IPdfFormFillerService
 {
-    Task FillPdfFormAsync(InvoiceDto model);
+    Task<byte[]> FillPdfFormAsync(InvoiceDto model);
 }
+
 public class PdfFormFillerService : IPdfFormFillerService
 {
     private readonly IWebHostEnvironment _env;
@@ -17,23 +17,20 @@ public class PdfFormFillerService : IPdfFormFillerService
         _env = env;
     }
 
-    public async Task FillPdfFormAsync(InvoiceDto model)
+    public async Task<byte[]> FillPdfFormAsync(InvoiceDto model)
     {
         string templatePath = Path.Combine(_env.WebRootPath, "templates", templateFileName);
-        string pdfOutputFolder = Path.Combine(_env.WebRootPath, "pdfs");
-
-        string outputFileName = $"FAKTURA {model.InvoiceNumber:D2}-{model.IssueDate:MM}-{model.IssueDate:yyyy}.pdf";
-        string outputPath = Path.Combine(pdfOutputFolder, outputFileName);
 
         using (var pdfReader = new PdfReader(templatePath))
-        using (var newFileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+        using (var memoryStream = new MemoryStream()) // Używamy MemoryStream do przechowywania pliku w pamięci
         {
-            var pdfStamper = new PdfStamper(pdfReader, newFileStream);
+            var pdfStamper = new PdfStamper(pdfReader, memoryStream);
             var pdfFormFields = pdfStamper.AcroFields;
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             BaseFont bfArialBold = BaseFont.CreateFont("c:/windows/fonts/tahomabd.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
+            // Wypełnianie pól formularza PDF zgodnie z model
             pdfFormFields.SetField("NUMER_FAKTURY", $"Nr {model.InvoiceNumber:D2}/{model.IssueDate:MM}/{model.IssueDate:yyyy}");
             pdfFormFields.SetField("NAZWA_FIRMY", model.CompanyName);
             pdfFormFields.SetField("ADRES_FIRMY", model.CompanyAddress);
@@ -62,15 +59,13 @@ public class PdfFormFillerService : IPdfFormFillerService
             pdfFormFields.SetFieldProperty("UWAGI", "textfont", bfArialBold, null);
             pdfFormFields.SetField("UWAGI", model.Remarks);
 
-            // Spłaszczenie formularza (pola stają się nieedytowalne)
-            pdfStamper.FormFlattening = true;
-
-            // Zamykanie strumieni
+            pdfStamper.FormFlattening = true; // Ustawienie formularza na tylko do odczytu
             pdfStamper.Close();
+
+            return memoryStream.ToArray(); // Zwracamy PDF jako tablicę bajtów
         }
     }
 
-    // Metoda do formatowania kwot w walucie
     private string FormatCurrency(decimal amount, string currencySymbol = "")
     {
         return string.Format(CultureInfo.InvariantCulture, "{0:N2} {1}", amount, currencySymbol).Trim();

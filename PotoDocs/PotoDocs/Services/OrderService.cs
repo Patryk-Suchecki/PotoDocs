@@ -36,6 +36,26 @@ public class OrderService
         }
         return null;
     }
+    public async Task<OrderDto> GetById(int invoiceNumber)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/order/{invoiceNumber}");
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return apiResponse.Data;
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return null;
+    }
     public async Task<string?> Delete(int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
@@ -114,7 +134,7 @@ public class OrderService
         }
         return outputPath;
     }
-    public async Task<string> DownloadInvoice(string fileName)
+    public async Task<string> DownloadFile(string fileName)
     {
         string archiveFileName = $"{fileName}";
         string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
@@ -173,5 +193,24 @@ public class OrderService
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.DeleteAsync($"api/order/pdf/{pdfname}");
+    }
+    public async Task<string> DownloadInvoice(int invoiceNumber)
+    {
+        string archiveFileName = $"{invoiceNumber}.pdf";
+        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
+
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files");
+        if (response.IsSuccessStatusCode)
+        {
+            var rarData = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(outputPath, rarData);
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return outputPath;
     }
 }
