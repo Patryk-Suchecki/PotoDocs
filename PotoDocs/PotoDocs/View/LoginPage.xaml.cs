@@ -4,8 +4,9 @@ namespace PotoDocs.View;
 
 public partial class LoginPage : ContentPage
 {
-    private readonly AuthService _authService;
-    public LoginPage(AuthService authService)
+    private readonly IAuthService _authService;
+
+    public LoginPage(IAuthService authService)
     {
         InitializeComponent();
         _authService = authService;
@@ -16,15 +17,14 @@ public partial class LoginPage : ContentPage
         string username = UsernameEntry.Text;
         string password = PasswordEntry.Text;
 
-
-        var error = await _authService.LoginAsync(new LoginDto() { Email = username , Password = password });
+        var error = await _authService.LoginAsync(new LoginRequestDto(username, password));
         if (string.IsNullOrWhiteSpace(error))
         {
-            Application.Current.MainPage = new AppShell(_authService);
+            await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
         }
         else
         {
-            await Shell.Current.DisplayAlert("Error", error, "Ok");
+            ResponseLabel.Text = error;
         }
     }
 }

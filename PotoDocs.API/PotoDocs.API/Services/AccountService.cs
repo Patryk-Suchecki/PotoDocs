@@ -10,30 +10,33 @@ using PotoDocs.Shared.Models;
 using PotoDocs.API.Entities;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using System.Net;
 
 namespace PotoDocs.API.Services;
 
 public interface IAccountService
 {
-    LoginResponseDto GenerateJwt(LoginDto dto);
     void RegisterUser(UserDto dto);
     void ChangePassword(ChangePasswordDto dto);
-    IEnumerable<UserDto> GetAll();
+    ApiResponse<List<UserDto>> GetAll();
+    Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto dto, CancellationToken cancellationToken = default);
 }
 
 public class AccountService : IAccountService
 {
     private readonly AuthenticationSettings _authSettings;
     private readonly PotodocsDbContext _context;
+    private readonly ITokenService _tokenService;
     private readonly IPasswordHasher<User> _hasher;
     private readonly IMapper _mapper;
 
-    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings, IMapper mapper)
+    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings, IMapper mapper, ITokenService tokenService)
     {
         _authSettings = authenticationSettings;
         _context = context;
         _hasher = hasher;
         _mapper = mapper;
+        _tokenService = tokenService;
     }
     public void RegisterUser(UserDto dto)
     {
@@ -50,46 +53,6 @@ public class AccountService : IAccountService
         newUser.PasswordHash = hashedPassword;
         _context.Users.Add(newUser);
         _context.SaveChanges();
-    }
-
-    public LoginResponseDto GenerateJwt(LoginDto dto)
-    {
-        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Email);
-
-        if (user is null)
-        {
-            throw new BadRequestException("Invalid username or password");
-        }
-
-        var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-        if (result == PasswordVerificationResult.Failed)
-        {
-            throw new BadRequestException("Invalid username or password");
-        }
-
-        var claims = new List<Claim>()
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
-
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authSettings.JwtKey));
-        var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.Now.AddDays(_authSettings.JwtExpireDays);
-
-        var token = new JwtSecurityToken(_authSettings.JwtIssuer,
-            _authSettings.JwtIssuer, claims, expires: expires, signingCredentials: cred);
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        return new LoginResponseDto()
-        {
-            Token = tokenHandler.WriteToken(token),
-            Role = user.Role
-        };
-        
     }
 
     public string GenerateRandomPassword(int length)
@@ -124,10 +87,33 @@ public class AccountService : IAccountService
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();
     }
-    public IEnumerable<UserDto> GetAll()
+    public ApiResponse<List<UserDto>> GetAll()
     {
         var users = _context.Users.Include(u => u.Role).ToList();
         var usersDto = _mapper.Map<List<UserDto>>(users);
-        return usersDto;
+        return ApiResponse<List<UserDto>>.Success(usersDto);
+    }
+    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto dto, CancellationToken cancellationToken = default)
+    {
+        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Username);
+
+        if (user is null)
+        {
+            return ApiResponse<LoginResponseDto>.Failure("Użytkownik lub hasło są niepoprawne", HttpStatusCode.Unauthorized);
+        }
+
+        var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
+        if (result == PasswordVerificationResult.Failed)
+        {
+            return ApiResponse<LoginResponseDto>.Failure("Użytkownik lub hasło są niepoprawne", HttpStatusCode.Unauthorized);
+        }
+
+        var jwt = _tokenService.GenerateJWT(user);
+        var authResponse = new LoginResponseDto
+        {
+            Role = user.Role,
+            Token = jwt
+        };
+        return ApiResponse<LoginResponseDto>.Success(authResponse);
     }
 }

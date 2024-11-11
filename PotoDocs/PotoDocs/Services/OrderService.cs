@@ -6,45 +6,75 @@ namespace PotoDocs.Services;
 
 public class OrderService
 {
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IAuthService _authService;
     private List<OrderDto> _orderList;
 
-    public OrderService(HttpClient httpClient)
+    public OrderService(IHttpClientFactory httpClientFactory, IAuthService authService)
     {
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
+        _authService = authService;
     }
 
-    public async Task<List<OrderDto>> GetOrders()
+    public async Task<IEnumerable<OrderDto>> GetAll()
     {
-        var jsonOptions = new JsonSerializerOptions
-        {
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-            PropertyNameCaseInsensitive = true
-        };
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        try
+        var response = await httpClient.GetAsync("api/order/all");
+        if (response.IsSuccessStatusCode)
         {
-            var response = await _httpClient.GetAsync(AppConstants.ApiUrl + "api/order/all");
-            if (response.IsSuccessStatusCode)
+            var content = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<OrderDto>>>(content, new JsonSerializerOptions
             {
-                _orderList = await response.Content.ReadFromJsonAsync<List<OrderDto>>(jsonOptions);
-                return _orderList;
-            }
+                PropertyNameCaseInsensitive = true
+            });
+            return apiResponse.Data;
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Błąd podczas pobierania danych online: {ex.Message}");
+            var statusCode = response.StatusCode;
         }
-
-        return _orderList;
+        return null;
     }
-    public async Task<OrderDto> UploadFile(string filePath)
+    public async Task<OrderDto> GetById(int invoiceNumber)
     {
-        var jsonOptions = new JsonSerializerOptions
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/order/{invoiceNumber}");
+        if (response.IsSuccessStatusCode)
         {
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-            PropertyNameCaseInsensitive = true
-        };
+            var content = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return apiResponse.Data;
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return null;
+    }
+    public async Task<string?> Delete(int invoiceNumber)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.DeleteAsync($"api/order/{invoiceNumber}");
+        if (response.IsSuccessStatusCode)
+        {
+            return "Ok";
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return null;
+    }
+    public async Task<OrderDto> Create(string filePath)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
         using (var multipartFormContent = new MultipartFormDataContent())
         {
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
@@ -53,42 +83,46 @@ public class OrderService
 
             multipartFormContent.Add(streamContent, "file", Path.GetFileName(filePath));
 
-            var response = await _httpClient.PostAsync(AppConstants.ApiUrl + "api/order", multipartFormContent);
+            var response = await httpClient.PostAsync("api/order", multipartFormContent);
 
             if (response.IsSuccessStatusCode)
             {
-                OrderDto order = await response.Content.ReadFromJsonAsync<OrderDto>(jsonOptions);
-
-                return order;
+                var content = await response.Content.ReadAsStringAsync();
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return apiResponse.Data;
             }
             else
             {
+                var statusCode = response.StatusCode;
                 return null;
             }
         }
     }
-    public async Task<string?> UpdateOrderAsync(OrderDto dto, int invoiceNumber)
+    public async Task<string?> Update(OrderDto dto, int invoiceNumber)
     {
-        var result = await _httpClient.PutAsJsonAsync(AppConstants.ApiUrl + $"api/order/{invoiceNumber}", dto);
-        if (result.IsSuccessStatusCode)
-        {
-        }
-        if (!result.IsSuccessStatusCode)
-        {
-            var errorContent = await result.Content.ReadAsStringAsync();
-            Console.WriteLine($"Błąd: {errorContent}");
-            return "Błąd w aktualizacji zamówienia";
-        }
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+        var response = await httpClient.PutAsJsonAsync($"api/order/{invoiceNumber}", dto);
 
-        return null;
+        if (response.IsSuccessStatusCode)
+        {
+            return "Zaktualizowano";
+        }
+        else
+        {
+            return response.StatusCode.ToString();
+        }
     }
     public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto)
     {
         string archiveFileName = $"Zlecenia_{downloadRequestDto.Month}-{downloadRequestDto.Year}.rar";
         string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
 
-        var response = await _httpClient.GetAsync($"{AppConstants.ApiUrl}/invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
+        var response = await httpClient.GetAsync($"invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
         if (response.IsSuccessStatusCode)
         {
             var rarData = await response.Content.ReadAsByteArrayAsync();
@@ -96,11 +130,87 @@ public class OrderService
         }
         else
         {
-            throw new Exception("Nie udało się pobrać archiwum RAR.");
+            var statusCode = response.StatusCode;
         }
-
         return outputPath;
     }
+    public async Task<string> DownloadFile(string fileName)
+    {
+        string archiveFileName = $"{fileName}";
+        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
 
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
+        var response = await httpClient.GetAsync($"api/order/pdf/{fileName}");
+        if (response.IsSuccessStatusCode)
+        {
+            var rarData = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(outputPath, rarData);
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return outputPath;
+    }
+    public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        using (var multipartFormContent = new MultipartFormDataContent())
+        {
+            foreach (var filePath in filePaths)
+            {
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                var streamContent = new StreamContent(fileStream);
+                streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+                multipartFormContent.Add(streamContent, "files", Path.GetFileName(filePath));
+            }
+
+            var response = await httpClient.PostAsync($"api/order/{invoiceNumber}/cmr", multipartFormContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return apiResponse.Data;
+            }
+            else
+            {
+                var statusCode = response.StatusCode;
+                Debug.WriteLine($"Błąd przesyłania plików: {statusCode}");
+                return null;
+            }
+        }
+    }
+
+    public async Task RemoveCMR(string pdfname)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.DeleteAsync($"api/order/pdf/{pdfname}");
+    }
+    public async Task<string> DownloadInvoice(int invoiceNumber)
+    {
+        string archiveFileName = $"{invoiceNumber}.pdf";
+        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
+
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files");
+        if (response.IsSuccessStatusCode)
+        {
+            var rarData = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(outputPath, rarData);
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return outputPath;
+    }
 }

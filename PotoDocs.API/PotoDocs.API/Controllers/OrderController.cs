@@ -1,15 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Asn1.X509;
-using PotoDocs.API.Entities;
-using PotoDocs.API.Models;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 
-namespace PotoDocs.API.Controllers;
-
-[Route("api/order")]
+[Route("api/[controller]")]
 [ApiController]
 [Authorize(Roles = "admin,manager")]
 public class OrderController : ControllerBase
@@ -24,36 +18,22 @@ public class OrderController : ControllerBase
     [HttpGet("all")]
     public ActionResult<IEnumerable<OrderDto>> GetAll()
     {
-        var orders = _orderService.GetAll();
-        return Ok(orders);
+        var response = _orderService.GetAll();
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpGet("{id}")]
     public ActionResult<OrderDto> GetById([FromRoute] int id)
     {
-        var order = _orderService.GetById(id);
-        if (order == null) return NotFound();
-
-        return Ok(order);
+        var response = _orderService.GetById(id);
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpPost]
     public async Task<ActionResult<OrderDto>> Create([FromForm] IFormFile file)
     {
-        var order = await _orderService.ProcessAndCreateOrderFromPdf(file);
-        if (order == null)
-        {
-            return BadRequest("Nie udało się przetworzyć i stworzyć zamówienia.");
-        }
-
-        return CreatedAtAction(nameof(GetById), new { id = order.InvoiceNumber }, order);
-    }
-
-    [HttpDelete("{id}")]
-    public ActionResult Delete([FromRoute] int id)
-    {
-        _orderService.Delete(id);
-        return NoContent();
+        var response = await _orderService.ProcessAndCreateOrderFromPdf(file);
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpPut("{id}")]
@@ -63,47 +43,10 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("{id}/cmr")]
-    [Authorize]
-    public async Task<ActionResult> UploadCMR(int id, [FromForm] List<IFormFile> cmrFiles)
+    [HttpDelete("{id}")]
+    public ActionResult Delete([FromRoute] int id)
     {
-        var order = _orderService.GetById(id);
-        if (order == null)
-        {
-            return NotFound($"Order with ID {id} not found.");
-        }
-
-        if (cmrFiles == null || cmrFiles.Count == 0)
-        {
-            return BadRequest("No files uploaded.");
-        }
-
-        var cmrFileUrls = new List<string>();
-        foreach (var file in cmrFiles)
-        {
-            // Zapis pliku do folderu wwwroot/pdfs
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/pdfs", fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Dodanie do listy URLi
-            var relativePath = Path.Combine("/pdfs", fileName); // Ścieżka względna do pliku
-            cmrFileUrls.Add(relativePath);
-
-            // Zapis danych pliku CMR w bazie danych
-            var cmrFile = new CMRFile
-            {
-                Url = relativePath,
-                OrderId = id
-            };
-            _orderService.AddCMRFile(cmrFile); // Dodanie pliku CMR do zamówienia
-        }
-
-        return Ok(new { cmrFileUrls });
+        _orderService.Delete(id);
+        return NoContent();
     }
 }
-
-

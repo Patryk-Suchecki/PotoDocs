@@ -1,4 +1,5 @@
-﻿using PotoDocs.Services;
+﻿using iTextSharp.text.pdf;
+using PotoDocs.Services;
 using PotoDocs.View;
 using System.Text;
 using PdfPigPage = UglyToad.PdfPig.Content.Page;
@@ -39,7 +40,7 @@ public partial class OrdersViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var orders = await orderService.GetOrders();
+            var orders = await orderService.GetAll();
 
             if (Orders.Count != 0)
                 Orders.Clear();
@@ -95,8 +96,7 @@ public partial class OrdersViewModel : BaseViewModel
             if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 IsBusy = true;
-                OrderDto order = await orderService.UploadFile(result.FullPath);
-                order.PDFUrl = result.FullPath;
+                OrderDto order = await orderService.Create(result.FullPath);
 
                 await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
@@ -138,28 +138,23 @@ public partial class OrdersViewModel : BaseViewModel
     {
         if (order == null)
             return;
+        await orderService.Delete(order.InvoiceNumber);
+        GetOrdersAsync();
     }
     
-    private string ExtractTextFromPdf(Stream pdfStream)
+    [RelayCommand]
+    async Task DownloadInvoice(OrderDto order)
     {
-        StringBuilder textBuilder = new StringBuilder();
-        var tempFile = Path.GetTempFileName();
-
-        using (var fileStream = File.Create(tempFile))
+        if (order == null)
+            return;
+        IsBusy = true;
+        string outputPath = await orderService.DownloadInvoice(order.InvoiceNumber);
+        await Share.RequestAsync(new ShareFileRequest
         {
-            pdfStream.CopyTo(fileStream);
-        }
-
-        using (var document = UglyToad.PdfPig.PdfDocument.Open(tempFile))
-        {
-            foreach (PdfPigPage page in document.GetPages())
-            {
-                textBuilder.Append(page.Text);
-            }
-        }
-
-        File.Delete(tempFile);
-        return textBuilder.ToString();
+            Title = "Zapisz pdf",
+            File = new ShareFile(outputPath)
+        });
+        IsBusy = false;
     }
 }
 

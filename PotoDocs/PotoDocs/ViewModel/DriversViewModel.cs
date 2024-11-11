@@ -25,7 +25,7 @@ public partial class DriversViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            var users = await userService.GetUsers();
+            var users = await userService.GetAll();
 
             if (Users.Count != 0)
                 Users.Clear();

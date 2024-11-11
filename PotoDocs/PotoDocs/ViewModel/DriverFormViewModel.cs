@@ -9,7 +9,8 @@ public partial class DriverFormViewModel : BaseViewModel
 {
     [ObservableProperty]
     UserDto userDto;
-    AuthService authService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IAuthService _authService;
 
     string pageTitle;
     public string PageTitle
@@ -21,9 +22,9 @@ public partial class DriverFormViewModel : BaseViewModel
             Title = pageTitle;
         }
     }
-    public DriverFormViewModel(AuthService authService)
+    public DriverFormViewModel(IHttpClientFactory httpClientFactory, IAuthService authService)
     {
-        this.authService = authService;
+        _authService = authService;
     }
     [RelayCommand]
     async Task SaveDriver(UserDto driver)

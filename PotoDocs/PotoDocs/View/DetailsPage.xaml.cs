@@ -1,4 +1,4 @@
-namespace PotoDocs;
+namespace PotoDocs.View;
 
 public partial class DetailsPage : ContentPage
 {
