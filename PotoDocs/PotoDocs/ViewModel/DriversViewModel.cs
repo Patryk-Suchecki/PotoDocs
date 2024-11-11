@@ -49,7 +49,7 @@ public partial class DriversViewModel : BaseViewModel
     [RelayCommand]
     async Task GoToNewUser()
     {
-        await Shell.Current.GoToAsync(nameof(DriverFormPage), true, new Dictionary<string, object>
+        await Shell.Current.GoToAsync($"//{nameof(DriverFormPage)}", true, new Dictionary<string, object>
         {
             {"User", new UserDto() },
             {"title", "Dodaj kierowce" }
@@ -61,7 +61,7 @@ public partial class DriversViewModel : BaseViewModel
         if (user == null)
             return;
 
-        await Shell.Current.GoToAsync(nameof(DriverFormPage), true, new Dictionary<string, object>
+        await Shell.Current.GoToAsync($"//{nameof(DriverFormPage)}", true, new Dictionary<string, object>
         {
             {"UserDto", user },
             {"title", "Edytuj kierowce" }

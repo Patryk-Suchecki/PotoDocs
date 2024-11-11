@@ -6,7 +6,6 @@
     <StackLayout Padding="30">
         <Entry x:Name="UsernameEntry" Placeholder="Nazwa użytkownika" />
         <Entry x:Name="PasswordEntry" Placeholder="Hasło" IsPassword="True" />
-        <Button Text="Logowanie" Clicked="OnLoginClicked" />
-        <Label x:Name="ResponseLabel" Text="" TextColor="Red" HorizontalOptions="Center" />
+        <Button Text="Logowanie" Clicked="OnLoginClicked" /> 
     </StackLayout>
 </ContentPage>

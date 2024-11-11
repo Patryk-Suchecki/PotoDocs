@@ -14,9 +14,8 @@ namespace PotoDocs.API.Services
         void Delete(int invoiceNumber);
         void Update(int invoiceNumber, OrderDto dto);
         Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file);
-        Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber);
+        Task AddCMRFileAsync(List<IFormFile> files, int invoiceNumber);
         void DeleteCMR(string fileName);
-        byte[] CreateInvoicePDF(int invoiceNumber);
     }
 
     public class OrderService : IOrderService
@@ -24,14 +23,12 @@ namespace PotoDocs.API.Services
         private readonly PotodocsDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IOpenAIService _openAIService;
-        private readonly IInvoiceService _invoiceService;
 
-        public OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService, IInvoiceService invoiceService)
+        public OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _openAIService = openAIService;
-            _invoiceService = invoiceService;
         }
 
         public ApiResponse<IEnumerable<OrderDto>> GetAll()
@@ -46,10 +43,8 @@ namespace PotoDocs.API.Services
 
         public ApiResponse<OrderDto> GetById(int id)
         {
-            var order = _dbContext.Orders.Include(o => o.Driver)
-                                         .Include(c => c.CMRFiles)
-                                         .FirstOrDefault(o => o.InvoiceNumber == id);
-            if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
+            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == id);
+            if (order == null) return null;
 
             return ApiResponse<OrderDto>.Success(_mapper.Map<OrderDto>(order));
         }
@@ -104,7 +99,7 @@ namespace PotoDocs.API.Services
             var order = _mapper.Map<Order>(extractedData);
             _dbContext.Orders.Add(order);
             _dbContext.SaveChanges();
-            
+
             return ApiResponse<OrderDto>.Success(extractedData);
         }
 
@@ -115,12 +110,12 @@ namespace PotoDocs.API.Services
             return int.Parse($"{invoiceNumber}{date.Month}{date.Year}");
         }
 
-        public async Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber)
+        public async Task AddCMRFileAsync(List<IFormFile> files, int invoiceNumber)
         {
             var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
-            if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
+            if (order == null) return ;
 
-            if (files == null || files.Count == 0) return ApiResponse<OrderDto>.Failure("Nie przesłano pliku", HttpStatusCode.BadRequest);
+            if (files == null || files.Count == 0) return;
 
             var cmrFileUrls = new List<string>();
             foreach (var file in files)
@@ -144,7 +139,6 @@ namespace PotoDocs.API.Services
                 _dbContext.CMRFiles.Add(cmrFile);
                 _dbContext.SaveChanges();
             }
-            return GetById(invoiceNumber);
 
         }
 
@@ -162,11 +156,6 @@ namespace PotoDocs.API.Services
             {
                 File.Delete(filePath);
             }
-        }
-        public byte[] CreateInvoicePDF(int invoiceNumber)
-        {
-            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
-            return _invoiceService.GenerateInvoicePdf(order).Result; 
         }
     }
 }

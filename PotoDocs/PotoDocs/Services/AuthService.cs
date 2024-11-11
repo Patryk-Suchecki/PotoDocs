@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace PotoDocs.Services;
@@ -25,12 +24,7 @@ public class AuthService : IAuthService
     public async Task<bool> IsUserAuthenticated()
     {
         var serializedData = await SecureStorage.Default.GetAsync(AppConstants.AuthStorageKeyName);
-
-        if (string.IsNullOrWhiteSpace(serializedData)) return false;
-
-        var user = JsonSerializer.Deserialize<LoginResponseDto>(serializedData);
-
-        return user != null && !IsTokenExpired(user.Token);
+        return !string.IsNullOrWhiteSpace(serializedData);
     }
 
     public async Task<LoginResponseDto?> GetAuthenticatedUserAsync()
@@ -47,22 +41,27 @@ public class AuthService : IAuthService
     {
         var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
         var response = await httpClient.PostAsJsonAsync< LoginRequestDto> ("api/account/login", dto);
-
-        var content = await response.Content.ReadAsStringAsync();
-        ApiResponse<LoginResponseDto> authResponse =
-            JsonSerializer.Deserialize<ApiResponse<LoginResponseDto>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-        if (authResponse.Status)
+        if (response.IsSuccessStatusCode)
         {
-            var serializedData = JsonSerializer.Serialize(authResponse.Data);
-            await SecureStorage.Default.SetAsync(AppConstants.AuthStorageKeyName, serializedData);
+            var content = await response.Content.ReadAsStringAsync();
+            ApiResponse<LoginResponseDto> authResponse =
+                JsonSerializer.Deserialize<ApiResponse<LoginResponseDto>>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            if (authResponse.Status)
+            {
+                var serializedData = JsonSerializer.Serialize(authResponse.Data);
+                await SecureStorage.Default.SetAsync(AppConstants.AuthStorageKeyName, serializedData);
+            }
+            else
+            {
+                return authResponse.Errors.FirstOrDefault();
+            }
         }
         else
         {
-            return authResponse.Errors.FirstOrDefault();
+            return "Error in logging in";
         }
         return null;
     }
@@ -79,14 +78,6 @@ public class AuthService : IAuthService
             new AuthenticationHeaderValue("Bearer", authenticatedUser.Token);
 
         return httpClient;
-    }
-    private bool IsTokenExpired(string token)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var expiration = jwtToken.ValidTo;
-
-        return expiration < DateTime.UtcNow;
     }
 }
 

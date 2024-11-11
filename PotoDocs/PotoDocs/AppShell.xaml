@@ -3,32 +3,47 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:view="clr-namespace:PotoDocs.View"
        x:Class="PotoDocs.AppShell">
-    <FlyoutItem Title="Menu" FlyoutDisplayOptions="AsMultipleItems">
-        <ShellContent 
-        Title="Main" 
-        ContentTemplate="{DataTemplate view:MainPage}" 
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate view:MainPage}"
         Route="MainPage" />
-        
+
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate view:LoginPage}"
+        Route="LoginPage" />
+    <ShellContent
+        Title="Details"
+        ContentTemplate="{DataTemplate view:DetailsPage}"
+        Route="DetailsPage" />
+    <ShellContent
+        Title="OrderForm"
+        ContentTemplate="{DataTemplate view:OrderFormPage}"
+        Route="OrderFormPage" />
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate view:DriverFormPage}"
+        Route="DriverFormPage" />
+
+    <TabBar>
         <ShellContent
         Title="Zlecenia"
-        Icon="orders.svg"
         ContentTemplate="{DataTemplate view:OrdersPage}"
         Route="OrdersPage" />
 
         <ShellContent
         Title="Kierowcy"
-        Icon="drivers.svg"
         ContentTemplate="{DataTemplate view:DriversPage}"
         Route="DriversPage" />
 
         <ShellContent
         Title="Pobieranie"
-        Icon="download.svg"
         ContentTemplate="{DataTemplate view:DownloadPage}"
         Route="DownloadPage" />
-    </FlyoutItem>
-    <ShellContent
-            Title="Wyloguj"
-            ContentTemplate="{DataTemplate view:LoginPage}"
-            Route="LoginPage" />
+
+        <ShellContent
+        Title="Wyloguj"
+        ContentTemplate="{DataTemplate view:LoginPage}"
+        Route="LoginPage" />
+    </TabBar>
 </Shell>
