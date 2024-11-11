@@ -5,23 +5,11 @@ namespace PotoDocs;
 
 public partial class AppShell : Shell
 {
-    private readonly AuthService _authService;
     public AppShell()
     {
         InitializeComponent();
-    }
-    private async void OnLogoutClicked(object sender, EventArgs e)
-    {
-        _authService.Logout();
-        Application.Current.MainPage = new NavigationPage(new LoginPage(_authService)); ;
-    }
-
-    private async void AppShell_Navigating(object sender, ShellNavigatingEventArgs e)
-    {
-        if (!await _authService.IsUserAuthenticated() && e.Target.Location.OriginalString != "//LoginPage")
-        {
-            e.Cancel();
-            Application.Current.MainPage = new NavigationPage(new LoginPage(_authService)); ;
-        }
+        Routing.RegisterRoute(nameof(DetailsPage), typeof(DetailsPage));
+        Routing.RegisterRoute(nameof(OrderFormPage), typeof(OrderFormPage));
+        Routing.RegisterRoute(nameof(DriverFormPage), typeof(DriverFormPage));
     }
 }

@@ -1,15 +1,7 @@
-﻿using AutoMapper;
-using Azure;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Asn1.X509;
-using PotoDocs.API.Entities;
-using PotoDocs.API.Models;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
-using System.Collections.Generic;
-
-namespace PotoDocs.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -33,10 +25,8 @@ public class OrderController : ControllerBase
     [HttpGet("{id}")]
     public ActionResult<OrderDto> GetById([FromRoute] int id)
     {
-        var order = _orderService.GetById(id);
-        if (order == null) return NotFound();
-
-        return Ok(order);
+        var response = _orderService.GetById(id);
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpPost]
@@ -46,13 +36,6 @@ public class OrderController : ControllerBase
         return StatusCode(response.StatusCode, response);
     }
 
-    [HttpDelete("{id}")]
-    public ActionResult Delete([FromRoute] int id)
-    {
-        _orderService.Delete(id);
-        return NoContent();
-    }
-
     [HttpPut("{id}")]
     public ActionResult Update([FromBody] OrderDto dto, [FromRoute] int id)
     {
@@ -60,31 +43,10 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("{id}/cmr")]
-    public async Task<ActionResult> UploadCMR(int id, [FromForm] List<IFormFile> files)
+    [HttpDelete("{id}")]
+    public ActionResult Delete([FromRoute] int id)
     {
-        await _orderService.AddCMRFileAsync(files, id);
-        return Ok();
-    }
-    [HttpGet("pdf/{fileName}")]
-    public IActionResult GetPdf(string fileName)
-    {
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs", fileName);
-        if (!System.IO.File.Exists(filePath))
-        {
-            return NotFound("File not found");
-        }
-
-        var mimeType = "application/pdf";
-        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        return File(fileStream, mimeType, fileName);
-    }
-    [HttpDelete("pdf/{fileName}")]
-    public ActionResult DeleteCMR([FromRoute] string fileName)
-    {
-        _orderService.DeleteCMR(fileName);
+        _orderService.Delete(id);
         return NoContent();
     }
 }
-
-

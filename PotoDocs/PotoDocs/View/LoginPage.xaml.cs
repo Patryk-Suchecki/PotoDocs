@@ -24,7 +24,7 @@ public partial class LoginPage : ContentPage
         }
         else
         {
-            await Shell.Current.DisplayAlert("Error", error, "Ok");
+            ResponseLabel.Text = error;
         }
     }
 }
