@@ -74,7 +74,7 @@ public static class MauiProgramExtensions
 #elif IOS
             return new IosHttpMessageHandler();
 #else
-            throw new NotSupportedException("This platform is not supported.");
+            return null;
 #endif
         });
 

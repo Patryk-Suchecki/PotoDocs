@@ -1,6 +1,9 @@
 ﻿using iTextSharp.text.pdf;
 using PotoDocs.API.Model;
 using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 public interface IPdfFormFillerService
 {
@@ -22,7 +25,7 @@ public class PdfFormFillerService : IPdfFormFillerService
         string templatePath = Path.Combine(_env.WebRootPath, "templates", templateFileName);
 
         using (var pdfReader = new PdfReader(templatePath))
-        using (var memoryStream = new MemoryStream()) // Używamy MemoryStream do przechowywania pliku w pamięci
+        using (var memoryStream = new MemoryStream())
         {
             var pdfStamper = new PdfStamper(pdfReader, memoryStream);
             var pdfFormFields = pdfStamper.AcroFields;
@@ -30,7 +33,6 @@ public class PdfFormFillerService : IPdfFormFillerService
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             BaseFont bfArialBold = BaseFont.CreateFont("c:/windows/fonts/tahomabd.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
-            // Wypełnianie pól formularza PDF zgodnie z model
             pdfFormFields.SetField("NUMER_FAKTURY", $"Nr {model.InvoiceNumber:D2}/{model.IssueDate:MM}/{model.IssueDate:yyyy}");
             pdfFormFields.SetField("NAZWA_FIRMY", model.CompanyName);
             pdfFormFields.SetField("ADRES_FIRMY", model.CompanyAddress);
@@ -59,10 +61,10 @@ public class PdfFormFillerService : IPdfFormFillerService
             pdfFormFields.SetFieldProperty("UWAGI", "textfont", bfArialBold, null);
             pdfFormFields.SetField("UWAGI", model.Remarks);
 
-            pdfStamper.FormFlattening = true; // Ustawienie formularza na tylko do odczytu
+            pdfStamper.FormFlattening = true;
             pdfStamper.Close();
 
-            return memoryStream.ToArray(); // Zwracamy PDF jako tablicę bajtów
+            return memoryStream.ToArray();
         }
     }
 
