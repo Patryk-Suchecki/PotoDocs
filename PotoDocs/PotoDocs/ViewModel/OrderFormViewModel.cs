@@ -89,7 +89,6 @@ public partial class OrderFormViewModel : BaseViewModel
             IsBusy = false;
             IsRefreshing = false;
         }
-
     }
     [RelayCommand]
     async Task SaveOrder()
@@ -106,7 +105,7 @@ public partial class OrderFormViewModel : BaseViewModel
         if (pdfname == null)
             return;
         IsBusy = true;
-        string outputPath = await orderService.DownloadFile(pdfname);
+        string outputPath = await orderService.DownloadFile(invoiceNumber, pdfname);
         await Share.RequestAsync(new ShareFileRequest
         {
             Title = "Zapisz pdf",
@@ -122,7 +121,7 @@ public partial class OrderFormViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            await orderService.RemoveCMR(pdfname);
+            await orderService.RemoveCMR(orderDto.InvoiceNumber, pdfname);
             orderDto = await orderService.GetById(invoiceNumber);
             OnPropertyChanged(nameof(OrderDto));
         }
@@ -169,6 +168,7 @@ public partial class OrderFormViewModel : BaseViewModel
                 if (filePaths.Any())
                 {
                     await orderService.UploadCMR(filePaths, invoiceNumber);
+                    orderDto = await orderService.GetById(invoiceNumber);
                     OnPropertyChanged(nameof(OrderDto));
                 }
                 else

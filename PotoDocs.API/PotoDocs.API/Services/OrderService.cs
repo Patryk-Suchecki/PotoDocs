@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
@@ -16,7 +17,8 @@ namespace PotoDocs.API.Services
         Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file);
         Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber);
         void DeleteCMR(string fileName);
-        byte[] CreateInvoicePDF(int invoiceNumber);
+        Task<byte[]> CreateInvoicePDF(int invoiceNumber);
+        Task<byte[]> CreateInvoices(DownloadDto dto);
     }
 
     public class OrderService : IOrderService
@@ -163,10 +165,25 @@ namespace PotoDocs.API.Services
                 File.Delete(filePath);
             }
         }
-        public byte[] CreateInvoicePDF(int invoiceNumber)
+        public async Task<byte[]> CreateInvoicePDF(int invoiceNumber)
         {
-            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
-            return _invoiceService.GenerateInvoicePdf(order).Result; 
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.InvoiceNumber == invoiceNumber);
+            if (order == null)
+            {
+                throw new Exception("Zamówienie o podanym numerze faktury nie zostało znalezione.");
+            }
+
+            return await _invoiceService.GenerateInvoicePdf(order);
+        }
+        public async Task<byte[]> CreateInvoices(DownloadDto dto)
+        {
+            var orders = await _dbContext.Orders.FirstOrDefaultAsync(o => o.InvoiceIssueDate.Value.Month == dto.Month && o.InvoiceIssueDate.Value.Year == dto.Year);
+            if (orders == null)
+            {
+                throw new Exception("Zamówienie o podanym numerze faktury nie zostało znalezione.");
+            }
+
+            return await _invoiceService.GenerateInvoicePdf(orders);
         }
     }
 }

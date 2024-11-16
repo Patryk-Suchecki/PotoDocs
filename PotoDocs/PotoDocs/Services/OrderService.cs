@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 
 namespace PotoDocs.Services;
 
@@ -134,14 +133,33 @@ public class OrderService
         }
         return outputPath;
     }
-    public async Task<string> DownloadFile(string fileName)
+    public async Task<string> DownloadFile(int invoiceNumber, string fileName)
     {
         string archiveFileName = $"{fileName}";
         string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
 
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync($"api/order/pdf/{fileName}");
+        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files/pdf/{fileName}");
+        if (response.IsSuccessStatusCode)
+        {
+            var rarData = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(outputPath, rarData);
+        }
+        else
+        {
+            var statusCode = response.StatusCode;
+        }
+        return outputPath;
+    }
+    public async Task<string> DownloadInvoice(int invoiceNumber)
+    {
+        string archiveFileName = $"FAKTURA {FormatInvoiceNumber(invoiceNumber)}.pdf";
+        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
+
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files/invoice");
         if (response.IsSuccessStatusCode)
         {
             var rarData = await response.Content.ReadAsByteArrayAsync();
@@ -168,7 +186,7 @@ public class OrderService
                 multipartFormContent.Add(streamContent, "files", Path.GetFileName(filePath));
             }
 
-            var response = await httpClient.PostAsync($"api/order/{invoiceNumber}/cmr", multipartFormContent);
+            var response = await httpClient.PostAsync($"api/orders/{invoiceNumber}/files/cmr", multipartFormContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -187,30 +205,20 @@ public class OrderService
             }
         }
     }
-
-    public async Task RemoveCMR(string pdfname)
+    public async Task RemoveCMR(int invoiceNumber, string pdfname)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.DeleteAsync($"api/order/pdf/{pdfname}");
+        var response = await httpClient.DeleteAsync($"api/orders/{invoiceNumber}/files/cmr/{pdfname}");
     }
-    public async Task<string> DownloadInvoice(int invoiceNumber)
+    public string FormatInvoiceNumber(int invoiceNumber)
     {
-        string archiveFileName = $"{invoiceNumber}.pdf";
-        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
+        string invoiceNumberStr = invoiceNumber.ToString("D7");
 
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+        string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
+        string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
+        string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
 
-        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files");
-        if (response.IsSuccessStatusCode)
-        {
-            var rarData = await response.Content.ReadAsByteArrayAsync();
-            await File.WriteAllBytesAsync(outputPath, rarData);
-        }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
-        return outputPath;
+        return $"FAKTURA {numberPart}-{monthPart}-{yearPart}";
     }
 }
