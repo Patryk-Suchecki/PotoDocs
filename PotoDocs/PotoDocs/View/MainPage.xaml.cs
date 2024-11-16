@@ -16,7 +16,7 @@ public partial class MainPage : ContentPage
         base.OnNavigatedTo(args);
         if (await _authService.IsUserAuthenticated())
         {
-            await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
+            await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
         }
         else
         {
