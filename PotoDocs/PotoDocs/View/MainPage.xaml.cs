@@ -13,14 +13,14 @@ public partial class MainPage : ContentPage
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
-        base.OnNavigatedTo(args);
-        if (await _authService.IsUserAuthenticated())
-        {
-            await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
-        }
-        else
-        {
-            await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
-        }
+        //base.OnNavigatedTo(args);
+        //if (await _authService.IsUserAuthenticated())
+        //{
+        //    await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
+        //}
+        //else
+        //{
+        //    await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
+        //}
     }
 }
