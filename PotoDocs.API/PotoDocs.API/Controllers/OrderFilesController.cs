@@ -4,7 +4,7 @@ using PotoDocs.API.Entities;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 
-[Route("api/orders/{invoiceNumber}/files")]
+[Route("api/orders/")]
 [ApiController]
 [Authorize(Roles = "admin,manager")]
 public class OrderFilesController : ControllerBase
@@ -16,21 +16,21 @@ public class OrderFilesController : ControllerBase
         _orderService = orderService;
     }
 
-    [HttpPost("cmr")]
+    [HttpPost("{invoiceNumber}/cmr")]
     public async Task<ActionResult> UploadCMR(int invoiceNumber, [FromForm] List<IFormFile> files)
     {
         var response = await _orderService.AddCMRFileAsync(files, invoiceNumber);
         return StatusCode(response.StatusCode, response);
     }
 
-    [HttpDelete("cmr/{fileName}")]
+    [HttpDelete("{invoiceNumber}/cmr/{fileName}")]
     public ActionResult DeleteCMR(string fileName)
     {
         _orderService.DeleteCMR(fileName);
         return NoContent();
     }
 
-    [HttpGet("pdf/{fileName}")]
+    [HttpGet("{invoiceNumber}/pdf/{fileName}")]
     public IActionResult GetPdf(string fileName)
     {
         if (fileName.Contains("..") || Path.GetInvalidFileNameChars().Any(fileName.Contains))
@@ -50,7 +50,7 @@ public class OrderFilesController : ControllerBase
         return File(fileStream, mimeType, fileName);
     }
 
-    [HttpGet("invoice")]
+    [HttpGet("{invoiceNumber}/invoice")]
     public async Task<IActionResult> GetInvoiceAsync(int invoiceNumber)
     {
         var pdfData = await _orderService.CreateInvoicePDF(invoiceNumber);

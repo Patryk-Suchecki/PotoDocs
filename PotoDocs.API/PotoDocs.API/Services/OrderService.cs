@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
+using System.IO.Compression;
 using System.Net;
 
 namespace PotoDocs.API.Services
@@ -177,13 +178,59 @@ namespace PotoDocs.API.Services
         }
         public async Task<byte[]> CreateInvoices(DownloadDto dto)
         {
-            var orders = await _dbContext.Orders.FirstOrDefaultAsync(o => o.InvoiceIssueDate.Value.Month == dto.Month && o.InvoiceIssueDate.Value.Year == dto.Year);
-            if (orders == null)
+            var orders = await _dbContext.Orders
+                .Where(o => o.InvoiceIssueDate.Value.Month == dto.Month && o.InvoiceIssueDate.Value.Year == dto.Year)
+                .ToListAsync();
+
+            if (orders == null || orders.Count == 0)
             {
-                throw new Exception("Zamówienie o podanym numerze faktury nie zostało znalezione.");
+                throw new Exception("Nie znaleziono żadnych zamówień dla podanego miesiąca i roku.");
             }
 
-            return await _invoiceService.GenerateInvoicePdf(orders);
+            string tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDirectory);
+
+            try
+            {
+                foreach (var order in orders)
+                {
+                    var pdfData = await _invoiceService.GenerateInvoicePdf(order);
+
+                    string fileName = $"FAKTURA_{FormatInvoiceNumber((int)order.InvoiceNumber)}.pdf";
+                    string filePath = Path.Combine(tempDirectory, fileName);
+
+                    await File.WriteAllBytesAsync(filePath, pdfData);
+                }
+
+                string zipFilePath = Path.Combine(Path.GetTempPath(), $"Faktury_{dto.Month:D2}-{dto.Year}.zip");
+
+                if (File.Exists(zipFilePath))
+                {
+                    File.Delete(zipFilePath);
+                }
+
+                ZipFile.CreateFromDirectory(tempDirectory, zipFilePath);
+
+                return await File.ReadAllBytesAsync(zipFilePath);
+            }
+            finally
+            {
+                if (Directory.Exists(tempDirectory))
+                {
+                    Directory.Delete(tempDirectory, true);
+                }
+            }
         }
+        private string FormatInvoiceNumber(int invoiceNumber)
+        {
+            string invoiceNumberStr = invoiceNumber.ToString("D7");
+
+            string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
+            string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
+            string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
+
+            return $"FAKTURA {numberPart}-{monthPart}-{yearPart}";
+        }
+
     }
 }

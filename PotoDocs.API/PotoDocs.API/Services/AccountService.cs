@@ -20,23 +20,26 @@ public interface IAccountService
     void ChangePassword(ChangePasswordDto dto);
     ApiResponse<List<UserDto>> GetAll();
     Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto dto, CancellationToken cancellationToken = default);
+    ApiResponse<List<string>> GetRoles();
 }
 
 public class AccountService : IAccountService
 {
     private readonly AuthenticationSettings _authSettings;
     private readonly PotodocsDbContext _context;
+    private readonly IEmailService _emailService;
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher<User> _hasher;
     private readonly IMapper _mapper;
 
-    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings, IMapper mapper, ITokenService tokenService)
+    public AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, AuthenticationSettings authenticationSettings, IMapper mapper, ITokenService tokenService, IEmailService emailService)
     {
         _authSettings = authenticationSettings;
         _context = context;
         _hasher = hasher;
         _mapper = mapper;
         _tokenService = tokenService;
+        _emailService = emailService;
     }
     public void RegisterUser(UserDto dto)
     {
@@ -45,10 +48,19 @@ public class AccountService : IAccountService
             Email = dto.Email,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
-            Role = dto.Role
+            Role = _context.Roles.FirstOrDefault(r => r.Name == dto.Role)
         };
         string randomPassword = GenerateRandomPassword(12);
-
+        _emailService.SendEmail(dto.Email, "Rejestracja PotoDocs", $"Witaj, Twoje dane do logowania to:\nEmail: {dto.Email}\nHasło: {randomPassword}", $@"
+        <html>
+            <body>
+                <h1>Witaj!</h1>
+                <p>Twoje dane do logowania:</p>
+                <p><b>Email:</b> {dto.Email}</p>
+                <p><b>Hasło:</b> {randomPassword}</p>
+                <p>Prosimy o zachowanie tych informacji w bezpiecznym miejscu.</p>
+            </body>
+        </html>");
         var hashedPassword = _hasher.HashPassword(newUser, randomPassword);
         newUser.PasswordHash = hashedPassword;
         _context.Users.Add(newUser);
@@ -89,13 +101,13 @@ public class AccountService : IAccountService
     }
     public ApiResponse<List<UserDto>> GetAll()
     {
-        var users = _context.Users.Include(u => u.Role).ToList();
+        var users = _context.Users.Include(u => u.Role.Name).ToList();
         var usersDto = _mapper.Map<List<UserDto>>(users);
         return ApiResponse<List<UserDto>>.Success(usersDto);
     }
     public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto dto, CancellationToken cancellationToken = default)
     {
-        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Username);
+        var user = _context.Users.Include(u => u.Role.Name).FirstOrDefault(u => u.Email == dto.Username);
 
         if (user is null)
         {
@@ -111,9 +123,15 @@ public class AccountService : IAccountService
         var jwt = _tokenService.GenerateJWT(user);
         var authResponse = new LoginResponseDto
         {
-            Role = user.Role,
+            Role = user.Role.Name,
             Token = jwt
         };
         return ApiResponse<LoginResponseDto>.Success(authResponse);
+    }
+
+    public ApiResponse<List<string>> GetRoles()
+    {
+        var roleNames = _context.Roles.Select(role => role.Name).ToList();
+        return ApiResponse<List<string>>.Success(roleNames);
     }
 }

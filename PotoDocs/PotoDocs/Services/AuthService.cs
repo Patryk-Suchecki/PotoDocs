@@ -1,6 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using iTextSharp.text.pdf;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace PotoDocs.Services;
 
@@ -10,6 +12,8 @@ public interface IAuthService
     Task<string?> LoginAsync(LoginRequestDto dto);
     Task<LoginResponseDto?> GetAuthenticatedUserAsync();
     Task<HttpClient> GetAuthenticatedHttpClientAsync();
+    Task RegisterAsync(UserDto dto);
+    Task<IEnumerable<string>> GetRoles();
     void Logout();
 }
 
@@ -87,6 +91,35 @@ public class AuthService : IAuthService
         var expiration = jwtToken.ValidTo;
 
         return expiration < DateTime.UtcNow;
+    }
+    public async Task RegisterAsync(UserDto dto)
+    {
+        var httpClient = await GetAuthenticatedHttpClientAsync();
+
+        var jsonContent = new StringContent(
+            JsonSerializer.Serialize(dto),
+            Encoding.UTF8,
+            "application/json"
+        );
+        var response = await httpClient.PostAsync("api/account/register", jsonContent);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Rejestracja nie powiodła się: {response.StatusCode}, {errorContent}");
+        }
+    }
+    public async Task<IEnumerable<string>> GetRoles()
+    {
+        var httpClient = await GetAuthenticatedHttpClientAsync();
+        var response = await httpClient.GetAsync("api/account/all/roles");
+
+        var content = await response.Content.ReadAsStringAsync();
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<string>>>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        return apiResponse.Data;
     }
 }
 

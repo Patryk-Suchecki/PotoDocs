@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using PotoDocs.Services;
 using PotoDocs.View;
+using System.Net.Security;
 
 namespace PotoDocs;
 
@@ -18,7 +19,6 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
         builder.Services.AddCustomApiHttpClient();
-
         builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
         builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
         builder.Services.AddSingleton<IMap>(Map.Default);
@@ -79,7 +79,7 @@ public static class MauiProgramExtensions
         {
             var baseAddress = DeviceInfo.Platform == DevicePlatform.Android
                 ? "https://10.0.2.2:7157" // Android (emulator)
-                : "https://localhost:7157"; // Inne platformy
+                : "http://localhost:44386"; // Inne platformy
 
             httpClient.BaseAddress = new Uri(baseAddress);
         })
@@ -93,3 +93,6 @@ public static class MauiProgramExtensions
         return services;
     }
 }
+
+
+

@@ -116,22 +116,22 @@ public class OrderService
     }
     public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto)
     {
-        string archiveFileName = $"Zlecenia_{downloadRequestDto.Month}-{downloadRequestDto.Year}.rar";
-        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
-
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.GetAsync($"invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
         if (response.IsSuccessStatusCode)
         {
             var rarData = await response.Content.ReadAsByteArrayAsync();
+            string fileName = response.Content.Headers.ContentDisposition.FileName.Trim('"');
+            string outputPath = Path.Combine(FileSystem.CacheDirectory, fileName);
             await File.WriteAllBytesAsync(outputPath, rarData);
+            return outputPath;
         }
         else
         {
             var statusCode = response.StatusCode;
         }
-        return outputPath;
+        return null;
     }
     public async Task<string> DownloadFile(int invoiceNumber, string fileName)
     {
@@ -140,7 +140,7 @@ public class OrderService
 
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files/pdf/{fileName}");
+        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/pdf/{fileName}");
         if (response.IsSuccessStatusCode)
         {
             var rarData = await response.Content.ReadAsByteArrayAsync();
@@ -154,22 +154,23 @@ public class OrderService
     }
     public async Task<string> DownloadInvoice(int invoiceNumber)
     {
-        string archiveFileName = $"FAKTURA {FormatInvoiceNumber(invoiceNumber)}.pdf";
-        string outputPath = Path.Combine(FileSystem.CacheDirectory, archiveFileName);
-
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/files/invoice");
+        var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/invoice");
         if (response.IsSuccessStatusCode)
         {
+
             var rarData = await response.Content.ReadAsByteArrayAsync();
+            string fileName = response.Content.Headers.ContentDisposition.FileName.Trim('"');
+            string outputPath = Path.Combine(FileSystem.CacheDirectory, fileName);
             await File.WriteAllBytesAsync(outputPath, rarData);
+            return outputPath;
         }
         else
         {
             var statusCode = response.StatusCode;
         }
-        return outputPath;
+        return null;
     }
     public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
     {
@@ -186,7 +187,7 @@ public class OrderService
                 multipartFormContent.Add(streamContent, "files", Path.GetFileName(filePath));
             }
 
-            var response = await httpClient.PostAsync($"api/orders/{invoiceNumber}/files/cmr", multipartFormContent);
+            var response = await httpClient.PostAsync($"api/orders/{invoiceNumber}/cmr", multipartFormContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -209,16 +210,6 @@ public class OrderService
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.DeleteAsync($"api/orders/{invoiceNumber}/files/cmr/{pdfname}");
-    }
-    public string FormatInvoiceNumber(int invoiceNumber)
-    {
-        string invoiceNumberStr = invoiceNumber.ToString("D7");
-
-        string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
-        string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
-        string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
-
-        return $"FAKTURA {numberPart}-{monthPart}-{yearPart}";
+        var response = await httpClient.DeleteAsync($"api/orders/{invoiceNumber}/cmr/{pdfname}");
     }
 }

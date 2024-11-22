@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
@@ -45,6 +46,14 @@ public class AccountController : ControllerBase
     public ActionResult<IEnumerable<UserDto>> GetUsers()
     {
         var response = _accountService.GetAll();
+        return StatusCode(response.StatusCode, response);
+    }
+    [HttpGet("all/roles")]
+    [Authorize]
+    public ActionResult<IEnumerable<string>> GetRoles()
+    {
+        var response = _accountService.GetRoles();
+
         return StatusCode(response.StatusCode, response);
     }
 }

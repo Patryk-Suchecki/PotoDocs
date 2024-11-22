@@ -1,5 +1,4 @@
 ﻿using PotoDocs.Services;
-using PotoDocs.View;
 
 namespace PotoDocs.ViewModel;
 
@@ -9,7 +8,13 @@ public partial class DriverFormViewModel : BaseViewModel
 {
     [ObservableProperty]
     UserDto userDto;
-    private readonly IHttpClientFactory _httpClientFactory;
+
+    [ObservableProperty]
+    bool isRefreshing;
+
+    [ObservableProperty]
+    private ObservableCollection<string> roles;
+
     private readonly IAuthService _authService;
 
     string pageTitle;
@@ -22,21 +27,74 @@ public partial class DriverFormViewModel : BaseViewModel
             Title = pageTitle;
         }
     }
-    public DriverFormViewModel(IHttpClientFactory httpClientFactory, IAuthService authService)
+
+    public DriverFormViewModel(IAuthService authService)
     {
         _authService = authService;
+        GetRoles();
     }
+
     [RelayCommand]
-    async Task SaveDriver(UserDto driver)
+    public async Task GetRoles()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var roles = await _authService.GetRoles();
+            Roles.Clear();
+            foreach (var role in roles)
+            {
+                Roles.Add(role);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Unable to get roles: {ex.Message}");
+            await Shell.Current.DisplayAlert("Error!", "Nie udało się pobrać ról. Spróbuj ponownie.", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+            IsRefreshing = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task SaveDriver()
+    {
+        if (UserDto == null)
+        {
+            await Shell.Current.DisplayAlert("Error", "Brak danych kierowcy do zapisania.", "OK");
+            return;
+        }
+
+        try
+        {
+            await _authService.RegisterAsync(UserDto);
+            await Shell.Current.DisplayAlert("Sukces", "Kierowca został zapisany.", "OK");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Unable to save driver: {ex.Message}");
+            await Shell.Current.DisplayAlert("Error", "Nie udało się zapisać kierowcy.", "OK");
+        }
+    }
+
+    [RelayCommand]
+    public Task GenerateNewPassword(UserDto driver)
     {
         if (driver == null)
-            return;
-    }
-    [RelayCommand]
-    async Task GenerateNewPassword(UserDto driver)
-    {
-        if (driver == null)
-            return;
+        {
+            Debug.WriteLine("Driver is null. Cannot generate a new password.");
+            return Task.CompletedTask;
+        }
+
+        // Tu zaimplementuj logikę generowania hasła
+        Debug.WriteLine($"New password for {driver.FirstAndLastName} has been generated.");
+        return Task.CompletedTask;
     }
 }
-
