@@ -6,6 +6,14 @@
        FlyoutBackgroundColor="#A11717"
        FlyoutWidth="250">
 
+    <Shell.TitleView>
+        <Image Source="logo.png" 
+            WidthRequest="150" 
+            HorizontalOptions="End" 
+            Margin="0,0,25,0"
+            VerticalOptions="End"/>
+    </Shell.TitleView>
+    
     <Shell.ItemTemplate>
         <DataTemplate>
             <Grid Padding="12">
@@ -24,10 +32,11 @@
 
     <FlyoutItem Title="Menu" FlyoutDisplayOptions="AsMultipleItems">
         <ShellContent 
-        Title="Strona główna"
+        Title="Menu główne"
         Icon="icon_home.png"
         ContentTemplate="{DataTemplate view:MainPage}" 
-        Route="MainPage" />
+        Route="MainPage">
+        </ShellContent>
 
         <ShellContent
         Title="Nowe zlecenie"

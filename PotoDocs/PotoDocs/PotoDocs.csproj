@@ -70,6 +70,7 @@
 	  <None Remove="Resources\Images\caranim.gif" />
 	  <None Remove="Resources\Images\icon_all.png" />
 	  <None Remove="Resources\Images\icon_driver.png" />
+	  <None Remove="Resources\Images\icon_hamburger.png" />
 	  <None Remove="Resources\Images\icon_logout.png" />
 	  <None Remove="Resources\Images\icon_neworder.png" />
 	  <None Remove="Resources\Images\icon_settings.png" />
