@@ -10,6 +10,7 @@ public partial class LoginPage : ContentPage
     {
         InitializeComponent();
         _authService = authService;
+        _authService.Logout();
     }
 
     private async void OnLoginClicked(object sender, EventArgs e)

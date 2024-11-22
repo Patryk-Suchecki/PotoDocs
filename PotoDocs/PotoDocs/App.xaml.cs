@@ -9,9 +9,5 @@ public partial class App : Application
     {
         InitializeComponent();
         MainPage = new AppShell();
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-        {
-            System.Diagnostics.Debug.WriteLine($"Unhandled exception: {e.ExceptionObject}");
-        };
     }
 }

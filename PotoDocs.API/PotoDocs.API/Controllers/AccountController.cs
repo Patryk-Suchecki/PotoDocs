@@ -23,8 +23,8 @@ public class AccountController : ControllerBase
     [Authorize(Roles = "admin,manager")]
     public ActionResult RegisterUser([FromBody]UserDto dto)
     {
-        _accountService.RegisterUser(dto);
-        return Ok();
+        var response = _accountService.RegisterUser(dto);
+        return StatusCode(response.StatusCode, response);
     }
 
     [HttpPost("login")]
@@ -38,8 +38,8 @@ public class AccountController : ControllerBase
     [Authorize]
     public ActionResult ChangePassword([FromBody] ChangePasswordDto dto)
     {
-        _accountService.ChangePassword(dto);
-        return Ok();
+        var response = _accountService.ChangePassword(dto);
+        return StatusCode(response.StatusCode, response);
     }
     [HttpGet("all")]
     [Authorize]

@@ -12,8 +12,7 @@ public partial class DriverFormViewModel : BaseViewModel
     [ObservableProperty]
     bool isRefreshing;
 
-    [ObservableProperty]
-    private ObservableCollection<string> roles;
+    public ObservableCollection<string> Roles { get; } = new ();
 
     private readonly IAuthService _authService;
 

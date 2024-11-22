@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Mail;
-using Azure;
+﻿using Azure;
 using Azure.Communication.Email;
 
 public interface IEmailService
@@ -38,10 +35,7 @@ public class EmailService : IEmailService
                 PlainText = plainTextContent,
                 Html = htmlContent
             },
-            recipients: new EmailRecipients(
-        new List<EmailAddress> { new EmailAddress(toEmail) }
-        )
-        );
+            recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(toEmail) }));
 
         try
         {
