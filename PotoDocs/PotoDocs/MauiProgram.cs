@@ -17,16 +17,13 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
-#if ANDROID
+//        builder.ConfigureMauiHandlers(handlers =>
+//        {
+//#if WINDOWS
+//    handlers.AddHandler(typeof(SwipeView), typeof(CustomSwipeViewHandler));
+//#endif
+//        });
         builder.Services.AddCustomApiHttpClient();
-#else
-        builder.Services.AddHttpClient(AppConstants.HttpClientName, httpClient =>
-        {
-            var baseAddress = "https://localhost:7157";
-
-            httpClient.BaseAddress = new Uri(baseAddress);
-        });
-#endif
         builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
         builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
         builder.Services.AddSingleton<IMap>(Map.Default);
@@ -70,6 +67,14 @@ public static class MauiProgramExtensions
 {
     public static IServiceCollection AddCustomApiHttpClient(this IServiceCollection services)
     {
+#if WINDOWS
+        services.AddHttpClient(AppConstants.HttpClientName, httpClient =>
+        {
+            var baseAddress = "https://localhost:7157";
+
+            httpClient.BaseAddress = new Uri(baseAddress);
+        });
+#else
         // Rejestracja platformowego handlera HTTP
         services.AddSingleton<IPlatformHttpMessageHandler>(sp =>
         {
@@ -97,6 +102,8 @@ public static class MauiProgramExtensions
             var platformHttpMessageHandler = sp.GetRequiredService<IPlatformHttpMessageHandler>();
             return platformHttpMessageHandler.GetHttpMessageHandler();
         });
+#endif
+
 
         return services;
     }

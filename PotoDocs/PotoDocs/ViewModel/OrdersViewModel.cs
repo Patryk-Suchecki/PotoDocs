@@ -156,5 +156,40 @@ public partial class OrdersViewModel : BaseViewModel
         });
         IsBusy = false;
     }
+    [RelayCommand]
+    async Task ShowContextMenu(OrderDto order)
+    {
+        if (order == null)
+            return;
+
+        // Opcje menu
+        var actions = new List<string>
+    {
+        "Edytuj",
+        "Usuń",
+        "Pobierz fakturę"
+    };
+
+        // Wyświetlenie menu kontekstowego
+        var action = await Shell.Current.DisplayActionSheet(
+            $"Opcje dla {order.CompanyName}",
+            "Anuluj",
+            null,
+            actions.ToArray());
+
+        // Obsługa wybranej opcji
+        if (action == "Edytuj")
+        {
+            await GoToEditOrder(order);
+        }
+        else if (action == "Usuń")
+        {
+            await DeleteOrder(order);
+        }
+        else if (action == "Pobierz fakturę")
+        {
+            await DownloadInvoice(order);
+        }
+    }
 }
 

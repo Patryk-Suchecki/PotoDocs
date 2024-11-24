@@ -50,7 +50,7 @@ public class AuthService : IAuthService
     public async Task<string?> LoginAsync(LoginRequestDto dto)
     {
         var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
-        var response = await httpClient.PostAsJsonAsync< LoginRequestDto> ("api/account/login", dto);
+        var response = await httpClient.PostAsJsonAsync<LoginRequestDto> ("api/account/login", dto);
 
         var content = await response.Content.ReadAsStringAsync();
         ApiResponse<LoginResponseDto> authResponse =
