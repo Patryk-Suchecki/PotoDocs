@@ -19,13 +19,14 @@ public class OrderMappingProfile : Profile
                 LastName = src.Driver.LastName
             } : null));
 
-
-
-
         CreateMap<OrderDto, Order>()
             .ForMember(dest => dest.Driver, opt => opt.Ignore());
 
-        CreateMap<User, UserDto>();
-        CreateMap<UserDto, User>();
+
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.Name));
+
+        CreateMap<UserDto, User>()
+                   .ForMember(dest => dest.Role, opt => opt.Ignore());
     }
 }

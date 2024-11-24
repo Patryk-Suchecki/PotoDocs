@@ -1,4 +1,4 @@
-﻿namespace PotoDocs.Shared.Models;
+﻿namespace PotoDocs.API.Entities;
 
 public class Role
 {

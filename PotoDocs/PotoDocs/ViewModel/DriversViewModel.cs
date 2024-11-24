@@ -51,7 +51,7 @@ public partial class DriversViewModel : BaseViewModel
     {
         await Shell.Current.GoToAsync(nameof(DriverFormPage), true, new Dictionary<string, object>
         {
-            {"User", new UserDto() },
+            {"UserDto", new UserDto() },
             {"title", "Dodaj kierowce" }
         });
     }
