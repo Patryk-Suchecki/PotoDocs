@@ -3,10 +3,68 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PotoDocs"
              x:Class="PotoDocs.View.MainPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+    <VerticalStackLayout Padding="10" Spacing="10">
+
+        <!-- Nagłówek -->
+        <Grid ColumnDefinitions="*,Auto" Margin="0,35,0,0">
+            <Label Text="Ostatnie zlecenia"
+                   FontSize="20"
+                   FontFamily="RobotoMedium"
+                   FontAttributes="Bold"
+                   TextColor="#8C0000"
+                   HorizontalOptions="Start" />
+            <Button Text="Dodaj zlecenie"
+                    BackgroundColor="#B20101"
+                    TextColor="White"
+                    FontFamily="RobotoMedium"
+                    FontSize="18"
+                    CornerRadius="10"
+                    HorizontalOptions="End"
+                    Padding="10,5"
+                    WidthRequest="158"
+                    HeightRequest="38"/>
+        </Grid>
+
+        <!-- Lista zleceń -->
+        <CollectionView ItemsSource="{Binding Orders}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                            <!-- Dane po lewej stronie -->
+                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                <Label Text="Mlekovita sp.z.o.o." FontAttributes="Bold" FontSize="16" />
+                                <Label Text="Załadunek 10.09.2024" FontSize="14" TextColor="Gray" />
+                                <Label Text="5000 EUR" FontSize="14" />
+                            </VerticalStackLayout>
+
+                            <!-- Dane po prawej stronie -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
+                                <Label Text="Jakub Potoniec" FontSize="14" />
+                                <Label Text="Zakończono" FontSize="14" TextColor="Green" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Przycisk "Pokaż więcej" -->
+        <Button Text="Pokaż więcej"
+                TextColor="White"
+                FontFamily="RobotoBold"
+                FontSize="20"
+                CornerRadius="15"
+                WidthRequest="200"
+                HeightRequest="48"
+                HorizontalOptions="Center"
+                Padding="10,5">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="1,0">
+                    <GradientStop Color="#8C0000" Offset="0.0" />
+                    <GradientStop Color="#BC0000" Offset="1.0" />
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
     </VerticalStackLayout>
 </ContentPage>
