@@ -1,61 +1,62 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:PotoDocs"
-             x:Class="PotoDocs.View.LoginPage">
+             xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+             x:Class="PotoDocs.View.LoginPage"
+             x:DataType="viewmodel:LoginViewModel">
+
     <ContentPage.BackgroundImageSource>
         <FileImageSource File="bg_login.png" />
     </ContentPage.BackgroundImageSource>
-    
-    <Grid>
-        <!-- Wewnętrzny układ dla elementów logowania -->
-        <StackLayout Padding="30" HorizontalOptions="Center" Spacing="30">
 
-            <!-- Logo -->
+    <Grid>
+        <StackLayout Padding="30" HorizontalOptions="Center" Spacing="30">
             <Image Source="logo.png" 
                    WidthRequest="300" 
                    HorizontalOptions="Center" 
                    Margin="0,45,0,0"
                    VerticalOptions="End"/>
 
-            <!-- Pola tekstowe (Email i Hasło) -->
-            <Entry x:Name="UsernameEntry" Placeholder="E-mail..." 
+            <Entry Placeholder="E-mail..." 
                    FontFamily="RobotoItalic"
                    FontSize="22"
-                   PlaceholderColor="#838383" TextColor="Black" 
+                   PlaceholderColor="#838383" 
+                   TextColor="Black" 
                    BackgroundColor="Transparent" 
                    HorizontalOptions="FillAndExpand"
-                   Margin="0,60,0,10" />
+                   Text="{Binding LoginDto.Email}" />
 
-            <Entry x:Name="PasswordEntry" Placeholder="Hasło..." 
+            <Entry Placeholder="Hasło..." 
                    FontFamily="RobotoItalic"
                    FontSize="22"
-                   IsPassword="True" PlaceholderColor="#838383" 
-                   TextColor="Black" BackgroundColor="Transparent" 
+                   IsPassword="True" 
+                   PlaceholderColor="#838383" 
+                   TextColor="Black" 
+                   BackgroundColor="Transparent" 
                    HorizontalOptions="FillAndExpand"
-                   Margin="0,0,0,10" />
-
-            <!-- Przycisk Logowania -->
-            <Button Text="Logowanie" Clicked="OnLoginClicked"
+                   Text="{Binding LoginDto.Password}" />
+            
+            <!-- Komunikat błędu -->
+            <Label Text="{Binding ErrorText}" 
+                   TextColor="Red" 
+                   HorizontalOptions="Center" 
+                   FontAttributes="Italic" />
+            
+            <Button Text="Logowanie" 
                     FontFamily="RobotoBold"
                     FontSize="18"
-                    CornerRadius="15" WidthRequest="200" HeightRequest="50"
-                    HorizontalOptions="Center" VerticalOptions="Center" >
+                    CornerRadius="15" 
+                    WidthRequest="200" 
+                    HeightRequest="50"
+                    Command="{Binding LoginCommand}">
                 <Button.Background>
                     <LinearGradientBrush EndPoint="1,0">
                         <GradientStop Color="#8C0000" Offset="0.0" />
                         <GradientStop Color="#BC0000" Offset="1.0" />
                     </LinearGradientBrush>
-                </Button.Background> 
+                </Button.Background>
             </Button>
 
             <Image Source="caranim.gif" WidthRequest="250" HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,0" IsAnimationPlaying="True"/>
-
-            <!-- Komunikat błędu -->
-            <Label x:Name="ResponseLabel" Text="" TextColor="Red" 
-                   HorizontalOptions="Center" />
-
-            
         </StackLayout>
     </Grid>
 </ContentPage>

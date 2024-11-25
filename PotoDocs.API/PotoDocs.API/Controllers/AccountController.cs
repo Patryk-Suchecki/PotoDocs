@@ -30,6 +30,10 @@ public class AccountController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto, CancellationToken cancellationToken = default)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         var response = await _accountService.LoginAsync(dto, cancellationToken);
         return StatusCode(response.StatusCode, response);
     }

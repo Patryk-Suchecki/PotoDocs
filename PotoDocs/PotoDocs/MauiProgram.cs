@@ -27,12 +27,12 @@ public static class MauiProgram
         builder.Services.AddSingleton<IMap>(Map.Default);
 
         builder.Services.AddSingleton<IAuthService, AuthService>();
-
         builder.Services.AddTransient<OrderService>();
-
         builder.Services.AddTransient<UserService>();
 
         builder.Services.AddSingleton<MainPage>();
+
+        builder.Services.AddSingleton<LoginViewModel>();
         builder.Services.AddTransient<LoginPage>();
 
         builder.Services.AddSingleton<OrdersViewModel>();

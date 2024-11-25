@@ -10,6 +10,6 @@ public class LoginDto
 
 
     [Required(ErrorMessage = "Hasło jest wymagane.")]
-    [StringLength(50, MinimumLength = 8, ErrorMessage = "Hasło musi mieć od 8 do 50 znaków.")]
+    [StringLength(50, MinimumLength = 1, ErrorMessage = "Hasło musi mieć od 8 do 50 znaków.")]
     public string Password { get; set; }
 }
