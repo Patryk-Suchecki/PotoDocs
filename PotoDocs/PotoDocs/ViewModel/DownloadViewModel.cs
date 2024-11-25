@@ -4,7 +4,7 @@ namespace PotoDocs.ViewModel;
 
 public partial class DownloadViewModel : BaseViewModel
 {
-    OrderService transportOrderService;
+    OrderService orderService;
     public List<string> Months { get; } = new List<string>
         {
             "Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
@@ -15,16 +15,16 @@ public partial class DownloadViewModel : BaseViewModel
     [ObservableProperty]
     DownloadDto downloadDto;
 
-    public DownloadViewModel(OrderService transportOrderService)
+    public DownloadViewModel(OrderService orderService)
     {
-        this.transportOrderService = transportOrderService;
+        this.orderService = orderService;
 
 
         downloadDto = new DownloadDto { Month = DateTime.Now.Month, Year = DateTime.Now.Year};
     }
 
     [RelayCommand]
-    async Task GetTransportOrdersAsync()
+    async Task GetOrdersAsync()
     {
         if (IsBusy)
             return;
@@ -33,7 +33,7 @@ public partial class DownloadViewModel : BaseViewModel
         {
             IsBusy = true;
 
-            string outputPath = await transportOrderService.DownloadInvoices(downloadDto);
+            string outputPath = await orderService.DownloadInvoices(downloadDto);
             await Share.RequestAsync(new ShareFileRequest
             {
                 Title = "Zapisz faktury",

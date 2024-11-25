@@ -23,7 +23,7 @@
 
         <!-- Przycisk do pobierania -->
         <Button Text="Pobierz zlecenia"
-                Command="{Binding GetTransportOrdersCommand}"
+                Command="{Binding GetOrdersCommand}"
                 IsEnabled="{Binding IsNotBusy}" />
 
         <!-- Wskaźnik ładowania -->

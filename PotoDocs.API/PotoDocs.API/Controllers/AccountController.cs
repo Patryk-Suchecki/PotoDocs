@@ -28,7 +28,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequestDto dto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Login(LoginDto dto, CancellationToken cancellationToken = default)
     {
         var response = await _accountService.LoginAsync(dto, cancellationToken);
         return StatusCode(response.StatusCode, response);

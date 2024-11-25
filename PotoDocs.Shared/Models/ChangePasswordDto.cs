@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PotoDocs.Shared.Models
+namespace PotoDocs.Shared.Models;
+
+public class ChangePasswordDto
 {
-    public class ChangePasswordDto
-    {
-        public string Email { get; set; }
-        public string OldPassword { get; set; }
-        public string NewPassword { get; set; }
-    }
+    [Required(ErrorMessage = "Email jest wymagany.")]
+    [EmailAddress(ErrorMessage = "Podaj poprawny adres e-mail.")]
+    public string Email { get; set; }
+
+    [Required(ErrorMessage = "Stare hasło jest wymagane.")]
+    [StringLength(50, MinimumLength = 8, ErrorMessage = "Stare hasło musi mieć od 8 do 50 znaków.")]
+    public string OldPassword { get; set; }
+
+    [Required(ErrorMessage = "Nowe hasło jest wymagane.")]
+    [StringLength(50, MinimumLength = 8, ErrorMessage = "Nowe hasło musi mieć od 8 do 50 znaków.")]
+    public string NewPassword { get; set; }
 }

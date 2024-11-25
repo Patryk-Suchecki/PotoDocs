@@ -9,7 +9,7 @@ namespace PotoDocs.Services;
 public interface IAuthService
 {
     Task<bool> IsUserAuthenticated();
-    Task<string?> LoginAsync(LoginRequestDto dto);
+    Task<string?> LoginAsync(LoginDto dto);
     Task<LoginResponseDto?> GetAuthenticatedUserAsync();
     Task<HttpClient> GetAuthenticatedHttpClientAsync();
     Task RegisterAsync(UserDto dto);
@@ -47,10 +47,10 @@ public class AuthService : IAuthService
         return null;
     }
 
-    public async Task<string?> LoginAsync(LoginRequestDto dto)
+    public async Task<string?> LoginAsync(LoginDto dto)
     {
         var httpClient = _httpClientFactory.CreateClient(AppConstants.HttpClientName);
-        var response = await httpClient.PostAsJsonAsync<LoginRequestDto> ("api/account/login", dto);
+        var response = await httpClient.PostAsJsonAsync<LoginDto> ("api/account/login", dto);
 
         var content = await response.Content.ReadAsStringAsync();
         ApiResponse<LoginResponseDto> authResponse =

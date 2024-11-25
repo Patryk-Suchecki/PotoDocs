@@ -19,7 +19,7 @@ public interface IAccountService
     ApiResponse<string> RegisterUser(UserDto dto);
     ApiResponse<string> ChangePassword(ChangePasswordDto dto);
     ApiResponse<List<UserDto>> GetAll();
-    Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto dto, CancellationToken cancellationToken = default);
+    Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default);
     ApiResponse<List<string>> GetRoles();
 }
 
@@ -104,9 +104,9 @@ public class AccountService : IAccountService
         var usersDto = _mapper.Map<List<UserDto>>(users);
         return ApiResponse<List<UserDto>>.Success(usersDto);
     }
-    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginRequestDto dto, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
     {
-        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Username);
+        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Email);
 
         if (user is null)
         {

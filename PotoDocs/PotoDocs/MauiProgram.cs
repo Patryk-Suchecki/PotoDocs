@@ -17,12 +17,6 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
-//        builder.ConfigureMauiHandlers(handlers =>
-//        {
-//#if WINDOWS
-//    handlers.AddHandler(typeof(SwipeView), typeof(CustomSwipeViewHandler));
-//#endif
-//        });
         builder.Services.AddCustomApiHttpClient();
         builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
         builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
