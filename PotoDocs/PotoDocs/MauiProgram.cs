@@ -21,24 +21,18 @@ public static class MauiProgram
                 fonts.AddFont("Roboto-Medium.ttf", "RobotoMedium");
                 fonts.AddFont("Roboto-Regular.ttf", "RobotoItalic");
             });
-//        builder.ConfigureMauiHandlers(handlers =>
-//        {
-//#if WINDOWS
-//    handlers.AddHandler(typeof(SwipeView), typeof(CustomSwipeViewHandler));
-//#endif
-//        });
         builder.Services.AddCustomApiHttpClient();
         builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
         builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
         builder.Services.AddSingleton<IMap>(Map.Default);
 
         builder.Services.AddSingleton<IAuthService, AuthService>();
-
         builder.Services.AddTransient<OrderService>();
-
         builder.Services.AddTransient<UserService>();
 
         builder.Services.AddSingleton<MainPage>();
+
+        builder.Services.AddSingleton<LoginViewModel>();
         builder.Services.AddTransient<LoginPage>();
 
         builder.Services.AddSingleton<OrdersViewModel>();

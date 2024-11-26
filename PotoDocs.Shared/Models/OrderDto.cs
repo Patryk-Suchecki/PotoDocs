@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace PotoDocs.Shared.Models;
+﻿namespace PotoDocs.Shared.Models;
 public class OrderDto
 {
 /*
@@ -48,6 +46,3 @@ public class OrderDto
     public string? PDFUrl { get; set; }
     public List<string>? CMRFiles { get; set; }
 }
-
-[JsonSerializable(typeof(List<OrderDto>))]
-internal sealed partial class OrderDtoContext : JsonSerializerContext { }
