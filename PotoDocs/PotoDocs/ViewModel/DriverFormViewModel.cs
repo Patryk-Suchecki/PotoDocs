@@ -1,4 +1,5 @@
 ﻿using PotoDocs.Services;
+using PotoDocs.View;
 
 namespace PotoDocs.ViewModel;
 
@@ -75,6 +76,7 @@ public partial class DriverFormViewModel : BaseViewModel
         {
             await _authService.RegisterAsync(UserDto);
             await Shell.Current.DisplayAlert("Sukces", "Kierowca został zapisany.", "OK");
+            await Shell.Current.GoToAsync($"//{nameof(DriversPage)}");
         }
         catch (Exception ex)
         {
