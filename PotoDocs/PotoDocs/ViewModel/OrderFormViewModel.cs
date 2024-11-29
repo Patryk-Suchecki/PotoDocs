@@ -1,4 +1,5 @@
 ﻿using PotoDocs.Services;
+using PotoDocs.View;
 
 namespace PotoDocs.ViewModel;
 
@@ -97,6 +98,7 @@ public partial class OrderFormViewModel : BaseViewModel
             return;
         IsBusy = true;
         await orderService.Update(orderDto, invoiceNumber);
+        await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
         IsBusy = false;
     }
     [RelayCommand]
