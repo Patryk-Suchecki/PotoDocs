@@ -80,7 +80,7 @@ public class OpenAIService : IOpenAIService
             }
             catch
             {
-                return null;
+                return new OrderDto();
             }
             
         }

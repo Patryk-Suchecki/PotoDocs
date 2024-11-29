@@ -47,7 +47,6 @@ builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddSingleton<IInvoiceService, InvoiceService>();
-builder.Services.AddSingleton<IPdfFormFillerService, PdfFormFillerService>();
 
 var app = builder.Build();
 

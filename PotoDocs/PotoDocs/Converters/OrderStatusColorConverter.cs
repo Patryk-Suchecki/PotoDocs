@@ -8,7 +8,7 @@ public class OrderStatusColorConverter : IValueConverter
     {
         if (value is OrderDto order)
         {
-            if (order.CMRFiles == null || order.CMRFiles.Count < 1 || !order.HasPaid)
+            if (order.CMRFiles == null || order.CMRFiles.Count < 1 || !(order.HasPaid ?? false))
             {
                 return Colors.Red;
             }

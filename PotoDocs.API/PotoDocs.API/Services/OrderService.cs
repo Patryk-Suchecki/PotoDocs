@@ -101,7 +101,7 @@ namespace PotoDocs.API.Services
 
             var extractedData = await _openAIService.GetInfoFromText(file);
             extractedData.InvoiceIssueDate = DateTime.Now;
-            extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate);
+            extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate ?? DateTime.Now);
             extractedData.PDFUrl = fileName;
 
             var order = _mapper.Map<Order>(extractedData);
@@ -120,10 +120,9 @@ namespace PotoDocs.API.Services
 
         public async Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber)
         {
+            if (files == null || files.Count == 0) return ApiResponse<OrderDto>.Failure("Nie przesłano pliku", HttpStatusCode.BadRequest);
             var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
             if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
-
-            if (files == null || files.Count == 0) return ApiResponse<OrderDto>.Failure("Nie przesłano pliku", HttpStatusCode.BadRequest);
 
             var cmrFileUrls = new List<string>();
             foreach (var file in files)

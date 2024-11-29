@@ -12,7 +12,7 @@ public class OrderStatusConverter : IValueConverter
             {
                 return "Brak CMR";
             }
-            return order.HasPaid ? "Zapłacono" : "Nie zapłacono";
+            return order.HasPaid ?? false ? "Zapłacono" : "Nie zapłacono";
         }
 
         return string.Empty;

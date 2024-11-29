@@ -7,7 +7,7 @@ public class Order
     public DateTime? InvoiceIssueDate { get; set; }
     public virtual User? Driver { get; set; }
 
-    public long? CompanyNIP { get; set; }
+    public string? CompanyNIP { get; set; }
     public string? CompanyName { get; set;}
     public string? CompanyAddress { get; set; }
     public string? CompanyCountry { get; set; }

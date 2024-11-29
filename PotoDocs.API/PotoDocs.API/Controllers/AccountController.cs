@@ -57,7 +57,6 @@ public class AccountController : ControllerBase
     public ActionResult<IEnumerable<string>> GetRoles()
     {
         var response = _accountService.GetRoles();
-
         return StatusCode(response.StatusCode, response);
     }
 }

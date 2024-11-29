@@ -1,8 +1,5 @@
-﻿using iTextSharp.text.pdf;
-using PotoDocs.Services;
+﻿using PotoDocs.Services;
 using PotoDocs.View;
-using System.Text;
-using PdfPigPage = UglyToad.PdfPig.Content.Page;
 
 namespace PotoDocs.ViewModel;
 
@@ -149,12 +146,24 @@ public partial class OrdersViewModel : BaseViewModel
             return;
         IsBusy = true;
         string outputPath = await orderService.DownloadInvoice(order.InvoiceNumber);
+#if WINDOWS
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = outputPath,
+                UseShellExecute = true // Wymagane do użycia domyślnej aplikacji w Windows
+            }
+        };
+        process.Start();
+#else
         await Share.RequestAsync(new ShareFileRequest
         {
             Title = "Zapisz pdf",
             File = new ShareFile(outputPath)
         });
         IsBusy = false;
+#endif
     }
     [RelayCommand]
     async Task ShowContextMenu(OrderDto order)
