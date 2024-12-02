@@ -9,21 +9,30 @@
         <Grid RowDefinitions="Auto,Auto,*">
             <VerticalStackLayout Grid.Row="2" Padding="10" Spacing="10">
 
+                <!-- Imię -->
                 <Label Text="Imię:" FontAttributes="Bold" />
                 <Entry Text="{Binding UserDto.FirstName, Mode=TwoWay}" Placeholder="Wprowadź imię" />
+                <Label Text="{Binding ValidationErrors[FirstName]}" TextColor="Red" FontSize="12" />
 
+                <!-- Nazwisko -->
                 <Label Text="Nazwisko:" FontAttributes="Bold" />
                 <Entry Text="{Binding UserDto.LastName, Mode=TwoWay}" Placeholder="Wprowadź nazwisko" />
+                <Label Text="{Binding ValidationErrors[LastName]}" TextColor="Red" FontSize="12" />
 
+                <!-- E-mail -->
                 <Label Text="E-mail:" FontAttributes="Bold" />
                 <Entry Text="{Binding UserDto.Email, Mode=TwoWay}" Placeholder="Wprowadź email" />
+                <Label Text="{Binding ValidationErrors[Email]}" TextColor="Red" FontSize="12" />
 
+                <!-- Rola -->
                 <Label Text="Rola:" FontAttributes="Bold" />
                 <Picker
                     Title="Wybierz rolę"
                     ItemsSource="{Binding Roles}"
                     SelectedItem="{Binding UserDto.Role, Mode=TwoWay}" />
+                <Label Text="{Binding ValidationErrors[Role]}" TextColor="Red" FontSize="12" />
 
+                <!-- Przyciski -->
                 <Button
                     Command="{Binding GenerateNewPasswordCommand}"
                     IsEnabled="{Binding IsNotBusy}"

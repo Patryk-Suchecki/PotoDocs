@@ -12,7 +12,7 @@ public partial class DriverFormViewModel : BaseViewModel
 
     [ObservableProperty]
     bool isRefreshing;
-
+    public ObservableDictionary<string, string> ValidationErrors { get; } = new();
     public ObservableCollection<string> Roles { get; } = new ();
 
     private readonly IAuthService _authService;
@@ -53,7 +53,6 @@ public partial class DriverFormViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unable to get roles: {ex.Message}");
             await Shell.Current.DisplayAlert("Error!", "Nie udało się pobrać ról. Spróbuj ponownie.", "OK");
         }
         finally
@@ -66,21 +65,16 @@ public partial class DriverFormViewModel : BaseViewModel
     [RelayCommand]
     public async Task SaveDriver()
     {
-        if (UserDto == null)
-        {
-            await Shell.Current.DisplayAlert("Error", "Brak danych kierowcy do zapisania.", "OK");
-            return;
-        }
+        if (UserDto == null) return;
 
+        if (!Validate()) return;
         try
         {
             await _authService.RegisterAsync(UserDto);
-            await Shell.Current.DisplayAlert("Sukces", "Kierowca został zapisany.", "OK");
             await Shell.Current.GoToAsync($"//{nameof(DriversPage)}");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unable to save driver: {ex.Message}");
             await Shell.Current.DisplayAlert("Error", "Nie udało się zapisać kierowcy.", "OK");
         }
     }
@@ -97,5 +91,18 @@ public partial class DriverFormViewModel : BaseViewModel
         // Tu zaimplementuj logikę generowania hasła
         Debug.WriteLine($"New password for {driver.FirstAndLastName} has been generated.");
         return Task.CompletedTask;
+    }
+    private bool Validate()
+    {
+        ValidationErrors.Clear();
+
+        var errors = ValidationHelper.ValidateToDictionary(UserDto);
+        foreach (var error in errors)
+        {
+            ValidationErrors[error.Key] = error.Value;
+        }
+
+        OnPropertyChanged(nameof(ValidationErrors));
+        return !errors.Any();
     }
 }

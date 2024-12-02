@@ -39,6 +39,10 @@ public class OrderController : ControllerBase
     [HttpPut("{id}")]
     public ActionResult Update([FromBody] OrderDto dto, [FromRoute] int id)
     {
+        if (!ModelState.IsValid)
+        {
+            BadRequest(ModelState);
+        }
         _orderService.Update(id, dto);
         return Ok();
     }

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using PotoDocs.Services;
+﻿using PotoDocs.Services;
 using PotoDocs.View;
 
 namespace PotoDocs.ViewModel;
@@ -10,9 +9,7 @@ public partial class LoginViewModel : BaseViewModel
 
     [ObservableProperty]
     private LoginDto loginDto = new LoginDto();
-
-    [ObservableProperty]
-    private string errorText;
+    public ObservableDictionary<string, string> ValidationErrors { get; } = new();
 
     public LoginViewModel(IAuthService authService)
     {
@@ -21,20 +18,12 @@ public partial class LoginViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    public async Task LoginAsync()
+    public async Task Login()
     {
-        if (IsBusy)
-            return;
+        if (IsBusy) return;
+        if (!Validate()) return;
 
         IsBusy = true;
-
-        var validationErrors = ValidateLoginDto(loginDto);
-        if (validationErrors.Any())
-        {
-            ErrorText = string.Join("\n", validationErrors);
-            IsBusy = false;
-            return;
-        }
 
         var error = await _authService.LoginAsync(loginDto);
         if (string.IsNullOrWhiteSpace(error))
@@ -43,19 +32,24 @@ public partial class LoginViewModel : BaseViewModel
         }
         else
         {
-            ErrorText = error;
+            ValidationErrors.Clear();
+            ValidationErrors["General"] = error;
+            OnPropertyChanged(nameof(ValidationErrors));
         }
 
         IsBusy = false;
     }
-
-    private List<string> ValidateLoginDto(LoginDto dto)
+    private bool Validate()
     {
-        var context = new ValidationContext(dto);
-        var results = new List<ValidationResult>();
+        ValidationErrors.Clear();
 
-        Validator.TryValidateObject(dto, context, results, true);
+        var errors = ValidationHelper.ValidateToDictionary(LoginDto);
+        foreach (var error in errors)
+        {
+            ValidationErrors[error.Key] = error.Value;
+        }
 
-        return results.Select(r => r.ErrorMessage).ToList();
+        OnPropertyChanged(nameof(ValidationErrors));
+        return !errors.Any();
     }
 }

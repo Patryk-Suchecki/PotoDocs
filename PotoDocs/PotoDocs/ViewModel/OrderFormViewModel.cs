@@ -1,5 +1,6 @@
 ﻿using PotoDocs.Services;
 using PotoDocs.View;
+using System.ComponentModel.DataAnnotations;
 
 namespace PotoDocs.ViewModel;
 
@@ -16,11 +17,14 @@ public partial class OrderFormViewModel : BaseViewModel
 
     [ObservableProperty]
     int invoiceNumber;
-    public ObservableCollection<UserDto> Users { get; } = new();
 
-    OrderService orderService;
-    UserService userService;
-    IConnectivity connectivity;
+    public ObservableCollection<UserDto> Users { get; } = new();
+    public ObservableDictionary<string, string> ValidationErrors { get; } = new();
+
+    private readonly OrderService orderService;
+    private readonly UserService userService;
+    private readonly IConnectivity connectivity;
+
     private UserDto selectedDriver;
     public UserDto SelectedDriver
     {
@@ -35,6 +39,7 @@ public partial class OrderFormViewModel : BaseViewModel
             OnPropertyChanged();
         }
     }
+
     string pageTitle;
     public string PageTitle
     {
@@ -45,45 +50,43 @@ public partial class OrderFormViewModel : BaseViewModel
             Title = pageTitle;
         }
     }
+
     public OrderFormViewModel(OrderService orderService, UserService userService, IConnectivity connectivity)
     {
         this.orderService = orderService;
         this.userService = userService;
         this.connectivity = connectivity;
 
-        GetDriversAsync();
-
+        GetAllDrivers();
     }
+
     [RelayCommand]
-    async Task GetDriversAsync()
+    async Task GetAllDrivers()
     {
-        if (IsBusy)
-            return;
+        if (IsBusy) return;
 
         try
         {
             if (connectivity.NetworkAccess != NetworkAccess.Internet)
             {
                 await Shell.Current.DisplayAlert("No connectivity!",
-                    $"Please check internet and try again.", "OK");
+                    "Please check your internet and try again.", "OK");
                 return;
             }
 
             IsBusy = true;
             var users = await userService.GetAll();
 
-
-            if (Users.Count != 0)
-                Users.Clear();
-
+            Users.Clear();
             foreach (var user in users)
+            {
                 Users.Add(user);
+            }
             SelectedDriver = OrderDto?.Driver != null ? Users.FirstOrDefault(u => u.Email == OrderDto.Driver.Email) : null;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unable to get users: {ex.Message}");
-            await Shell.Current.DisplayAlert("Error!", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Error!", "Nie udało się pobrać kierowców: " + ex.Message, "OK");
         }
         finally
         {
@@ -91,50 +94,66 @@ public partial class OrderFormViewModel : BaseViewModel
             IsRefreshing = false;
         }
     }
+
     [RelayCommand]
-    async Task SaveOrder()
+    async Task Save()
     {
-        if (orderDto == null)
-            return;
+        if (OrderDto == null) return;
+        if (!Validate()) return;
+
         IsBusy = true;
-        await orderService.Update(orderDto, invoiceNumber);
-        await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
-        IsBusy = false;
+        try
+        {
+            await orderService.Update(OrderDto, InvoiceNumber);
+            await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
+
     [RelayCommand]
     async Task NavigateToPdf(string pdfname)
     {
-        if (pdfname == null)
-            return;
+        if (pdfname == null) return;
+
         IsBusy = true;
-        string outputPath = await orderService.DownloadFile(invoiceNumber, pdfname);
-        await Share.RequestAsync(new ShareFileRequest
+        try
         {
-            Title = "Zapisz pdf",
-            File = new ShareFile(outputPath)
-        });
-        IsBusy = false;
+            string outputPath = await orderService.DownloadFile(InvoiceNumber, pdfname);
+            await Share.RequestAsync(new ShareFileRequest
+            {
+                Title = "Zapisz pdf",
+                File = new ShareFile(outputPath)
+            });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
+
     [RelayCommand]
     async Task RemoveCMR(string pdfname)
     {
         if (pdfname == null)
             return;
+
         IsBusy = true;
         try
         {
-            await orderService.RemoveCMR(orderDto.InvoiceNumber, pdfname);
-            orderDto = await orderService.GetById(invoiceNumber);
+            await orderService.RemoveCMR(OrderDto.InvoiceNumber, pdfname);
+            OrderDto = await orderService.GetById(InvoiceNumber);
             OnPropertyChanged(nameof(OrderDto));
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Błąd podczas usuwania CMR: {ex.Message}");
+            Debug.WriteLine($"Error removing CMR: {ex.Message}");
         }
         finally
         {
             IsBusy = false;
-            IsRefreshing = false;
         }
     }
 
@@ -144,12 +163,12 @@ public partial class OrderFormViewModel : BaseViewModel
         try
         {
             var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-        {
-            { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
-            { DevicePlatform.Android, new[] { "application/pdf" } },
-            { DevicePlatform.WinUI, new[] { ".pdf" } },
-            { DevicePlatform.MacCatalyst, new[] { "pdf" } }
-        });
+            {
+                { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
+                { DevicePlatform.Android, new[] { "application/pdf" } },
+                { DevicePlatform.WinUI, new[] { ".pdf" } },
+                { DevicePlatform.MacCatalyst, new[] { "pdf" } }
+            });
 
             var pickOptions = new PickOptions
             {
@@ -169,28 +188,40 @@ public partial class OrderFormViewModel : BaseViewModel
 
                 if (filePaths.Any())
                 {
-                    await orderService.UploadCMR(filePaths, invoiceNumber);
-                    orderDto = await orderService.GetById(invoiceNumber);
+                    await orderService.UploadCMR(filePaths, InvoiceNumber);
+                    OrderDto = await orderService.GetById(InvoiceNumber);
                     OnPropertyChanged(nameof(OrderDto));
                 }
                 else
                 {
-                    Debug.WriteLine("Nie wybrano żadnych plików PDF.");
+                    Debug.WriteLine("No valid PDF files selected.");
                 }
             }
             else
             {
-                Debug.WriteLine("Nie wybrano żadnych plików.");
+                Debug.WriteLine("No files selected.");
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Błąd: {ex.Message}");
+            Debug.WriteLine($"Error: {ex.Message}");
         }
         finally
         {
             IsBusy = false;
-            IsRefreshing = false;
         }
+    }
+    private bool Validate()
+    {
+        ValidationErrors.Clear();
+
+        var errors = ValidationHelper.ValidateToDictionary(OrderDto);
+        foreach (var error in errors)
+        {
+            ValidationErrors[error.Key] = error.Value;
+        }
+
+        OnPropertyChanged(nameof(ValidationErrors));
+        return !errors.Any();
     }
 }

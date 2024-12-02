@@ -27,7 +27,7 @@
         <!-- Odświeżanie -->
         <RefreshView
             Grid.ColumnSpan="2"
-            Command="{Binding GetOrdersCommand}"
+            Command="{Binding GetAllCommand}"
             IsRefreshing="{Binding IsRefreshing}">
             <CollectionView
                 ItemsSource="{Binding Orders}"
@@ -56,12 +56,12 @@
                                     <SwipeItem Text="Edytuj"
                                                BackgroundColor="LightBlue"
                                                IconImageSource="icon_edit.png"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=GoToEditOrderCommand}"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=EditCommand}"
                                                CommandParameter="{Binding .}" />
                                     <SwipeItem Text="Usuń"
                                                BackgroundColor="LightCoral"
                                                IconImageSource="icon_delete.png"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteOrderCommand}"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteCommand}"
                                                CommandParameter="{Binding .}" />
                                     <SwipeItem Text="Pobierz fakturę"
                                                BackgroundColor="LightGreen"
@@ -89,7 +89,7 @@
                                 </Grid>
                                 <!-- TapGestureRecognizer do wyświetlenia szczegółów -->
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DownloadInvoiceCommand}" CommandParameter="{Binding .}" />
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=EditCommand}" CommandParameter="{Binding .}" />
                                 </Frame.GestureRecognizers>
                             </Frame>
                         </SwipeView>
@@ -103,7 +103,7 @@
             Grid.Row="1"
             Grid.Column="0"
             Margin="8"
-            Command="{Binding GetOrdersCommand}"
+            Command="{Binding GetAllCommand}"
             IsEnabled="{Binding IsNotBusy}"
             ImageSource="icon_refresh.png"
             WidthRequest="80"
@@ -113,7 +113,7 @@
             Grid.Row="1"
             Grid.Column="1"
             Margin="8"
-            Command="{Binding GoToNewOrderCommand}"
+            Command="{Binding CreateCommand}"
             IsEnabled="{Binding IsNotBusy}"
             ImageSource="icon_add_order.png"
             WidthRequest="80"

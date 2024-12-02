@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
+using System.Net;
 
 namespace PotoDocs.API.Controllers;
 
@@ -23,6 +24,10 @@ public class AccountController : ControllerBase
     [Authorize(Roles = "admin,manager")]
     public ActionResult RegisterUser([FromBody]UserDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            BadRequest(ModelState);
+        }
         var response = _accountService.RegisterUser(dto);
         return StatusCode(response.StatusCode, response);
     }
@@ -32,7 +37,7 @@ public class AccountController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            BadRequest(ModelState);
         }
         var response = await _accountService.LoginAsync(dto, cancellationToken);
         return StatusCode(response.StatusCode, response);
@@ -42,6 +47,10 @@ public class AccountController : ControllerBase
     [Authorize]
     public ActionResult ChangePassword([FromBody] ChangePasswordDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            BadRequest(ModelState);
+        }
         var response = _accountService.ChangePassword(dto);
         return StatusCode(response.StatusCode, response);
     }

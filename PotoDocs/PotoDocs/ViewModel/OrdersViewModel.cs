@@ -8,24 +8,20 @@ public partial class OrdersViewModel : BaseViewModel
     public ObservableCollection<OrderDto> Orders { get; } = new();
     OrderService orderService;
     IConnectivity connectivity;
-    IGeolocation geolocation;
-    public OrdersViewModel(OrderService orderService, IConnectivity connectivity, IGeolocation geolocation)
+    public OrdersViewModel(OrderService orderService, IConnectivity connectivity)
     {
-        Title = "Zlecenia";
         this.orderService = orderService;
         this.connectivity = connectivity;
-        this.geolocation = geolocation;
-        GetOrdersAsync();
+        GetAll();
     }
 
     [ObservableProperty]
     bool isRefreshing;
 
     [RelayCommand]
-    async Task GetOrdersAsync()
+    async Task GetAll()
     {
-        if (IsBusy)
-            return;
+        if (IsBusy) return;
 
         try
         {
@@ -48,8 +44,7 @@ public partial class OrdersViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unable to get orders: {ex.Message}");
-            await Shell.Current.DisplayAlert("Error!", ex.Message, "OK");
+            await Shell.Current.DisplayAlert("Błąd!", "Nie udało się pobrać zleceń:" + ex.Message, "OK");
         }
         finally
         {
@@ -60,10 +55,9 @@ public partial class OrdersViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    async Task GoToDetails(OrderDto order)
+    async Task Details(OrderDto order)
     {
-        if (order == null)
-            return;
+        if (order == null) return;
 
         await Shell.Current.GoToAsync(nameof(DetailsPage), true, new Dictionary<string, object>
         {
@@ -71,7 +65,7 @@ public partial class OrdersViewModel : BaseViewModel
         });
     }
     [RelayCommand]
-    async Task GoToNewOrder()
+    async Task Create()
     {
         try
         {
@@ -102,14 +96,10 @@ public partial class OrdersViewModel : BaseViewModel
                     { "InvoiceNumber", order.InvoiceNumber}
                 });
             }
-            else
-            {
-                Debug.WriteLine("Wybrany plik nie jest plikiem PDF.");
-            }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Błąd:  {ex.Message}");
+            await Shell.Current.DisplayAlert("Błąd!", "Nie udało się utworzyć zlecenia:" + ex.Message, "OK");
         }
         finally
         {
@@ -117,10 +107,9 @@ public partial class OrdersViewModel : BaseViewModel
         }
     }
     [RelayCommand]
-    async Task GoToEditOrder(OrderDto order)
+    async Task Edit(OrderDto order)
     {
-        if (order == null)
-            return;
+        if (order == null) return;
 
         await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
@@ -131,12 +120,12 @@ public partial class OrdersViewModel : BaseViewModel
 
     }
     [RelayCommand]
-    async Task DeleteOrder(OrderDto order)
+    async Task Delete(OrderDto order)
     {
         if (order == null)
             return;
         await orderService.Delete(order.InvoiceNumber);
-        GetOrdersAsync();
+        GetAll();
     }
     
     [RelayCommand]
@@ -152,7 +141,7 @@ public partial class OrdersViewModel : BaseViewModel
             StartInfo = new ProcessStartInfo
             {
                 FileName = outputPath,
-                UseShellExecute = true // Wymagane do użycia domyślnej aplikacji w Windows
+                UseShellExecute = true
             }
         };
         process.Start();
@@ -164,41 +153,6 @@ public partial class OrdersViewModel : BaseViewModel
         });
         IsBusy = false;
 #endif
-    }
-    [RelayCommand]
-    async Task ShowContextMenu(OrderDto order)
-    {
-        if (order == null)
-            return;
-
-        // Opcje menu
-        var actions = new List<string>
-    {
-        "Edytuj",
-        "Usuń",
-        "Pobierz fakturę"
-    };
-
-        // Wyświetlenie menu kontekstowego
-        var action = await Shell.Current.DisplayActionSheet(
-            $"Opcje dla {order.CompanyName}",
-            "Anuluj",
-            null,
-            actions.ToArray());
-
-        // Obsługa wybranej opcji
-        if (action == "Edytuj")
-        {
-            await GoToEditOrder(order);
-        }
-        else if (action == "Usuń")
-        {
-            await DeleteOrder(order);
-        }
-        else if (action == "Pobierz fakturę")
-        {
-            await DownloadInvoice(order);
-        }
     }
 }
 

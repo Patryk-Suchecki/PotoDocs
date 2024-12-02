@@ -16,6 +16,7 @@
                    Margin="0,45,0,0"
                    VerticalOptions="End"/>
 
+            <!-- Pole e-mail -->
             <Entry Placeholder="E-mail..." 
                    FontFamily="RobotoItalic"
                    FontSize="22"
@@ -24,7 +25,12 @@
                    BackgroundColor="Transparent" 
                    HorizontalOptions="FillAndExpand"
                    Text="{Binding LoginDto.Email}" />
+            <Label Text="{Binding ValidationErrors[Email]}" 
+                   TextColor="Red" 
+                   FontSize="12"
+                   HorizontalOptions="Start" />
 
+            <!-- Pole hasło -->
             <Entry Placeholder="Hasło..." 
                    FontFamily="RobotoItalic"
                    FontSize="22"
@@ -34,13 +40,18 @@
                    BackgroundColor="Transparent" 
                    HorizontalOptions="FillAndExpand"
                    Text="{Binding LoginDto.Password}" />
-            
+            <Label Text="{Binding ValidationErrors[Password]}" 
+                   TextColor="Red" 
+                   FontSize="12"
+                   HorizontalOptions="Start" />
+
             <!-- Komunikat błędu -->
-            <Label Text="{Binding ErrorText}" 
+            <Label Text="{Binding ValidationErrors[General]}" 
                    TextColor="Red" 
                    HorizontalOptions="Center" 
                    FontAttributes="Italic" />
-            
+
+            <!-- Przycisk logowania -->
             <Button Text="Logowanie" 
                     FontFamily="RobotoBold"
                     FontSize="18"

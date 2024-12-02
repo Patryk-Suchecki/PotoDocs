@@ -13,24 +13,28 @@
 
                 <Label Text="Numer faktury:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.InvoiceNumber, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź numer faktury" />
+                <Label Text="{Binding ValidationErrors[InvoiceNumber]}" TextColor="Red" FontSize="12" />
 
                 <Label Text="Data wystawienia faktury:" FontSize="18" />
-                <DatePicker x:Name="InvoiceDatePicker" Date="{Binding OrderDto.InvoiceIssueDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
+                <DatePicker Date="{Binding OrderDto.InvoiceIssueDate, Mode=TwoWay}" Format="dd-MM-yyyy" />
 
                 <Label Text="NIP:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyNIP, Mode=TwoWay}" Placeholder="Wprowadź NIP" />
+                <Label Text="{Binding ValidationErrors[CompanyNIP]}" TextColor="Red" FontSize="12" />
 
                 <Label Text="Nazwa firmy:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyName, Mode=TwoWay}" Placeholder="Wprowadź nazwę firmy" />
+                <Label Text="{Binding ValidationErrors[CompanyName]}" TextColor="Red" FontSize="12" />
 
                 <Label Text="Kierowca:" FontAttributes="Bold" />
                 <Picker ItemsSource="{Binding Users}" 
-                    SelectedItem="{Binding SelectedDriver, Mode=TwoWay}" 
-                    ItemDisplayBinding="{Binding FirstAndLastName}" 
-                    Title="Wybierz kierowcę" />
+                        SelectedItem="{Binding SelectedDriver, Mode=TwoWay}" 
+                        ItemDisplayBinding="{Binding FirstAndLastName}" 
+                        Title="Wybierz kierowcę" />
 
                 <Label Text="Adres firmy:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy" />
+                <Label Text="{Binding ValidationErrors[CompanyAddress]}" TextColor="Red" FontSize="12" />
 
                 <HorizontalStackLayout Spacing="10">
                     <VerticalStackLayout>
@@ -48,6 +52,7 @@
                     <VerticalStackLayout>
                         <Label Text="Kwota netto:" FontAttributes="Bold" />
                         <Entry Text="{Binding OrderDto.Price, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź kwotę netto" />
+                        <Label Text="{Binding ValidationErrors[Price]}" TextColor="Red" FontSize="12" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout>
@@ -55,37 +60,35 @@
                         <Entry Text="{Binding OrderDto.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Wprowadź termin płatności" />
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
+
                 <Label Text="Zlecenie:" FontAttributes="Bold" />
                 <Label Text="{Binding OrderDto.PDFUrl}" TextColor="Blue" FontAttributes="Bold">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding NavigateToPdfCommand}" CommandParameter="{Binding OrderDto.PDFUrl}" />
                     </Label.GestureRecognizers>
                 </Label>
+
                 <Label Text="Uwagi:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
-                
-                <!-- Sekcja CMR -->
+
                 <Label Text="Lista CMR:" FontAttributes="Bold" />
                 <CollectionView ItemsSource="{Binding OrderDto.CMRFiles}" SelectionMode="None">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid Padding="5" ColumnDefinitions="*,Auto">
-                                <!-- Nazwa pliku -->
                                 <Label Text="{Binding .}" TextColor="Blue" VerticalOptions="Center">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrderFormViewModel}}, Path=NavigateToPdfCommand}" CommandParameter="{Binding .}" />
                                     </Label.GestureRecognizers>
                                 </Label>
-
-                                <!-- Przycisk usuń z ikoną -->
                                 <ImageButton Source="icon_delete.png"
-                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrderFormViewModel}}, Path=RemoveCMRCommand}"
-                             CommandParameter="{Binding .}"
-                             BackgroundColor="BLACK"
-                             WidthRequest="30"
-                             HeightRequest="30"
-                             HorizontalOptions="End"
-                             VerticalOptions="Center" />
+                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrderFormViewModel}}, Path=RemoveCMRCommand}"
+                                             CommandParameter="{Binding .}"
+                                             BackgroundColor="Black"
+                                             WidthRequest="30"
+                                             HeightRequest="30"
+                                             HorizontalOptions="End"
+                                             VerticalOptions="Center" />
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -95,7 +98,7 @@
                         Command="{Binding AddCMRsCommand}"
                         BackgroundColor="Green"
                         TextColor="White" />
-                <Button Command="{Binding SaveOrderCommand}" IsEnabled="{Binding IsNotBusy}" Text="Zapisz" />
+                <Button Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}" Text="Zapisz" />
 
             </VerticalStackLayout>
         </Grid>
