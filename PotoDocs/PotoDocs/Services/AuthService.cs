@@ -1,8 +1,9 @@
-﻿using iTextSharp.text.pdf;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 
 namespace PotoDocs.Services;
 
@@ -15,6 +16,8 @@ public interface IAuthService
     Task RegisterAsync(UserDto dto);
     Task<IEnumerable<string>> GetRoles();
     void Logout();
+    Task<IEnumerable<UserDto>> GetAll();
+    Task GeneratePassword(string email);
 }
 
 public class AuthService : IAuthService
@@ -53,12 +56,10 @@ public class AuthService : IAuthService
         var response = await httpClient.PostAsJsonAsync<LoginDto> ("api/account/login", dto);
 
         var content = await response.Content.ReadAsStringAsync();
-        ApiResponse<LoginResponseDto> authResponse =
-            JsonSerializer.Deserialize<ApiResponse<LoginResponseDto>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
+        var authResponse =JsonSerializer.Deserialize<ApiResponse<LoginResponseDto>>(content, new JsonSerializerOptions 
+        {
+            PropertyNameCaseInsensitive = true
+        });
         if (authResponse.Status)
         {
             var serializedData = JsonSerializer.Serialize(authResponse.Data);
@@ -102,12 +103,13 @@ public class AuthService : IAuthService
             "application/json"
         );
         var response = await httpClient.PostAsync("api/account/register", jsonContent);
-
+        var toast = Toast.Make("Użytkownik został zarejestrowany.", ToastDuration.Short, 5);
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Rejestracja nie powiodła się: {response.StatusCode}, {errorContent}");
+            toast = Toast.Make("Błąd: " + errorContent, ToastDuration.Short, 5);
         }
+        await toast.Show();
     }
     public async Task<IEnumerable<string>> GetRoles()
     {
@@ -120,6 +122,38 @@ public class AuthService : IAuthService
             PropertyNameCaseInsensitive = true
         });
         return apiResponse.Data;
+    }
+    public async Task GeneratePassword(string email)
+    {
+        var httpClient = await GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync($"api/account/generate-password/{email}");
+        var snackbar = Snackbar.Make("Nowe hasło zostało wygenerowane.", duration: TimeSpan.FromSeconds(3));
+        
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            snackbar = Snackbar.Make("Błąd: " + errorContent, duration: TimeSpan.FromSeconds(3));
+        }
+        await snackbar.Show();
+    }
+    public async Task<IEnumerable<UserDto>> GetAll()
+    {
+        var httpClient = await GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync("api/account/all");
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<UserDto>>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return apiResponse.Data;
+        }
+
+        return null;
     }
 }
 

@@ -63,7 +63,7 @@ public partial class DriverFormViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    public async Task SaveDriver()
+    public async Task Save()
     {
         if (UserDto == null) return;
 
@@ -80,17 +80,11 @@ public partial class DriverFormViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    public Task GenerateNewPassword(UserDto driver)
+    public async Task GeneratePassword()
     {
-        if (driver == null)
-        {
-            Debug.WriteLine("Driver is null. Cannot generate a new password.");
-            return Task.CompletedTask;
-        }
+        if (userDto == null) return;
 
-        // Tu zaimplementuj logikę generowania hasła
-        Debug.WriteLine($"New password for {driver.FirstAndLastName} has been generated.");
-        return Task.CompletedTask;
+        await _authService.GeneratePassword(userDto.Email);
     }
     private bool Validate()
     {

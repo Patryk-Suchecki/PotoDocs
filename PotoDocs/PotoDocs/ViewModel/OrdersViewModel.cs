@@ -6,12 +6,12 @@ namespace PotoDocs.ViewModel;
 public partial class OrdersViewModel : BaseViewModel
 {
     public ObservableCollection<OrderDto> Orders { get; } = new();
-    OrderService orderService;
-    IConnectivity connectivity;
-    public OrdersViewModel(OrderService orderService, IConnectivity connectivity)
+    IOrderService _orderService;
+    IConnectivity _connectivity;
+    public OrdersViewModel(IOrderService orderService, IConnectivity connectivity)
     {
-        this.orderService = orderService;
-        this.connectivity = connectivity;
+        _orderService = orderService;
+        _connectivity = connectivity;
         GetAll();
     }
 
@@ -25,7 +25,7 @@ public partial class OrdersViewModel : BaseViewModel
 
         try
         {
-            if (connectivity.NetworkAccess != NetworkAccess.Internet)
+            if (_connectivity.NetworkAccess != NetworkAccess.Internet)
             {
                 await Shell.Current.DisplayAlert("No connectivity!",
                     $"Please check internet and try again.", "OK");
@@ -33,7 +33,7 @@ public partial class OrdersViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var orders = await orderService.GetAll();
+            var orders = await _orderService.GetAll();
 
             if (Orders.Count != 0)
                 Orders.Clear();
@@ -87,7 +87,7 @@ public partial class OrdersViewModel : BaseViewModel
             if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 IsBusy = true;
-                OrderDto order = await orderService.Create(result.FullPath);
+                OrderDto order = await _orderService.Create(result.FullPath);
 
                 await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
@@ -124,7 +124,7 @@ public partial class OrdersViewModel : BaseViewModel
     {
         if (order == null)
             return;
-        await orderService.Delete(order.InvoiceNumber);
+        await _orderService.Delete(order.InvoiceNumber);
         GetAll();
     }
     
@@ -134,7 +134,7 @@ public partial class OrdersViewModel : BaseViewModel
         if (order == null)
             return;
         IsBusy = true;
-        string outputPath = await orderService.DownloadInvoice(order.InvoiceNumber);
+        string outputPath = await _orderService.DownloadInvoice(order.InvoiceNumber);
 #if WINDOWS
         var process = new Process
         {

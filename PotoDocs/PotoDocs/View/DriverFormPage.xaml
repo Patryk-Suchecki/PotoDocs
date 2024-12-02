@@ -34,11 +34,11 @@
 
                 <!-- Przyciski -->
                 <Button
-                    Command="{Binding GenerateNewPasswordCommand}"
+                    Command="{Binding GeneratePasswordCommand}"
                     IsEnabled="{Binding IsNotBusy}"
                     Text="Generuj hasło"/>
                 <Button
-                    Command="{Binding SaveDriverCommand}"
+                    Command="{Binding SaveCommand}"
                     IsEnabled="{Binding IsNotBusy}"
                     Text="Zapisz"/>
 

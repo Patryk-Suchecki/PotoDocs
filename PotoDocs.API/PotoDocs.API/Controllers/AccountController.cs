@@ -54,6 +54,15 @@ public class AccountController : ControllerBase
         var response = _accountService.ChangePassword(dto);
         return StatusCode(response.StatusCode, response);
     }
+
+    [HttpPost("generate-password/{email}")]
+    [Authorize]
+    public ActionResult GeneratePassword([FromRoute] string email)
+    {
+        var response = _accountService.GeneratePassword(email);
+        return StatusCode(response.StatusCode, response);
+    }
+
     [HttpGet("all")]
     [Authorize]
     public ActionResult<IEnumerable<UserDto>> GetUsers()
@@ -61,6 +70,7 @@ public class AccountController : ControllerBase
         var response = _accountService.GetAll();
         return StatusCode(response.StatusCode, response);
     }
+
     [HttpGet("all/roles")]
     [Authorize]
     public ActionResult<IEnumerable<string>> GetRoles()

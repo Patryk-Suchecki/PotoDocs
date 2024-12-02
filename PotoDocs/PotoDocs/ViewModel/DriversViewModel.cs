@@ -6,10 +6,10 @@ namespace PotoDocs.ViewModel;
 public partial class DriversViewModel : BaseViewModel
 {
     public ObservableCollection<UserDto> Users { get; } = new();
-    UserService userService;
-    public DriversViewModel(UserService userService)
+    IAuthService _authService;
+    public DriversViewModel(IAuthService authService)
     {
-        this.userService = userService;
+        _authService = authService;
         GetUsersAsync();
     }
 
@@ -25,7 +25,7 @@ public partial class DriversViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            var users = await userService.GetAll();
+            var users = await _authService.GetAll();
 
             if (Users.Count != 0)
                 Users.Clear();

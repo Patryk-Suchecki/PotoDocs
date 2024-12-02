@@ -1,17 +1,30 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 
 namespace PotoDocs.Services;
 
-public class OrderService
+public interface IOrderService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IAuthService _authService;
-    private List<OrderDto> _orderList;
+    Task<IEnumerable<OrderDto>> GetAll();
+    Task<OrderDto> GetById(int invoiceNumber);
+    Task Delete(int invoiceNumber);
+    Task<OrderDto> Create(string filePath);
+    Task Update(OrderDto dto, int invoiceNumber);
+    Task<string> DownloadInvoices(DownloadDto downloadRequestDto);
+    Task<string> DownloadFile(int invoiceNumber, string fileName);
+    Task<string> DownloadInvoice(int invoiceNumber);
+    Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber);
+    Task RemoveCMR(int invoiceNumber, string pdfname);
 
-    public OrderService(IHttpClientFactory httpClientFactory, IAuthService authService)
+}
+public class OrderService : IOrderService
+{
+    private readonly IAuthService _authService;
+
+    public OrderService(IAuthService authService)
     {
-        _httpClientFactory = httpClientFactory;
         _authService = authService;
     }
 
@@ -29,10 +42,7 @@ public class OrderService
             });
             return apiResponse.Data;
         }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
+
         return null;
     }
     public async Task<OrderDto> GetById(int invoiceNumber)
@@ -49,26 +59,21 @@ public class OrderService
             });
             return apiResponse.Data;
         }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
+
         return null;
     }
-    public async Task<string?> Delete(int invoiceNumber)
+    public async Task Delete(int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.DeleteAsync($"api/order/{invoiceNumber}");
-        if (response.IsSuccessStatusCode)
+        var toast = Toast.Make("Zlecenie zostało usunięte.", ToastDuration.Short, 5);
+        if (!response.IsSuccessStatusCode)
         {
-            return "Ok";
+            var errorContent = await response.Content.ReadAsStringAsync();
+            toast = Toast.Make("Błąd: " + errorContent, ToastDuration.Short, 5);
         }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
-        return null;
+        await toast.Show();
     }
     public async Task<OrderDto> Create(string filePath)
     {
@@ -93,26 +98,21 @@ public class OrderService
                 });
                 return apiResponse.Data;
             }
-            else
-            {
-                var statusCode = response.StatusCode;
-                return null;
-            }
+            return null;
         }
     }
-    public async Task<string?> Update(OrderDto dto, int invoiceNumber)
+    public async Task Update(OrderDto dto, int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{invoiceNumber}", dto);
 
-        if (response.IsSuccessStatusCode)
+        var toast = Toast.Make("Nowe hasło zostało wygenerowane.", ToastDuration.Short, 5);
+        if (!response.IsSuccessStatusCode)
         {
-            return "Zaktualizowano";
+            var errorContent = await response.Content.ReadAsStringAsync();
+            toast = Toast.Make("Błąd: " + errorContent, ToastDuration.Short, 5);
         }
-        else
-        {
-            return response.StatusCode.ToString();
-        }
+        await toast.Show();
     }
     public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto)
     {
@@ -127,10 +127,7 @@ public class OrderService
             await File.WriteAllBytesAsync(outputPath, rarData);
             return outputPath;
         }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
+
         return null;
     }
     public async Task<string> DownloadFile(int invoiceNumber, string fileName)
@@ -145,12 +142,10 @@ public class OrderService
         {
             var rarData = await response.Content.ReadAsByteArrayAsync();
             await File.WriteAllBytesAsync(outputPath, rarData);
+            return outputPath;
         }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
-        return outputPath;
+
+        return null;
     }
     public async Task<string> DownloadInvoice(int invoiceNumber)
     {
@@ -166,10 +161,7 @@ public class OrderService
             await File.WriteAllBytesAsync(outputPath, rarData);
             return outputPath;
         }
-        else
-        {
-            var statusCode = response.StatusCode;
-        }
+
         return null;
     }
     public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
@@ -198,12 +190,7 @@ public class OrderService
                 });
                 return apiResponse.Data;
             }
-            else
-            {
-                var statusCode = response.StatusCode;
-                Debug.WriteLine($"Błąd przesyłania plików: {statusCode}");
-                return null;
-            }
+            return null;
         }
     }
     public async Task RemoveCMR(int invoiceNumber, string pdfname)

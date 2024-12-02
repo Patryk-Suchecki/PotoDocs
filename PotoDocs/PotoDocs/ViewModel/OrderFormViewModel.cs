@@ -21,9 +21,9 @@ public partial class OrderFormViewModel : BaseViewModel
     public ObservableCollection<UserDto> Users { get; } = new();
     public ObservableDictionary<string, string> ValidationErrors { get; } = new();
 
-    private readonly OrderService orderService;
-    private readonly UserService userService;
-    private readonly IConnectivity connectivity;
+    private readonly IOrderService _orderService;
+    private readonly IAuthService _authService;
+    private readonly IConnectivity _connectivity;
 
     private UserDto selectedDriver;
     public UserDto SelectedDriver
@@ -51,11 +51,11 @@ public partial class OrderFormViewModel : BaseViewModel
         }
     }
 
-    public OrderFormViewModel(OrderService orderService, UserService userService, IConnectivity connectivity)
+    public OrderFormViewModel(IOrderService orderService, IAuthService authService, IConnectivity connectivity)
     {
-        this.orderService = orderService;
-        this.userService = userService;
-        this.connectivity = connectivity;
+        _orderService = orderService;
+        _authService = authService;
+        _connectivity = connectivity;
 
         GetAllDrivers();
     }
@@ -67,7 +67,7 @@ public partial class OrderFormViewModel : BaseViewModel
 
         try
         {
-            if (connectivity.NetworkAccess != NetworkAccess.Internet)
+            if (_connectivity.NetworkAccess != NetworkAccess.Internet)
             {
                 await Shell.Current.DisplayAlert("No connectivity!",
                     "Please check your internet and try again.", "OK");
@@ -75,7 +75,7 @@ public partial class OrderFormViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var users = await userService.GetAll();
+            var users = await _authService.GetAll();
 
             Users.Clear();
             foreach (var user in users)
@@ -104,7 +104,7 @@ public partial class OrderFormViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            await orderService.Update(OrderDto, InvoiceNumber);
+            await _orderService.Update(OrderDto, InvoiceNumber);
             await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
         }
         finally
@@ -121,7 +121,7 @@ public partial class OrderFormViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            string outputPath = await orderService.DownloadFile(InvoiceNumber, pdfname);
+            string outputPath = await _orderService.DownloadFile(InvoiceNumber, pdfname);
             await Share.RequestAsync(new ShareFileRequest
             {
                 Title = "Zapisz pdf",
@@ -143,8 +143,8 @@ public partial class OrderFormViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            await orderService.RemoveCMR(OrderDto.InvoiceNumber, pdfname);
-            OrderDto = await orderService.GetById(InvoiceNumber);
+            await _orderService.RemoveCMR(OrderDto.InvoiceNumber, pdfname);
+            OrderDto = await _orderService.GetById(InvoiceNumber);
             OnPropertyChanged(nameof(OrderDto));
         }
         catch (Exception ex)
@@ -188,8 +188,8 @@ public partial class OrderFormViewModel : BaseViewModel
 
                 if (filePaths.Any())
                 {
-                    await orderService.UploadCMR(filePaths, InvoiceNumber);
-                    OrderDto = await orderService.GetById(InvoiceNumber);
+                    await _orderService.UploadCMR(filePaths, InvoiceNumber);
+                    OrderDto = await _orderService.GetById(InvoiceNumber);
                     OnPropertyChanged(nameof(OrderDto));
                 }
                 else

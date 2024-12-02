@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using PotoDocs.Services;
 using PotoDocs.View;
@@ -20,15 +21,19 @@ public static class MauiProgram
                 fonts.AddFont("Roboto-Italic.ttf", "RobotoItalic");
                 fonts.AddFont("Roboto-Medium.ttf", "RobotoMedium");
                 fonts.AddFont("Roboto-Regular.ttf", "RobotoItalic");
+            })
+            .UseMauiCommunityToolkit(options =>
+            {
+                options.SetShouldEnableSnackbarOnWindows(true);
             });
+  
         builder.Services.AddCustomApiHttpClient();
         builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
         builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
         builder.Services.AddSingleton<IMap>(Map.Default);
 
         builder.Services.AddSingleton<IAuthService, AuthService>();
-        builder.Services.AddTransient<OrderService>();
-        builder.Services.AddTransient<UserService>();
+        builder.Services.AddTransient<IOrderService, OrderService>();
 
         builder.Services.AddSingleton<MainPage>();
 

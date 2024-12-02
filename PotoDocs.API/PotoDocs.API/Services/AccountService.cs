@@ -18,6 +18,7 @@ public interface IAccountService
 {
     ApiResponse<string> RegisterUser(UserDto dto);
     ApiResponse<string> ChangePassword(ChangePasswordDto dto);
+    ApiResponse<string> GeneratePassword(string email);
     ApiResponse<List<UserDto>> GetAll();
     Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default);
     ApiResponse<List<string>> GetRoles();
@@ -93,6 +94,29 @@ public class AccountService : IAccountService
         }
 
         var newPasswordHash = _hasher.HashPassword(user, dto.NewPassword);
+        user.PasswordHash = newPasswordHash;
+        _context.SaveChanges();
+        return ApiResponse<string>.Success(HttpStatusCode.OK);
+    }
+    public ApiResponse<string> GeneratePassword(string email)
+    {
+        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        if (user is null)
+        {
+            return ApiResponse<string>.Failure($"Nie znaleziono użytkownika", HttpStatusCode.BadRequest);
+        }
+        string randomPassword = GenerateRandomPassword(12);
+        _emailService.SendEmail(email, "Rejestracja PotoDocs", $"Witaj, Twoje dane do logowania to:\nEmail: {email}\nHasło: {randomPassword}", $@"
+        <html>
+            <body>
+                <h1>Witaj!</h1>
+                <p>Twoje dane do logowania:</p>
+                <p><b>Email:</b> {email}</p>
+                <p><b>Hasło:</b> {randomPassword}</p>
+                <p>Prosimy o zachowanie tych informacji w bezpiecznym miejscu.</p>
+            </body>
+        </html>");
+        var newPasswordHash = _hasher.HashPassword(user, randomPassword);
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();
         return ApiResponse<string>.Success(HttpStatusCode.OK);
