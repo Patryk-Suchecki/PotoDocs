@@ -1,12 +1,60 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PotoDocs.ViewModel"
              x:Class="PotoDocs.View.SettingsPage"
-             Title="SettingsPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Ustawienia"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <!-- Logo -->
+            <Image Source="logo.png" HeightRequest="100" HorizontalOptions="Center" />
+
+            <!-- Nagłówek -->
+            <Label Text="Ustawienia" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   TextColor="Black"
+                   HorizontalOptions="Start" />
+
+            <!-- Sekcja Profil -->
+            <VerticalStackLayout Spacing="15">
+                <Label Text="Profil" 
+                       FontSize="18" 
+                       FontAttributes="Bold" 
+                       TextColor="#990000" 
+                       HorizontalOptions="Start" />
+
+                <!-- Edytuj profil -->
+                <Button Text="Edytuj profil"
+                        FontSize="16"
+                        HorizontalOptions="Start"
+                        Command="{Binding EditProfileCommand}" />
+
+                <!-- Zmień hasło -->
+                <Button Text="Zmień hasło"
+                        FontSize="16"
+                        HorizontalOptions="Start"
+                        Command="{Binding ChangePasswordCommand}" />
+            </VerticalStackLayout>
+
+            <!-- Sekcja Powiadomienia -->
+            <VerticalStackLayout Spacing="15">
+                <Label Text="Powiadomienia" 
+                       FontSize="18" 
+                       FontAttributes="Bold" 
+                       TextColor="#990000" 
+                       HorizontalOptions="Start" />
+
+                <Grid ColumnDefinitions="50, *, Auto" RowDefinitions="Auto">
+                    <Image Source="bell_icon.png" HeightRequest="30" VerticalOptions="Center" />
+                    <Label Text="Włącz powiadomienia aplikacji" FontSize="16" VerticalOptions="Center" />
+                    <Switch IsToggled="{Binding AreNotificationsEnabled}" VerticalOptions="Center" />
+                </Grid>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>

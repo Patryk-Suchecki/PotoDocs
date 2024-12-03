@@ -7,8 +7,4 @@ public partial class OrdersPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-    }
 }
