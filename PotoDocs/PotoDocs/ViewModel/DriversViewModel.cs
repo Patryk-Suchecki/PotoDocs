@@ -8,10 +8,10 @@ public partial class DriversViewModel : BaseViewModel
     [ObservableProperty]
     bool isRefreshing;
     public ObservableCollection<UserDto> Users { get; } = new();
-    IAuthService _authService;
-    public DriversViewModel(IAuthService authService)
+    IUserService _userService;
+    public DriversViewModel(IUserService userService)
     {
-        _authService = authService;
+        _userService = userService;
         GetUsersAsync();
     }
 
@@ -25,7 +25,7 @@ public partial class DriversViewModel : BaseViewModel
         {
             IsRefreshing = true;
             IsBusy = true;
-            var users = await _authService.GetAll();
+            var users = await _userService.GetAll();
 
             if (Users.Count != 0)
                 Users.Clear();

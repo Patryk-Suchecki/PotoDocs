@@ -16,12 +16,12 @@ public partial class SettingsViewModel : BaseViewModel
     private UserDto userDto = new UserDto();
     [ObservableProperty]
     private ChangePasswordDto changePasswordDto = new ChangePasswordDto();
-    private readonly IAuthService _authService;
+    private readonly IUserService _userService;
     public ObservableDictionary<string, string> ValidationErrors { get; } = new();
 
-    public SettingsViewModel(IAuthService authService)
+    public SettingsViewModel(IUserService userService)
     {
-        _authService = authService;
+        _userService = userService;
         GetUser();
     }
 
@@ -35,7 +35,7 @@ public partial class SettingsViewModel : BaseViewModel
         try
         {
             ChangePasswordDto.Email = userDto.Email;
-            await _authService.ChangePassword(ChangePasswordDto);
+            await _userService.ChangePassword(ChangePasswordDto);
             await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
         }
         catch (Exception ex)
@@ -58,7 +58,7 @@ public partial class SettingsViewModel : BaseViewModel
         IsRefreshing = true;
         try
         {
-            UserDto = await _authService.GetUser();
+            UserDto = await _userService.GetUser();
         }
         catch (Exception ex)
         {

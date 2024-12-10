@@ -2,14 +2,12 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using PotoDocs.API;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.API.Models.Validators;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("https://localhost:7157");
@@ -46,6 +44,8 @@ builder.Services.AddScoped<IValidator<UserDto>, RegisterUserDtoValidator>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddSingleton<IInvoiceService, InvoiceService>();
 
 var app = builder.Build();

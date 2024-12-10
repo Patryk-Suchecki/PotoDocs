@@ -7,11 +7,28 @@ namespace PotoDocs.ViewModel;
 [QueryProperty(nameof(UserDto), "UserDto")]
 public partial class DriverFormViewModel : BaseViewModel
 {
+    private readonly IRoleService _roleService;
+    private readonly IUserService _userService;
+
     [ObservableProperty]
     UserDto userDto = new UserDto();
 
     [ObservableProperty]
     bool isRefreshing;
+
+    public ObservableDictionary<string, string> ValidationErrors { get; } = new();
+    public ObservableCollection<string> Roles { get; } = new ();
+
+    private string pageTitle;
+    public string PageTitle
+    {
+        get => pageTitle;
+        set
+        {
+            pageTitle = value;
+            Title = pageTitle;
+        }
+    }
     private string selectedRole;
     public string SelectedRole
     {
@@ -27,25 +44,10 @@ public partial class DriverFormViewModel : BaseViewModel
         }
     }
 
-    public ObservableDictionary<string, string> ValidationErrors { get; } = new();
-    public ObservableCollection<string> Roles { get; } = new ();
-
-    private readonly IAuthService _authService;
-
-    string pageTitle;
-    public string PageTitle
+    public DriverFormViewModel(IRoleService roleService, IUserService userService)
     {
-        get => pageTitle;
-        set
-        {
-            pageTitle = value;
-            Title = pageTitle;
-        }
-    }
-
-    public DriverFormViewModel(IAuthService authService)
-    {
-        _authService = authService;
+        _roleService = roleService;
+        _userService = userService;
         GetRoles();
     }
 
@@ -59,7 +61,7 @@ public partial class DriverFormViewModel : BaseViewModel
         {
             IsBusy = true;
 
-            var roles = await _authService.GetRoles();
+            var roles = await _roleService.GetRoles();
             Roles.Clear();
             foreach (var role in roles)
             {
@@ -86,7 +88,7 @@ public partial class DriverFormViewModel : BaseViewModel
         if (!Validate()) return;
         try
         {
-            await _authService.RegisterAsync(UserDto);
+            await _userService.RegisterAsync(UserDto);
             await Shell.Current.GoToAsync($"//{nameof(DriversPage)}");
         }
         catch (Exception ex)
@@ -100,7 +102,7 @@ public partial class DriverFormViewModel : BaseViewModel
     {
         if (userDto == null) return;
 
-        await _authService.GeneratePassword(userDto.Email);
+        await _userService.GeneratePassword(userDto.Email);
     }
     private bool Validate()
     {

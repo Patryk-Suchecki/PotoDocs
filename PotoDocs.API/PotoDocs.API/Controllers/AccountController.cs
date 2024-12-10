@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 
@@ -18,18 +16,6 @@ public class AccountController : ControllerBase
         _accountService = accountService;
     }
 
-    [HttpPost("register")]
-    [Authorize(Roles = "admin,manager")]
-    public ActionResult RegisterUser([FromBody] UserDto dto)
-    {
-        if (!ModelState.IsValid)
-        {
-            BadRequest(ModelState);
-        }
-        var response = _accountService.RegisterUser(dto);
-        return StatusCode(response.StatusCode, response);
-    }
-
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto, CancellationToken cancellationToken = default)
     {
@@ -38,51 +24,6 @@ public class AccountController : ControllerBase
             BadRequest(ModelState);
         }
         var response = await _accountService.LoginAsync(dto, cancellationToken);
-        return StatusCode(response.StatusCode, response);
-    }
-
-    [HttpPost("change-password")]
-    [Authorize]
-    public ActionResult ChangePassword([FromBody] ChangePasswordDto dto)
-    {
-        if (!ModelState.IsValid)
-        {
-            BadRequest(ModelState);
-        }
-        var response = _accountService.ChangePassword(dto);
-        return StatusCode(response.StatusCode, response);
-    }
-
-    [HttpPost("generate-password/{email}")]
-    [Authorize]
-    public ActionResult GeneratePassword([FromRoute] string email)
-    {
-        var response = _accountService.GeneratePassword(email);
-        return StatusCode(response.StatusCode, response);
-    }
-
-    [HttpGet("all")]
-    [Authorize]
-    public ActionResult<IEnumerable<UserDto>> GetUsers()
-    {
-        var response = _accountService.GetAll();
-        return StatusCode(response.StatusCode, response);
-    }
-
-    [HttpGet("all/roles")]
-    [Authorize]
-    public ActionResult<IEnumerable<string>> GetRoles()
-    {
-        var response = _accountService.GetRoles();
-        return StatusCode(response.StatusCode, response);
-    }
-
-    [HttpGet("user")]
-    [Authorize]
-    public ActionResult<IEnumerable<string>> GetUser()
-    {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-        var response = _accountService.GetUser(userId);
         return StatusCode(response.StatusCode, response);
     }
 }

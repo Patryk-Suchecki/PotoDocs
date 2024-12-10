@@ -9,6 +9,10 @@ namespace PotoDocs.ViewModel;
 [QueryProperty(nameof(InvoiceNumber), "InvoiceNumber")]
 public partial class OrderFormViewModel : BaseViewModel
 {
+    private readonly IOrderService _orderService;
+    private readonly IUserService _userService;
+    private readonly IConnectivity _connectivity;
+
     [ObservableProperty]
     OrderDto orderDto;
 
@@ -20,10 +24,6 @@ public partial class OrderFormViewModel : BaseViewModel
 
     public ObservableCollection<UserDto> Users { get; } = new();
     public ObservableDictionary<string, string> ValidationErrors { get; } = new();
-
-    private readonly IOrderService _orderService;
-    private readonly IAuthService _authService;
-    private readonly IConnectivity _connectivity;
 
     private UserDto selectedDriver;
     public UserDto SelectedDriver
@@ -51,10 +51,10 @@ public partial class OrderFormViewModel : BaseViewModel
         }
     }
 
-    public OrderFormViewModel(IOrderService orderService, IAuthService authService, IConnectivity connectivity)
+    public OrderFormViewModel(IOrderService orderService, IUserService userService, IConnectivity connectivity)
     {
         _orderService = orderService;
-        _authService = authService;
+        _userService = userService;
         _connectivity = connectivity;
 
         GetAllDrivers();
@@ -75,7 +75,7 @@ public partial class OrderFormViewModel : BaseViewModel
             }
 
             IsBusy = true;
-            var users = await _authService.GetAll();
+            var users = await _userService.GetAll();
 
             Users.Clear();
             foreach (var user in users)

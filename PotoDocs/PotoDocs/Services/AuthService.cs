@@ -1,9 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 
 namespace PotoDocs.Services;
 
@@ -13,13 +10,7 @@ public interface IAuthService
     Task<string?> LoginAsync(LoginDto dto);
     Task<LoginResponseDto?> GetAuthenticatedUserAsync();
     Task<HttpClient> GetAuthenticatedHttpClientAsync();
-    Task RegisterAsync(UserDto dto);
-    Task<IEnumerable<string>> GetRoles();
     void Logout();
-    Task<IEnumerable<UserDto>> GetAll();
-    Task GeneratePassword(string email);
-    Task<UserDto> GetUser();
-    Task ChangePassword(ChangePasswordDto dto);
 }
 
 public class AuthService : IAuthService
@@ -94,104 +85,6 @@ public class AuthService : IAuthService
         var expiration = jwtToken.ValidTo;
 
         return expiration < DateTime.UtcNow;
-    }
-    public async Task RegisterAsync(UserDto dto)
-    {
-        var httpClient = await GetAuthenticatedHttpClientAsync();
-
-        var jsonContent = new StringContent(
-            JsonSerializer.Serialize(dto),
-            Encoding.UTF8,
-            "application/json"
-        );
-        var response = await httpClient.PostAsync("api/account/register", jsonContent);
-        var toast = Toast.Make("Użytkownik został zarejestrowany.", ToastDuration.Short, 5);
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            toast = Toast.Make("Błąd: " + errorContent, ToastDuration.Short, 5);
-        }
-        await toast.Show();
-    }
-    public async Task<IEnumerable<string>> GetRoles()
-    {
-        var httpClient = await GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync("api/account/all/roles");
-
-        var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<string>>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-        return apiResponse.Data;
-    }
-    public async Task GeneratePassword(string email)
-    {
-        var httpClient = await GetAuthenticatedHttpClientAsync();
-
-        var response = await httpClient.GetAsync($"api/account/generate-password/{email}");
-        var snackbar = Snackbar.Make("Nowe hasło zostało wygenerowane.", duration: TimeSpan.FromSeconds(3));
-        
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            snackbar = Snackbar.Make("Błąd: " + errorContent, duration: TimeSpan.FromSeconds(3));
-        }
-        await snackbar.Show();
-    }
-    public async Task<IEnumerable<UserDto>> GetAll()
-    {
-        var httpClient = await GetAuthenticatedHttpClientAsync();
-
-        var response = await httpClient.GetAsync("api/account/all");
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<UserDto>>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return apiResponse.Data;
-        }
-
-        return null;
-    }
-    public async Task<UserDto> GetUser()
-    {
-        var httpClient = await GetAuthenticatedHttpClientAsync();
-
-        var response = await httpClient.GetAsync("api/account/user");
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<UserDto>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return apiResponse.Data;
-        }
-
-        return null;
-    }
-    public async Task ChangePassword(ChangePasswordDto dto)
-    {
-        var httpClient = await GetAuthenticatedHttpClientAsync();
-        var jsonContent = new StringContent(
-            JsonSerializer.Serialize(dto),
-            Encoding.UTF8,
-            "application/json"
-        );
-        var response = await httpClient.PostAsync("api/account/change-password", jsonContent);
-        var snackbar = Snackbar.Make("Hasło zostało zmienione wylogowywanie...", duration: TimeSpan.FromSeconds(3));
-
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            snackbar = Snackbar.Make("Błąd: " + errorContent, duration: TimeSpan.FromSeconds(3));
-        }
-        await snackbar.Show();
     }
 }
 
