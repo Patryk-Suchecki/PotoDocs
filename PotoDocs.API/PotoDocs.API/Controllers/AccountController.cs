@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using Azure;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
-using System.Net;
 
 namespace PotoDocs.API.Controllers;
 
@@ -14,7 +12,7 @@ namespace PotoDocs.API.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
-    
+
     public AccountController(IAccountService accountService)
     {
         _accountService = accountService;
@@ -22,7 +20,7 @@ public class AccountController : ControllerBase
 
     [HttpPost("register")]
     [Authorize(Roles = "admin,manager")]
-    public ActionResult RegisterUser([FromBody]UserDto dto)
+    public ActionResult RegisterUser([FromBody] UserDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -76,6 +74,15 @@ public class AccountController : ControllerBase
     public ActionResult<IEnumerable<string>> GetRoles()
     {
         var response = _accountService.GetRoles();
+        return StatusCode(response.StatusCode, response);
+    }
+
+    [HttpGet("user")]
+    [Authorize]
+    public ActionResult<IEnumerable<string>> GetUser()
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var response = _accountService.GetUser(userId);
         return StatusCode(response.StatusCode, response);
     }
 }

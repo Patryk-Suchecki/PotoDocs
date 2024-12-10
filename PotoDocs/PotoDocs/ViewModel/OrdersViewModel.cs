@@ -31,7 +31,7 @@ public partial class OrdersViewModel : BaseViewModel
                     $"Please check internet and try again.", "OK");
                 return;
             }
-
+            IsRefreshing = true;
             IsBusy = true;
             var orders = await _orderService.GetAll();
 

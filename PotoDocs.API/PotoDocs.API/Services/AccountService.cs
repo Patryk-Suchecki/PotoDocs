@@ -1,11 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Identity.Client;
-using Microsoft.IdentityModel.Tokens;
-using PotoDocs.API.Exceptions;
 using PotoDocs.API.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using PotoDocs.Shared.Models;
 using PotoDocs.API.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +16,7 @@ public interface IAccountService
     ApiResponse<List<UserDto>> GetAll();
     Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default);
     ApiResponse<List<string>> GetRoles();
+    ApiResponse<UserDto> GetUser(int id);
 }
 
 public class AccountService : IAccountService
@@ -50,23 +45,30 @@ public class AccountService : IAccountService
         {
             return ApiResponse<string>.Failure($"Rola '{dto.Role}' nie istnieje.", HttpStatusCode.BadRequest);
         }
-
-        var user = _mapper.Map<User>(dto);
+        var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+        if (user == null)
+        {
+            user = _mapper.Map<User>(dto);
+            string randomPassword = GenerateRandomPassword(12);
+            _emailService.SendEmail(dto.Email, "Rejestracja PotoDocs", $"Witaj, Twoje dane do logowania to:\nEmail: {dto.Email}\nHasło: {randomPassword}", $@"
+            <html>
+                <body>
+                    <h1>Witaj!</h1>
+                    <p>Twoje dane do logowania:</p>
+                    <p><b>Email:</b> {dto.Email}</p>
+                    <p><b>Hasło:</b> {randomPassword}</p>
+                    <p>Prosimy o zachowanie tych informacji w bezpiecznym miejscu.</p>
+                </body>
+            </html>");
+            var hashedPassword = _hasher.HashPassword(user, randomPassword);
+            user.PasswordHash = hashedPassword;
+            _context.Users.Add(user);
+        }
+        else
+        {
+            _mapper.Map(dto, user);
+        }
         user.Role = role;
-        string randomPassword = GenerateRandomPassword(12);
-        _emailService.SendEmail(dto.Email, "Rejestracja PotoDocs", $"Witaj, Twoje dane do logowania to:\nEmail: {dto.Email}\nHasło: {randomPassword}", $@"
-        <html>
-            <body>
-                <h1>Witaj!</h1>
-                <p>Twoje dane do logowania:</p>
-                <p><b>Email:</b> {dto.Email}</p>
-                <p><b>Hasło:</b> {randomPassword}</p>
-                <p>Prosimy o zachowanie tych informacji w bezpiecznym miejscu.</p>
-            </body>
-        </html>");
-        var hashedPassword = _hasher.HashPassword(user, randomPassword);
-        user.PasswordHash = hashedPassword;
-        _context.Users.Add(user);
         _context.SaveChanges();
         return ApiResponse<string>.Success(HttpStatusCode.Created);
     }
@@ -156,5 +158,15 @@ public class AccountService : IAccountService
     {
         var roleNames = _context.Roles.Select(role => role.Name).ToList();
         return ApiResponse<List<string>>.Success(roleNames);
+    }
+
+    public ApiResponse<UserDto> GetUser(int id)
+    {
+        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Id == id);
+        if (user == null) return ApiResponse<UserDto>.Failure("Nie znaleziono użytkownika", HttpStatusCode.Unauthorized);
+
+        var dto = _mapper.Map<UserDto>(user);
+
+        return ApiResponse<UserDto>.Success(dto);
     }
 }

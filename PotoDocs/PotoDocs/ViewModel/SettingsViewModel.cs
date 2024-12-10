@@ -1,46 +1,83 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PotoDocs.Services;
+using PotoDocs.Shared.Models;
+using PotoDocs.View;
 
 namespace PotoDocs.ViewModel;
 
 public partial class SettingsViewModel : BaseViewModel
 {
-    // Automatyczna generacja właściwości i metody OnAreNotificationsEnabledChanged
+    [ObservableProperty]
+    bool isRefreshing;
     [ObservableProperty]
     private bool areNotificationsEnabled;
+    [ObservableProperty]
+    private UserDto userDto = new UserDto();
+    [ObservableProperty]
+    private ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+    private readonly IAuthService _authService;
+    public ObservableDictionary<string, string> ValidationErrors { get; } = new();
 
-    public SettingsViewModel()
+    public SettingsViewModel(IAuthService authService)
     {
-        // Przykład - załaduj początkową wartość przełącznika
-        //AreNotificationsEnabled = LoadNotificationPreference();
+        _authService = authService;
+        GetUser();
     }
 
-    // Obsługa przycisku "Edytuj profil"
-    [RelayCommand]
-    private async Task EditProfileAsync()
-    {
-        await Shell.Current.DisplayAlert("Edytuj profil", "Otwieranie edycji profilu...", "OK");
-        // Logika do otwierania widoku edycji profilu
-    }
-
-    // Obsługa przycisku "Zmień hasło"
     [RelayCommand]
     private async Task ChangePasswordAsync()
     {
-        await Shell.Current.DisplayAlert("Zmień hasło", "Otwieranie zmiany hasła...", "OK");
-        // Logika do otwierania widoku zmiany hasła
+        if (IsBusy) return;
+        if (!Validate()) return;
+        IsBusy = true;
+        IsRefreshing = true;
+        try
+        {
+            ChangePasswordDto.Email = userDto.Email;
+            await _authService.ChangePassword(ChangePasswordDto);
+            await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
+        }
+        catch (Exception ex)
+        {
+            ValidationErrors.Clear();
+            OnPropertyChanged(nameof(ValidationErrors));
+        }
+        finally
+        {
+            IsBusy = false;
+            IsRefreshing = false;
+        }
+    }
+    [RelayCommand]
+    private async Task GetUser()
+    {
+        if (IsBusy) return;
+
+        IsBusy = true;
+        IsRefreshing = true;
+        try
+        {
+            UserDto = await _authService.GetUser();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error!", "Nie udało się pobrać użytkownika: " + ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+            IsRefreshing = false;
+        }
     }
 
-    // Logika obsługująca powiadomienia
     private bool LoadNotificationPreference()
     {
-        // Załaduj stan przełącznika z pamięci
         return Preferences.Get("AreNotificationsEnabled", true);
     }
 
     private void SaveNotificationPreference(bool isEnabled)
     {
-        // Zapisz stan przełącznika do pamięci
         Preferences.Set("AreNotificationsEnabled", isEnabled);
     }
 
@@ -49,4 +86,17 @@ public partial class SettingsViewModel : BaseViewModel
     //    // Wywoływane przy każdej zmianie wartości przełącznika
     //    SaveNotificationPreference(value);
     //}
+    private bool Validate()
+    {
+        ValidationErrors.Clear();
+
+        var errors = ValidationHelper.ValidateToDictionary(ChangePasswordDto);
+        foreach (var error in errors)
+        {
+            ValidationErrors[error.Key] = error.Value;
+        }
+
+        OnPropertyChanged(nameof(ValidationErrors));
+        return !errors.Any();
+    }
 }

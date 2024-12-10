@@ -27,9 +27,9 @@
                 <!-- Rola -->
                 <Label Text="Rola:" FontAttributes="Bold" />
                 <Picker
-                    Title="Wybierz rolę"
-                    ItemsSource="{Binding Roles}"
-                    SelectedItem="{Binding UserDto.Role, Mode=TwoWay}" />
+                Title="Wybierz rolę"
+                ItemsSource="{Binding Roles}"
+                SelectedItem="{Binding SelectedRole, Mode=TwoWay}" />
                 <Label Text="{Binding ValidationErrors[Role]}" TextColor="Red" FontSize="12" />
 
                 <!-- Przyciski -->

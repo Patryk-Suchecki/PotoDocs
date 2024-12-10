@@ -4,57 +4,86 @@
              xmlns:vm="clr-namespace:PotoDocs.ViewModel"
              x:Class="PotoDocs.View.SettingsPage"
              Title="Ustawienia"
+             BackgroundColor="Black"
              x:DataType="vm:SettingsViewModel">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
-
-            <!-- Logo -->
-            <Image Source="logo.png" HeightRequest="100" HorizontalOptions="Center" />
-
-            <!-- Nagłówek -->
-            <Label Text="Ustawienia" 
-                   FontSize="24" 
-                   FontAttributes="Bold" 
-                   TextColor="Black"
-                   HorizontalOptions="Start" />
-
+        <VerticalStackLayout Padding="20" Spacing="30">
+            <!-- Odświeżanie -->
             <!-- Sekcja Profil -->
-            <VerticalStackLayout Spacing="15">
-                <Label Text="Profil" 
-                       FontSize="18" 
-                       FontAttributes="Bold" 
-                       TextColor="#990000" 
+            <VerticalStackLayout Padding="20" Spacing="30">
+                <RefreshView Command="{Binding GetUserCommand}" IsRefreshing="{Binding IsRefreshing}">
+                    <VerticalStackLayout Spacing="20">
+                        <Label Text="Profil" FontSize="18" FontAttributes="Bold" />
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="Imię:" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label Text="{Binding UserDto.FirstName}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="Nazwisko:" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label Text="{Binding UserDto.LastName}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="E-mail:" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label Text="{Binding UserDto.Email}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="Rola:" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label Text="{Binding UserDto.Role}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </RefreshView>
+            </VerticalStackLayout>
+
+            <!-- Sekcja zmiany hasła -->
+            <VerticalStackLayout Spacing="20">
+                <Label Text="Zmiana hasła"
+                       FontSize="18"
+                       FontAttributes="Bold"
                        HorizontalOptions="Start" />
 
-                <!-- Edytuj profil -->
-                <Button Text="Edytuj profil"
-                        FontSize="16"
-                        HorizontalOptions="Start"
-                        Command="{Binding EditProfileCommand}" />
+                <!-- Stare hasło -->
+                <Entry Text="{Binding ChangePasswordDto.OldPassword}" Placeholder="Wprowadź stare hasło" IsPassword="True"/>
+                <Label Text="{Binding ValidationErrors[OldPassword]}" TextColor="Red" FontSize="12" />
 
-                <!-- Zmień hasło -->
+                <!-- Nowe hasło -->
+                <Entry Text="{Binding ChangePasswordDto.NewPassword}" Placeholder="Wprowadź nowe hasło"  IsPassword="True"/>
+                <Label Text="{Binding ValidationErrors[NewPassword]}" TextColor="Red" FontSize="12" />
+
                 <Button Text="Zmień hasło"
                         FontSize="16"
-                        HorizontalOptions="Start"
+                        CornerRadius="10"
+                        Padding="10"
                         Command="{Binding ChangePasswordCommand}" />
             </VerticalStackLayout>
 
             <!-- Sekcja Powiadomienia -->
-            <VerticalStackLayout Spacing="15">
-                <Label Text="Powiadomienia" 
-                       FontSize="18" 
-                       FontAttributes="Bold" 
-                       TextColor="#990000" 
+            <VerticalStackLayout Spacing="20">
+                <Label Text="Powiadomienia"
+                       FontSize="18"
+                       FontAttributes="Bold"
                        HorizontalOptions="Start" />
 
-                <Grid ColumnDefinitions="50, *, Auto" RowDefinitions="Auto">
-                    <Image Source="bell_icon.png" HeightRequest="30" VerticalOptions="Center" />
-                    <Label Text="Włącz powiadomienia aplikacji" FontSize="16" VerticalOptions="Center" />
-                    <Switch IsToggled="{Binding AreNotificationsEnabled}" VerticalOptions="Center" />
-                </Grid>
+                <!-- Włącz powiadomienia -->
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
+                    <Label Text="Włącz powiadomienia aplikacji"
+                           FontSize="16"
+                           VerticalOptions="Center"/>
+
+                    <Switch IsToggled="{Binding AreNotificationsEnabled}"/>
+                </HorizontalStackLayout>
             </VerticalStackLayout>
+            <ActivityIndicator Grid.RowSpan="2"
+                               Grid.ColumnSpan="2"
+                               HorizontalOptions="Fill"
+                               IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Primary}"
+                               VerticalOptions="Center" />
         </VerticalStackLayout>
     </ScrollView>
-
 </ContentPage>

@@ -5,6 +5,8 @@ namespace PotoDocs.ViewModel;
 
 public partial class DriversViewModel : BaseViewModel
 {
+    [ObservableProperty]
+    bool isRefreshing;
     public ObservableCollection<UserDto> Users { get; } = new();
     IAuthService _authService;
     public DriversViewModel(IAuthService authService)
@@ -12,9 +14,6 @@ public partial class DriversViewModel : BaseViewModel
         _authService = authService;
         GetUsersAsync();
     }
-
-    [ObservableProperty]
-    bool isRefreshing;
 
     [RelayCommand]
     async Task GetUsersAsync()
@@ -24,6 +23,7 @@ public partial class DriversViewModel : BaseViewModel
 
         try
         {
+            IsRefreshing = true;
             IsBusy = true;
             var users = await _authService.GetAll();
 

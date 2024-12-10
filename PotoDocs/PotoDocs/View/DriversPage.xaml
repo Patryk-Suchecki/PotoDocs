@@ -41,6 +41,7 @@
                                 <HorizontalStackLayout Grid.Column="0" Spacing="5">
                                     <Label Text="{Binding FirstName}" FontAttributes="Bold" FontSize="16" />
                                     <Label Text="{Binding LastName}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding Role}" FontAttributes="Bold" FontSize="16" />
                                 </HorizontalStackLayout>
                             </Grid>
                             <Frame.GestureRecognizers>

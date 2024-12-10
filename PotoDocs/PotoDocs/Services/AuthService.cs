@@ -18,6 +18,8 @@ public interface IAuthService
     void Logout();
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(string email);
+    Task<UserDto> GetUser();
+    Task ChangePassword(ChangePasswordDto dto);
 }
 
 public class AuthService : IAuthService
@@ -154,6 +156,42 @@ public class AuthService : IAuthService
         }
 
         return null;
+    }
+    public async Task<UserDto> GetUser()
+    {
+        var httpClient = await GetAuthenticatedHttpClientAsync();
+
+        var response = await httpClient.GetAsync("api/account/user");
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<UserDto>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return apiResponse.Data;
+        }
+
+        return null;
+    }
+    public async Task ChangePassword(ChangePasswordDto dto)
+    {
+        var httpClient = await GetAuthenticatedHttpClientAsync();
+        var jsonContent = new StringContent(
+            JsonSerializer.Serialize(dto),
+            Encoding.UTF8,
+            "application/json"
+        );
+        var response = await httpClient.PostAsync("api/account/change-password", jsonContent);
+        var snackbar = Snackbar.Make("Hasło zostało zmienione wylogowywanie...", duration: TimeSpan.FromSeconds(3));
+
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            snackbar = Snackbar.Make("Błąd: " + errorContent, duration: TimeSpan.FromSeconds(3));
+        }
+        await snackbar.Show();
     }
 }
 

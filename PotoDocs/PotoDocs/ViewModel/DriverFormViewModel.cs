@@ -8,10 +8,25 @@ namespace PotoDocs.ViewModel;
 public partial class DriverFormViewModel : BaseViewModel
 {
     [ObservableProperty]
-    UserDto userDto;
+    UserDto userDto = new UserDto();
 
     [ObservableProperty]
     bool isRefreshing;
+    private string selectedRole;
+    public string SelectedRole
+    {
+        get => selectedRole;
+        set
+        {
+            selectedRole = value;
+            if (UserDto != null)
+            {
+                UserDto.Role = selectedRole;
+            }
+            OnPropertyChanged();
+        }
+    }
+
     public ObservableDictionary<string, string> ValidationErrors { get; } = new();
     public ObservableCollection<string> Roles { get; } = new ();
 
@@ -50,6 +65,7 @@ public partial class DriverFormViewModel : BaseViewModel
             {
                 Roles.Add(role);
             }
+            SelectedRole = UserDto?.Role != null ? Roles.FirstOrDefault(u => u == UserDto.Role) : null;
         }
         catch (Exception ex)
         {

@@ -68,13 +68,20 @@ namespace PotoDocs.API.Services
 
         public void Update(int invoiceNumber, OrderDto dto)
         {
-            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
+            var order = _dbContext.Orders
+                .Include(o => o.Driver)
+                .Include(o => o.CMRFiles)
+                .FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
+
             if (order == null) return;
 
-            // Mapowanie dto na istniejące zamówienie
             _mapper.Map(dto, order);
-            if(dto.Driver != null)
+
+            if (dto.Driver != null)
+            {
                 order.Driver = _dbContext.Users.FirstOrDefault(u => u.Email == dto.Driver.Email);
+            }
+
             _dbContext.SaveChanges();
         }
 

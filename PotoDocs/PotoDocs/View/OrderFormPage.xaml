@@ -29,7 +29,7 @@
                 <Label Text="Kierowca:" FontAttributes="Bold" />
                 <Picker ItemsSource="{Binding Users}" 
                         SelectedItem="{Binding SelectedDriver, Mode=TwoWay}" 
-                        ItemDisplayBinding="{Binding FirstAndLastName}" 
+                        ItemDisplayBinding="{Binding SelectedDriver.FirstAndLastName}" 
                         Title="Wybierz kierowcę" />
 
                 <Label Text="Adres firmy:" FontAttributes="Bold" />
@@ -70,7 +70,15 @@
 
                 <Label Text="Uwagi:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
+                
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
+                    <Label Text="Opłacona:"
+                           FontSize="16"
+                           VerticalOptions="Center"/>
 
+                    <Switch IsToggled="{Binding OrderDto.HasPaid}"/>
+                </HorizontalStackLayout>
+                
                 <Label Text="Lista CMR:" FontAttributes="Bold" />
                 <CollectionView ItemsSource="{Binding OrderDto.CMRFiles}" SelectionMode="None">
                     <CollectionView.ItemTemplate>

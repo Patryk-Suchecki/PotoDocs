@@ -61,6 +61,12 @@
         Icon="icon_download.png"
         ContentTemplate="{DataTemplate view:DownloadPage}"
         Route="DownloadPage" />
+        
+        <ShellContent
+        Title="Ustawienia"
+        Icon="icon_download.png"
+        ContentTemplate="{DataTemplate view:SettingsPage}"
+        Route="SettingsPage" />
     </FlyoutItem>
     <ShellContent
         Title="Wyloguj"
