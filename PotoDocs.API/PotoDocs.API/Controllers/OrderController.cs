@@ -16,9 +16,9 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("all")]
-    public ActionResult<IEnumerable<OrderDto>> GetAll()
+    public ActionResult<PaginatedResponse<OrderDto>> GetAll([FromQuery] string? filter, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
     {
-        var response = _orderService.GetAll();
+        var response = _orderService.GetAll(filter, page, pageSize);
         return StatusCode(response.StatusCode, response);
     }
 

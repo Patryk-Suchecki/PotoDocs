@@ -15,15 +15,22 @@ public class OrderService
         _authService = authService;
     }
 
-    public async Task<IEnumerable<OrderDto>> GetAll()
+    public async Task<PaginatedResponse<OrderDto>> GetAll(string? filter = null, int page = 1, int pageSize = 15)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync("api/order/all");
+        // Tworzenie zapytania URL z parametrami
+        var query = $"api/order/all?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrEmpty(filter))
+        {
+            query += $"&filter={Uri.EscapeDataString(filter)}";
+        }
+
+        var response = await httpClient.GetAsync(query);
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<OrderDto>>>(content, new JsonSerializerOptions
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<PaginatedResponse<OrderDto>>>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -32,7 +39,9 @@ public class OrderService
         else
         {
             var statusCode = response.StatusCode;
+            Debug.WriteLine($"Błąd pobierania zamówień: {statusCode}");
         }
+
         return null;
     }
     public async Task<OrderDto> GetById(int invoiceNumber)

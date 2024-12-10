@@ -11,7 +11,7 @@ namespace PotoDocs.API.Services
 {
     public interface IOrderService
     {
-        ApiResponse<IEnumerable<OrderDto>> GetAll();
+        ApiResponse<PaginatedResponse<OrderDto>> GetAll(string? filter, int page, int pageSize);
         ApiResponse<OrderDto> GetById(int id);
         void Delete(int invoiceNumber);
         void Update(int invoiceNumber, OrderDto dto);
@@ -37,14 +37,41 @@ namespace PotoDocs.API.Services
             _invoiceService = invoiceService;
         }
 
-        public ApiResponse<IEnumerable<OrderDto>> GetAll()
+        public ApiResponse<PaginatedResponse<OrderDto>> GetAll(string? filter, int page, int pageSize)
         {
-            var orders = _dbContext.Orders.Include(o => o.Driver)
-                                          .Include(c => c.CMRFiles)
-                                          .ToList();
+            // Zapytanie bazowe
+            var query = _dbContext.Orders.Include(o => o.Driver)
+                                         .Include(c => c.CMRFiles)
+                                         .AsQueryable();
+
+            // Filtrowanie
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                query = query.Where(o => o.CompanyName.Contains(filter) ||
+                                         o.Driver.FirstName.Contains(filter) ||
+                                         o.Driver.LastName.Contains(filter) ||
+                                         o.InvoiceNumber.ToString().Contains(filter));
+            }
+
+            // Paginacja
+            var totalItems = query.Count();
+            var orders = query.Skip((page - 1) * pageSize)
+                              .Take(pageSize)
+                              .ToList();
 
             var ordersDto = _mapper.Map<List<OrderDto>>(orders);
-            return ApiResponse<IEnumerable<OrderDto>>.Success(ordersDto);
+
+            // Tworzenie odpowiedzi
+            var paginatedResponse = new PaginatedResponse<OrderDto>
+            {
+                Items = ordersDto,
+                TotalItems = totalItems,
+                PageSize = pageSize,
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
+            };
+
+            return ApiResponse<PaginatedResponse<OrderDto>>.Success(paginatedResponse);
         }
 
         public ApiResponse<OrderDto> GetById(int id)
