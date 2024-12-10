@@ -1,56 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:PotoDocs"
-             x:Class="PotoDocs.View.MainPage">
-    <VerticalStackLayout Padding="10" Spacing="10">
+             xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
+             xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
+             x:Class="PotoDocs.View.MainPage"
+             x:DataType="viewmodel:MainViewModel"
+             Title="Twoje zlecenia">
 
-        <!-- Nagłówek -->
-        <Grid ColumnDefinitions="*,Auto" Margin="0,35,0,0">
-            <Label Text="Ostatnie zlecenia"
-                   FontSize="20"
-                   FontFamily="RobotoMedium"
-                   FontAttributes="Bold"
-                   TextColor="#8C0000"
-                   HorizontalOptions="Start" />
-            <Button Text="Dodaj zlecenie"
-                    BackgroundColor="#B20101"
-                    TextColor="White"
-                    FontFamily="RobotoMedium"
-                    FontSize="18"
-                    CornerRadius="10"
-                    HorizontalOptions="End"
-                    Padding="10,5"
-                    WidthRequest="158"
-                    HeightRequest="38"/>
-        </Grid>
+    <VerticalStackLayout Padding="15" Spacing="15">
+
+        <!-- Powitanie użytkownika -->
+        <Label Text="{Binding UserDto.FirstName, StringFormat='Cześć {0}!'}"
+               FontSize="20"
+               FontAttributes="Bold"
+               TextColor="Black"
+               Margin="0,15,0,0" />
+
+        <!-- Tytuł sekcji -->
+        <Label Text="Twoje zlecenia"
+               FontSize="18"
+               FontAttributes="Bold"
+               TextColor="Red"
+               Margin="0,10,0,0" />
 
         <!-- Lista zleceń -->
-        <CollectionView ItemsSource="{Binding Orders}" SelectionMode="None">
+        <CollectionView ItemsSource="{Binding Orders}" SelectionMode="None" VerticalOptions="FillAndExpand">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                <DataTemplate x:DataType="model:OrderDto">
+                    <Frame Padding="10" Margin="5,0" HasShadow="False" BorderColor="LightGray">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                             <!-- Dane po lewej stronie -->
                             <VerticalStackLayout Grid.Column="0" Spacing="5">
-                                <Label Text="Mlekovita sp.z.o.o." FontAttributes="Bold" FontSize="16" />
-                                <Label Text="Załadunek 10.09.2024" FontSize="14" TextColor="Gray" />
-                                <Label Text="5000 EUR" FontSize="14" />
+                                <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" />
+                                <Label Text="{Binding LoadingDate, StringFormat='{0:dd.MM.yyyy}'}"
+                                       FontSize="14" TextColor="Gray" />
                             </VerticalStackLayout>
 
-                            <!-- Dane po prawej stronie -->
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
-                                <Label Text="Jakub Potoniec" FontSize="14" />
-                                <Label Text="Zakończono" FontSize="14" TextColor="Green" />
+                            <!-- Dane po prawej stronie
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End">
+                                <Label Text="{Binding StatusText}"
+                                       FontSize="14"
+                                       TextColor="{Binding StatusColor}" />
                             </VerticalStackLayout>
+                            -->
                         </Grid>
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <!-- Przycisk "Pokaż więcej" -->
+        <!-- Przycisk "Pokaż więcej" 
         <Button Text="Pokaż więcej"
+                Command="{Binding ShowMoreCommand}"
                 TextColor="White"
                 FontFamily="RobotoBold"
                 FontSize="20"
@@ -66,5 +67,6 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
+        -->
     </VerticalStackLayout>
 </ContentPage>

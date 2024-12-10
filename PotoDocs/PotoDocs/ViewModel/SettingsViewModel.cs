@@ -1,7 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using PotoDocs.Services;
-using PotoDocs.Shared.Models;
+﻿using PotoDocs.Services;
 using PotoDocs.View;
 
 namespace PotoDocs.ViewModel;

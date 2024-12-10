@@ -29,7 +29,7 @@
                 <Label Text="Kierowca:" FontAttributes="Bold" />
                 <Picker ItemsSource="{Binding Users}" 
                         SelectedItem="{Binding SelectedDriver, Mode=TwoWay}" 
-                        ItemDisplayBinding="{Binding SelectedDriver.FirstAndLastName}" 
+                        ItemDisplayBinding="{Binding FirstAndLastName}" 
                         Title="Wybierz kierowcę" />
 
                 <Label Text="Adres firmy:" FontAttributes="Bold" />

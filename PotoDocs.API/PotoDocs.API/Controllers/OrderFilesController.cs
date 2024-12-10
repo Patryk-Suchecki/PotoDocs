@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PotoDocs.API.Entities;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 

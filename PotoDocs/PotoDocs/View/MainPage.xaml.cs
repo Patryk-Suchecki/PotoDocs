@@ -5,9 +5,10 @@ namespace PotoDocs.View;
 public partial class MainPage : ContentPage
 {
     private readonly IAuthService _authService;
-    public MainPage(IAuthService authService)
+    public MainPage(MainViewModel viewModel, IAuthService authService)
     {
         InitializeComponent();
+        BindingContext = viewModel;
         _authService = authService;
     }
 
@@ -17,14 +18,9 @@ public partial class MainPage : ContentPage
 
         var isAuthenticated = await _authService.IsUserAuthenticated();
 
-        // Wykonanie nawigacji na wątku interfejsu użytkownika
         Dispatcher.Dispatch(async () =>
         {
-            if (isAuthenticated)
-            {
-                await Shell.Current.GoToAsync($"//{nameof(OrdersPage)}");
-            }
-            else
+            if (!isAuthenticated)
             {
                 await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
             }

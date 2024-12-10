@@ -7,7 +7,7 @@ namespace PotoDocs.Services;
 
 public interface IOrderService
 {
-    Task<IEnumerable<OrderDto>> GetAll();
+    Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null);
     Task<OrderDto> GetById(int invoiceNumber);
     Task Delete(int invoiceNumber);
     Task<OrderDto> Create(string filePath);
@@ -28,22 +28,31 @@ public class OrderService : IOrderService
         _authService = authService;
     }
 
-    public async Task<IEnumerable<OrderDto>> GetAll()
+    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync("api/order/all");
+        var query = $"api/order/all?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrEmpty(driverEmail))
+        {
+            query += $"&driverEmail={Uri.EscapeDataString(driverEmail)}";
+        }
+
+        var response = await httpClient.GetAsync(query);
+
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
+
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<OrderDto>>>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
-            return apiResponse.Data;
+
+            return apiResponse?.Data;
         }
 
-        return null;
+        throw new Exception($"API call failed with status code {response.StatusCode} and message {await response.Content.ReadAsStringAsync()}");
     }
     public async Task<OrderDto> GetById(int invoiceNumber)
     {

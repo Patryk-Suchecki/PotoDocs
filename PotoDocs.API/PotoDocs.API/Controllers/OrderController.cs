@@ -16,9 +16,10 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("all")]
-    public ActionResult<IEnumerable<OrderDto>> GetAll()
+    public ActionResult<IEnumerable<OrderDto>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? driverEmail = null)
     {
-        var response = _orderService.GetAll();
+        var response = _orderService.GetAll(page, pageSize, driverEmail);
+
         return StatusCode(response.StatusCode, response);
     }
 
