@@ -10,14 +10,7 @@
     ios:Page.UseSafeArea="True"
     Title="{Binding Title}"
     x:DataType="viewmodel:OrdersViewModel">
-    
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <converter:OrderStatusConverter x:Key="OrderStatusConverter" />
-            <converter:OrderStatusColorConverter x:Key="OrderStatusColorConverter" />
-        </ResourceDictionary>
-    </ContentPage.Resources>
-    
+
     <Grid
         ColumnDefinitions="*,*"
         ColumnSpacing="5"
