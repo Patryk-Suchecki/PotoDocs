@@ -28,19 +28,29 @@ public partial class OrdersViewModel : BaseViewModel
             if (_connectivity.NetworkAccess != NetworkAccess.Internet)
             {
                 await Shell.Current.DisplayAlert("No connectivity!",
-                    $"Please check internet and try again.", "OK");
+                    $"Please check your internet connection and try again.", "OK");
                 return;
             }
             IsRefreshing = true;
             IsBusy = true;
             var orders = await _orderService.GetAll();
 
-            if (Orders.Count != 0)
-                Orders.Clear();
+            // Pobranie danych z API
+            var response = await orderService.GetAll(null, currentPage, pageSize);
 
-            foreach (var order in orders)
-                Orders.Add(order);
+            if (response != null)
+            {
+                if (currentPage == 1) // Jeśli to pierwsza strona, wyczyść listę
+                    Orders.Clear();
 
+                foreach (var order in response.Items)
+                {
+                    Orders.Add(order);
+                }
+
+                // Zaktualizuj dane paginacji
+                totalPages = response.TotalPages;
+            }
         }
         catch (Exception ex)
         {
@@ -51,7 +61,6 @@ public partial class OrdersViewModel : BaseViewModel
             IsBusy = false;
             IsRefreshing = false;
         }
-
     }
 
     [RelayCommand]

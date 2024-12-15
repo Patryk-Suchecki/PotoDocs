@@ -134,8 +134,9 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <!-- Przycisk "Pokaż więcej" -->
+        <!-- Przycisk "Pokaż więcej" 
         <Button Text="Pokaż więcej"
+                Command="{Binding ShowMoreCommand}"
                 TextColor="White"
                 FontFamily="RobotoBold"
                 FontSize="20"
@@ -151,5 +152,6 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
+        -->
     </VerticalStackLayout>
 </ContentPage>

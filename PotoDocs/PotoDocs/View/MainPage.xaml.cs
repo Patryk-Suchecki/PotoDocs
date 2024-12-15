@@ -10,6 +10,7 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
         _authService = authService;
+        BindingContext = viewModel;
     }
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
