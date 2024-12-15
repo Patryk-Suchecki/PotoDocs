@@ -36,6 +36,9 @@
                 <Entry Text="{Binding OrderDto.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy" />
                 <Label Text="{Binding ValidationErrors[CompanyAddress]}" TextColor="Red" FontSize="12" />
 
+                <Label Text="Kraj:" FontAttributes="Bold" />
+                <Entry Text="{Binding OrderDto.CompanyCountry, Mode=TwoWay}" Placeholder="Wprowadź kraj" />
+                
                 <HorizontalStackLayout Spacing="10">
                     <VerticalStackLayout>
                         <Label Text="Data załadunku:" FontAttributes="Bold" />
@@ -70,7 +73,7 @@
 
                 <Label Text="Uwagi:" FontAttributes="Bold" />
                 <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi" />
-                
+
                 <HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
                     <Label Text="Opłacona:"
                            FontSize="16"
@@ -78,7 +81,7 @@
 
                     <Switch IsToggled="{Binding OrderDto.HasPaid}"/>
                 </HorizontalStackLayout>
-                
+
                 <Label Text="Lista CMR:" FontAttributes="Bold" />
                 <CollectionView ItemsSource="{Binding OrderDto.CMRFiles}" SelectionMode="None">
                     <CollectionView.ItemTemplate>

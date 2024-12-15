@@ -59,7 +59,7 @@ public class OrderFilesController : ControllerBase
             return BadRequest("Nie udało się wygenerować faktury.");
         }
 
-        string invoiceFileName = $"FAKTURA_{FormatInvoiceNumber(invoiceNumber)}.pdf";
+        string invoiceFileName = $"{FormatInvoiceNumber(invoiceNumber)}.pdf";
 
         return File(pdfData, "application/pdf", invoiceFileName);
     }
@@ -73,7 +73,7 @@ public class OrderFilesController : ControllerBase
             return BadRequest("Nie udało się wygenerować faktury.");
         }
 
-        string invoiceFileName = $"FAKTURY_{dto.Month}-{dto.Year}.pdf";
+        string invoiceFileName = $"FAKTURY_{dto.Month:D2}-{dto.Year}.pdf";
 
         return File(pdfData, "application/pdf", invoiceFileName);
     }
@@ -85,6 +85,6 @@ public class OrderFilesController : ControllerBase
         string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
         string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
 
-        return $"FAKTURA {numberPart}-{monthPart}-{yearPart}";
+        return $"FAKTURA {numberPart:D2}-{monthPart}-{yearPart}";
     }
 }

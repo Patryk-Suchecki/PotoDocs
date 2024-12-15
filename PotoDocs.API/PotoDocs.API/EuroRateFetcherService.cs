@@ -37,11 +37,10 @@ public static class EuroRateFetcherService
 
             var rate = exchangeRateData.Rates[0].Mid;
             var tableNo = exchangeRateData.Rates[0].No;
-            var effectiveDate = exchangeRateData.Rates[0].EffectiveDate.ToString("dd.MM.yyyy");
+            var effectiveDate = exchangeRateData.Rates[0].EffectiveDate.ToString("dd-MM-yyyy");
 
 
-            string message = $"Kwota VAT została przeliczona na złote polskie po kursie średnim NBP dla EUR, " +
-                             $"Tabela nr. {tableNo} z {effectiveDate}.";
+            string message = $"Kwota VAT została przeliczona na złote polskie po kursie średnim NBP dla EUR, Tabela nr\n{tableNo} z {effectiveDate}.";
 
             return new EuroRateResult
             {

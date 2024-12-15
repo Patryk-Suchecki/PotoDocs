@@ -145,14 +145,16 @@ public partial class OrdersViewModel : BaseViewModel
             }
         };
         process.Start();
+        process.Close();
 #else
         await Share.RequestAsync(new ShareFileRequest
         {
             Title = "Zapisz pdf",
             File = new ShareFile(outputPath)
         });
-        IsBusy = false;
+
 #endif
+        IsBusy = false;
     }
 }
 

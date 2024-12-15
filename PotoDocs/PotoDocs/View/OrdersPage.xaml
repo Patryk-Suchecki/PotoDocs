@@ -83,6 +83,14 @@
 
                                     <!-- Dane po prawej stronie -->
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5" HorizontalOptions="End">
+                                        <Button
+                                            Margin="8"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DownloadInvoiceCommand}"
+                                            CommandParameter="{Binding .}"
+                                            ImageSource="icon_add_order.png"
+                                            WidthRequest="80"
+                                            HeightRequest="80"
+                                            BackgroundColor="White" />
                                         <Label Text="{Binding Driver.FirstAndLastName}" FontSize="14" />
                                         <Label Text="{Binding ., Converter={StaticResource OrderStatusConverter}}" FontSize="14" TextColor="{Binding ., Converter={StaticResource OrderStatusColorConverter}}" />
                                     </VerticalStackLayout>

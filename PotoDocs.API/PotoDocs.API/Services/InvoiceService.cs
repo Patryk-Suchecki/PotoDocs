@@ -42,7 +42,7 @@ public class InvoiceService : IInvoiceService
             decimal vatAmountPln = vatAmount * euroRateResult.Rate;
             decimal totalAmountPln = grossAmount * euroRateResult.Rate;
 
-            pdf.SetField("NUMER_FAKTURY", $"Nr {order.InvoiceNumber / 1000000}/{order.InvoiceIssueDate:MM}/{order.InvoiceIssueDate:yyyy}");
+            pdf.SetField("NUMER_FAKTURY", $"Nr {order.InvoiceNumber / 1000000:D2}/{order.InvoiceIssueDate:MM}/{order.InvoiceIssueDate:yyyy}");
             pdf.SetField("NAZWA_FIRMY", order.CompanyName);
             pdf.SetField("ADRES_FIRMY", order.CompanyAddress);
             pdf.SetField("NIP_FIRMY", order.CompanyNIP.ToString());
@@ -62,9 +62,9 @@ public class InvoiceService : IInvoiceService
             pdf.SetField("KWOTA_VAT2", FormatCurrency(vatAmount, "€"));
             pdf.SetField("SLOWNIE_EURO", NumberToWordsConverter.AmountInWords(grossAmount, "EUR"));
             pdf.SetField("CENA_EURO", euroRateResult.Rate.ToString());
-            pdf.SetField("KWOTA_VAT_PLN", FormatCurrency(vatAmountPln));
+            pdf.SetField("KWOTA_VAT_PLN", FormatCurrency(vatAmountPln, "zł"));
             pdf.SetField("SLOWNIE_KWOTA_VAT_PLN", NumberToWordsConverter.AmountInWords(vatAmountPln, "PLN"));
-            pdf.SetField("CALA_KWOTA_PLN", FormatCurrency(totalAmountPln));
+            pdf.SetField("CALA_KWOTA_PLN", FormatCurrency(totalAmountPln, "zł"));
             pdf.SetField("SLOWNIE_CALA_KWOTA_PLN", NumberToWordsConverter.AmountInWords(totalAmountPln, "PLN"));
             pdf.SetField("KURS_EURO_INFO", euroRateResult.Message);
             pdf.SetFieldProperty("UWAGI", "textfont", bfArialBold, null);

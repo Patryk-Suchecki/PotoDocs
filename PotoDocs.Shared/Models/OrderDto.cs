@@ -32,7 +32,6 @@ public class OrderDto
     [Range(0, double.MaxValue, ErrorMessage = "Cena nie może być ujemna.")]
     public decimal? Price { get; set; }
 
-    [StringLength(3, ErrorMessage = "Kod waluty musi mieć maksymalnie 3 znaki.")]
     public string? Currency { get; set; }
 
     public int? PaymentDeadline { get; set; }
