@@ -1,72 +1,77 @@
-﻿
+﻿using PotoDocs.Services;
+using PotoDocs.View;
 
-using PotoDocs.Services;
-
-namespace PotoDocs.ViewModel;
-
-public partial class MainViewModel : BaseViewModel
+namespace PotoDocs.ViewModel
 {
-    public ObservableCollection<OrderDto> Orders { get; } = new();
-    [ObservableProperty]
-    bool isRefreshing;
-    [ObservableProperty]
-    private UserDto userDto = new UserDto();
-    private readonly IUserService _userService;
-    private readonly IOrderService _orderService;
-    public MainViewModel(IAuthService authService, IUserService userService, IOrderService orderService)
+    public partial class MainViewModel : BaseViewModel
     {
-        _userService = userService;
-        _orderService = orderService;
-        GetUser();
-    }
-    [RelayCommand]
-    private async Task GetUser()
-    {
-        if (IsBusy) return;
+        public ObservableCollection<OrderDto> Orders { get; } = new();
+        private readonly IOrderService _orderService;
+        private readonly IConnectivity _connectivity;
 
-        IsBusy = true;
-        IsRefreshing = true;
-        try
+        public MainViewModel(IOrderService orderService, IConnectivity connectivity)
         {
-            UserDto = await _userService.GetUser();
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error!", "Nie udało się pobrać użytkownika: " + ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-            IsRefreshing = false;
-        }
-    }
-    [RelayCommand]
-    async Task GetAll()
-    {
-        if (IsBusy) return;
+            Title = "Strona główna";
+            _orderService = orderService;
+            _connectivity = connectivity;
 
-        try
-        {
-            IsRefreshing = true;
-            IsBusy = true;
-            var orders = await _orderService.GetAll(1, 10, UserDto.Email);
-
-            if (Orders.Count != 0)
-                Orders.Clear();
-
-            foreach (var order in orders)
-                Orders.Add(order);
-
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Błąd!", "Nie udało się pobrać zleceń:" + ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-            IsRefreshing = false;
+            GetOrdersAsync();
         }
 
+        [ObservableProperty]
+        bool isRefreshing;
+
+        [RelayCommand]
+        async Task GetOrdersAsync()
+        {
+            if (IsBusy)
+                return;
+
+            try
+            {
+                if (_connectivity.NetworkAccess != NetworkAccess.Internet)
+                {
+                    await Shell.Current.DisplayAlert("Brak połączenia!",
+                        "Sprawdź połączenie z internetem i spróbuj ponownie.", "OK");
+                    return;
+                }
+
+                IsBusy = true;
+
+                // Pobierz pierwsze 5 zamówień
+                var orders = await _orderService.GetAll();
+
+                if (orders != null)
+                {
+                    Orders.Clear();
+                    foreach (var order in orders)
+                    {
+                        Orders.Add(order);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Błąd pobierania ostatnich zleceń: {ex.Message}");
+                await Shell.Current.DisplayAlert("Błąd!", ex.Message, "OK");
+            }
+            finally
+            {
+                IsBusy = false;
+                IsRefreshing = false;
+            }
+        }
+
+        [RelayCommand]
+        async Task GoToDetails(OrderDto order)
+        {
+            if (order == null)
+                return;
+
+            await Shell.Current.GoToAsync(nameof(DetailsPage), true, new Dictionary<string, object>
+        {
+            {"OrderDto", order }
+        });
+        }
     }
 }

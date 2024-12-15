@@ -31,7 +31,7 @@
         </Grid>
 
         <!-- Lista ostatnich zleceń -->
-        <CollectionView Grid.Row="1" Grid.ColumnSpan="2" ItemsSource="{Binding RecentOrders}" SelectionMode="None">
+        <CollectionView Grid.Row="1" Grid.ColumnSpan="2" ItemsSource="{Binding Orders}" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="model:OrderDto">
                     <SwipeView>

@@ -35,21 +35,15 @@ public partial class OrdersViewModel : BaseViewModel
             IsBusy = true;
             var orders = await _orderService.GetAll();
 
-            // Pobranie danych z API
-            var response = await orderService.GetAll(null, currentPage, pageSize);
 
-            if (response != null)
+            if (orders != null)
             {
-                if (currentPage == 1) // Jeśli to pierwsza strona, wyczyść listę
-                    Orders.Clear();
+                Orders.Clear();
 
-                foreach (var order in response.Items)
+                foreach (var order in orders)
                 {
                     Orders.Add(order);
                 }
-
-                // Zaktualizuj dane paginacji
-                totalPages = response.TotalPages;
             }
         }
         catch (Exception ex)
