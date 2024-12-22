@@ -67,48 +67,7 @@ public partial class OrdersViewModel : BaseViewModel
             {"OrderDto", order }
         });
     }
-    [RelayCommand]
-    async Task Create()
-    {
-        try
-        {
-            var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
-                { DevicePlatform.Android, new[] { "application/pdf" } },
-                { DevicePlatform.WinUI, new[] { ".pdf" } },
-                { DevicePlatform.MacCatalyst, new[] { "pdf" } }
-            });
 
-            var pickOptions = new PickOptions
-            {
-                PickerTitle = "Wybierz plik PDF",
-                FileTypes = pdfFileType
-            };
-
-            var result = await FilePicker.Default.PickAsync(pickOptions);
-            if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-            {
-                IsBusy = true;
-                OrderDto order = await _orderService.Create(result.FullPath);
-
-                await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
-                {
-                    {"OrderDto", order },
-                    {"title", "Dodaj nowe zlecenie" },
-                    { "InvoiceNumber", order.InvoiceNumber}
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Błąd!", "Nie udało się utworzyć zlecenia:" + ex.Message, "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
     [RelayCommand]
     async Task Edit(OrderDto order)
     {
@@ -117,7 +76,6 @@ public partial class OrdersViewModel : BaseViewModel
         await Shell.Current.GoToAsync(nameof(OrderFormPage), true, new Dictionary<string, object>
                 {
                     {"OrderDto", order },
-                    { "title", "Edytuj zlecenie" },
                     { "InvoiceNumber", order.InvoiceNumber}
                 });
 
