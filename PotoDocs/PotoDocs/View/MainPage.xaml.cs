@@ -7,9 +7,9 @@ public partial class MainPage : ContentPage
     private readonly IAuthService _authService;
     public MainPage(MainViewModel viewModel, IAuthService authService)
     {
-        InitializeComponent();
         BindingContext = viewModel;
         _authService = authService;
+        InitializeComponent();
     }
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)

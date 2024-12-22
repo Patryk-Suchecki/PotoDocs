@@ -28,19 +28,23 @@ public partial class OrdersViewModel : BaseViewModel
             if (_connectivity.NetworkAccess != NetworkAccess.Internet)
             {
                 await Shell.Current.DisplayAlert("No connectivity!",
-                    $"Please check internet and try again.", "OK");
+                    $"Please check your internet connection and try again.", "OK");
                 return;
             }
             IsRefreshing = true;
             IsBusy = true;
             var orders = await _orderService.GetAll();
 
-            if (Orders.Count != 0)
+
+            if (orders != null)
+            {
                 Orders.Clear();
 
-            foreach (var order in orders)
-                Orders.Add(order);
-
+                foreach (var order in orders)
+                {
+                    Orders.Add(order);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -51,7 +55,6 @@ public partial class OrdersViewModel : BaseViewModel
             IsBusy = false;
             IsRefreshing = false;
         }
-
     }
 
     [RelayCommand]
