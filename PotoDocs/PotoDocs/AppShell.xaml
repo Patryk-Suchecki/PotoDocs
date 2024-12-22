@@ -7,7 +7,8 @@
        FlyoutWidth="250">
 
     <Shell.TitleView>
-        <Image Source="logo.png" 
+        <Image x:Name="LogoImage"
+               Source="logo.png" 
             WidthRequest="150" 
             HorizontalOptions="End" 
             Margin="0,0,25,0"
@@ -42,7 +43,8 @@
         Title="Nowe zlecenie"
         Icon="icon_neworder.png"
         ContentTemplate="{DataTemplate view:OrderFormPage}"
-        Route="OrderFormPage" />
+        Route="OrderFormPage" 
+        Shell.BackgroundColor="#CA0000"/>
 
         <ShellContent
         Title="Wszystkie zlecenia"

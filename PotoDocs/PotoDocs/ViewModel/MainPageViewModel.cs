@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace PotoDocs.ViewModel
 {
@@ -44,12 +45,12 @@ namespace PotoDocs.ViewModel
                 IsBusy = true;
 
                 // Pobierz pierwsze 5 zamówień
-                var response = await orderService.GetAll(null, 1, 5);
+                var response = await orderService.GetAll(0, 5, null);
 
                 if (response != null)
                 {
                     RecentOrders.Clear();
-                    foreach (var order in response.Items)
+                    foreach (var order in response)
                     {
                         RecentOrders.Add(order);
                     }
