@@ -1,10 +1,8 @@
 ﻿using PotoDocs.Services;
 using PotoDocs.View;
-using System.ComponentModel.DataAnnotations;
 
 namespace PotoDocs.ViewModel;
 
-[QueryProperty(nameof(PageTitle), "title")]
 [QueryProperty(nameof(OrderDto), "OrderDto")]
 [QueryProperty(nameof(InvoiceNumber), "InvoiceNumber")]
 public partial class OrderFormViewModel : BaseViewModel
@@ -40,26 +38,46 @@ public partial class OrderFormViewModel : BaseViewModel
         }
     }
 
-    string pageTitle;
-    public string PageTitle
-    {
-        get => pageTitle;
-        set
-        {
-            pageTitle = value;
-            Title = pageTitle;
-        }
-    }
-
     public OrderFormViewModel(IOrderService orderService, IUserService userService, IConnectivity connectivity)
     {
         _orderService = orderService;
         _userService = userService;
         _connectivity = connectivity;
-
-        GetAllDrivers();
     }
+    public async Task Initialize()
+    {
+        if (OrderDto == null)
+        {
+            IsBusy = true;
+            IsRefreshing = true;
+            var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>{
+                { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
+                { DevicePlatform.Android, new[] { "application/pdf" } },
+                { DevicePlatform.WinUI, new[] { ".pdf" } },
+                { DevicePlatform.MacCatalyst, new[] { "pdf" } }});
 
+            var pickOptions = new PickOptions
+            {
+                PickerTitle = "Wybierz plik PDF",
+                FileTypes = pdfFileType
+            };
+
+            var result = await FilePicker.Default.PickAsync(pickOptions);
+            if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                OrderDto = await _orderService.Create(result.FullPath);
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Błąd!", "Nie udało się utworzyć zlecenia.", "OK");
+                await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
+            }
+            IsBusy = false;
+            IsRefreshing = false;
+        }
+
+        await GetAllDrivers();
+    }
     [RelayCommand]
     async Task GetAllDrivers()
     {
