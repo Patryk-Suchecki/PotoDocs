@@ -6,8 +6,12 @@
     xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
     Title="Szczegóły zlecenia"
     x:DataType="viewmodel:OrderDetailsViewModel">
-
-    <TableView Intent="Form">
+    <VerticalStackLayout Padding="10" Spacing="20">
+        <Label Text="Szczegóły zlecenia" FontSize="20"
+            FontFamily="RobotoBold"
+            TextColor="#8C0000"
+            HorizontalOptions="Start"/>
+        <TableView Intent="Form">
         <TableRoot>
             <TableSection>
 
@@ -189,4 +193,6 @@
             </TableSection>
         </TableRoot>
     </TableView>
+
+    </VerticalStackLayout>
 </ContentPage>

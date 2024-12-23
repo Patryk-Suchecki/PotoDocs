@@ -44,10 +44,9 @@ public partial class OrderFormViewModel : BaseViewModel
         _userService = userService;
         _connectivity = connectivity;
     }
-    public async Task Initialize()
+    public async Task UploadOrderFile()
     {
-        if (OrderDto == null)
-        {
+        
             IsBusy = true;
             IsRefreshing = true;
             var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>{
@@ -74,12 +73,11 @@ public partial class OrderFormViewModel : BaseViewModel
             }
             IsBusy = false;
             IsRefreshing = false;
-        }
-
-        await GetAllDrivers();
+        
+        
     }
     [RelayCommand]
-    async Task GetAllDrivers()
+    public async Task GetAllDrivers()
     {
         if (IsBusy) return;
 
