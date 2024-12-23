@@ -19,7 +19,6 @@ public partial class SettingsViewModel : BaseViewModel
     public SettingsViewModel(IUserService userService)
     {
         _userService = userService;
-        GetUser();
     }
 
     [RelayCommand]
@@ -47,7 +46,7 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
     [RelayCommand]
-    private async Task GetUser()
+    public async Task GetUser()
     {
         if (IsBusy) return;
 

@@ -5,10 +5,13 @@ namespace PotoDocs.View;
 public partial class MainPage : ContentPage
 {
     private readonly IAuthService _authService;
+    private readonly MainViewModel _viewModel;
     public MainPage(MainViewModel viewModel, IAuthService authService)
     {
         BindingContext = viewModel;
         _authService = authService;
+        _viewModel = viewModel;
+
         InitializeComponent();
     }
 
@@ -25,5 +28,10 @@ public partial class MainPage : ContentPage
                 await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
             }
         });
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.GetAll();
     }
 }

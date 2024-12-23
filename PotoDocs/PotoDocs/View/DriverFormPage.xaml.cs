@@ -1,10 +1,20 @@
+
 namespace PotoDocs.View;
 
 public partial class DriverFormPage : ContentPage
 {
-	public DriverFormPage(DriverFormViewModel viewModel)
+    DriverFormViewModel _viewModel;
+
+    public DriverFormPage(DriverFormViewModel viewModel)
 	{
-		InitializeComponent();
         BindingContext = viewModel;
+        _viewModel = viewModel;
+
+        InitializeComponent();
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.GetRoles();
     }
 }

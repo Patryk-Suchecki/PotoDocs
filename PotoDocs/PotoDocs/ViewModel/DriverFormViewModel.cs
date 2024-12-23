@@ -48,7 +48,6 @@ public partial class DriverFormViewModel : BaseViewModel
     {
         _roleService = roleService;
         _userService = userService;
-        GetRoles();
     }
 
     [RelayCommand]

@@ -1,10 +1,19 @@
+
 namespace PotoDocs.View;
 
 public partial class OrdersPage : ContentPage
 {
-	public OrdersPage(OrdersViewModel viewModel)
+    private readonly OrdersViewModel _viewModel;
+    public OrdersPage(OrdersViewModel viewModel)
 	{
-        InitializeComponent();
         BindingContext = viewModel;
+        _viewModel = viewModel;
+
+        InitializeComponent();
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.GetAll();
     }
 }

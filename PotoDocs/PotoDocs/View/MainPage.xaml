@@ -5,29 +5,42 @@
              xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
              xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
              xmlns:converter="clr-namespace:PotoDocs.Converters"
-             x:Class="PotoDocs.View.MainPage">
+             x:Class="PotoDocs.View.MainPage"
+             Title="Strona główna">
     <VerticalStackLayout Padding="10" Spacing="10">
 
         
 
         <!-- Nagłówek -->
         <Grid ColumnDefinitions="*,Auto" Margin="0,35,0,0">
-            <Label Text="Ostatnie zlecenia"
+            <HorizontalStackLayout>
+                <Label Text="Ostatnie zlecenia"
                    FontSize="20"
                    FontFamily="RobotoMedium"
                    FontAttributes="Bold"
                    TextColor="#8C0000"
                    HorizontalOptions="Start" />
-            <Button Text="Dodaj zlecenie"
-                    BackgroundColor="#B20101"
-                    TextColor="White"
-                    FontFamily="RobotoMedium"
-                    FontSize="18"
-                    CornerRadius="10"
-                    HorizontalOptions="End"
-                    Padding="10,5"
-                    WidthRequest="158"
-                    HeightRequest="38"/>
+                <Button
+                Margin="0,-12,0,0"
+                Command="{Binding GetAllCommand}"
+                IsEnabled="{Binding IsNotBusy}"
+                ImageSource="icon_refresh.png"
+                WidthRequest="60"
+                BackgroundColor="Transparent" />
+            </HorizontalStackLayout>
+
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,0">
+                <Button Text="Dodaj zlecenie"
+                        BackgroundColor="#B20101"
+                        TextColor="White"
+                        FontFamily="RobotoMedium"
+                        FontSize="18"
+                        CornerRadius="10"
+                        HorizontalOptions="End"
+                        Padding="10,5"
+                        WidthRequest="158"
+                        HeightRequest="38"/>
+            </Grid>
         </Grid>
 
         <!-- Lista ostatnich zleceń -->
@@ -54,7 +67,7 @@
                                         </VerticalStackLayout>
                                     </Grid>
                                     <SwipeItemView.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=GoToEditOrderCommand}" 
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=EditCommand}" 
                               CommandParameter="{Binding .}" />
                                     </SwipeItemView.GestureRecognizers>
                                 </SwipeItemView>
@@ -73,7 +86,7 @@
                                         </VerticalStackLayout>
                                     </Grid>
                                     <SwipeItemView.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DownloadInvoiceCommand}" 
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DownloadInvoiceCommand}" 
                                           CommandParameter="{Binding .}" />
                                     </SwipeItemView.GestureRecognizers>
                                 </SwipeItemView>
@@ -96,7 +109,7 @@
                                         </VerticalStackLayout>
                                     </Grid>
                                     <SwipeItemView.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteOrderCommand}" 
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteCommand}" 
                                         CommandParameter="{Binding .}" />
                                     </SwipeItemView.GestureRecognizers>
                                 </SwipeItemView>
@@ -127,6 +140,9 @@
                                     <Label Text="{Binding ., Converter={StaticResource OrderStatusConverter}}" FontSize="14" FontFamily="RobotoBold" HorizontalTextAlignment="End" TextColor="{Binding ., Converter={StaticResource OrderStatusColorConverter}}" />
                                 </VerticalStackLayout>
                             </Grid>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DetailsCommand}" CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
                         </Frame>
                     </SwipeView>
 

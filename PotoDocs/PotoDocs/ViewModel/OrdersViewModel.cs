@@ -12,14 +12,13 @@ public partial class OrdersViewModel : BaseViewModel
     {
         _orderService = orderService;
         _connectivity = connectivity;
-        GetAll();
     }
 
     [ObservableProperty]
     bool isRefreshing;
 
     [RelayCommand]
-    async Task GetAll()
+    public async Task GetAll()
     {
         if (IsBusy) return;
 

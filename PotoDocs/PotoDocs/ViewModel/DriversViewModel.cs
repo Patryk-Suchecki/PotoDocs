@@ -12,11 +12,10 @@ public partial class DriversViewModel : BaseViewModel
     public DriversViewModel(IUserService userService)
     {
         _userService = userService;
-        GetUsersAsync();
     }
 
     [RelayCommand]
-    async Task GetUsersAsync()
+    public async Task GetUsersAsync()
     {
         if (IsBusy)
             return;
