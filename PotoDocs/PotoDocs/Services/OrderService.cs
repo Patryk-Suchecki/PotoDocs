@@ -28,7 +28,7 @@ public class OrderService : IOrderService
         _authService = authService;
     }
 
-    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 100, string? driverEmail = null)
+    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 

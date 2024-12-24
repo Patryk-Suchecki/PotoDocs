@@ -8,16 +8,16 @@ namespace PotoDocs.ViewModel
         public ObservableCollection<OrderDto> Orders { get; } = new();
         private readonly IOrderService _orderService;
         private readonly IConnectivity _connectivity;
-
-        public MainViewModel(IOrderService orderService, IConnectivity connectivity)
-        {
-            _orderService = orderService;
-            _connectivity = connectivity;
-
-        }
+        private readonly IUserService _userService;
 
         [ObservableProperty]
         bool isRefreshing;
+        public MainViewModel(IOrderService orderService, IConnectivity connectivity, IUserService userService)
+        {
+            _orderService = orderService;
+            _connectivity = connectivity;
+            _userService = userService;
+        }
 
         [RelayCommand]
         public async Task GetAll()
@@ -36,8 +36,8 @@ namespace PotoDocs.ViewModel
 
                 IsBusy = true;
 
-                // Pobierz pierwsze 5 zamówień
-                var orders = await _orderService.GetAll();
+                var user = await _userService.GetUser();
+                var orders = await _orderService.GetAll(1, 5, user.Email);
 
                 if (orders != null)
                 {
@@ -69,6 +69,12 @@ namespace PotoDocs.ViewModel
         {
             {"OrderDto", order }
         });
+        }
+
+        [RelayCommand]
+        async Task Add()
+        {
+            await Shell.Current.GoToAsync(nameof(OrderFormPage));
         }
 
         [RelayCommand]
@@ -119,6 +125,10 @@ namespace PotoDocs.ViewModel
 
 #endif
             IsBusy = false;
+        }
+        [RelayCommand]
+        async Task ShowMore()
+        {
         }
     }
 }

@@ -46,35 +46,31 @@ public partial class OrderFormViewModel : BaseViewModel
     }
     public async Task UploadOrderFile()
     {
-        
-            IsBusy = true;
-            IsRefreshing = true;
-            var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>{
-                { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
-                { DevicePlatform.Android, new[] { "application/pdf" } },
-                { DevicePlatform.WinUI, new[] { ".pdf" } },
-                { DevicePlatform.MacCatalyst, new[] { "pdf" } }});
+        IsBusy = true;
+        IsRefreshing = true;
+        var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>{
+            { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
+            { DevicePlatform.Android, new[] { "application/pdf" } },
+            { DevicePlatform.WinUI, new[] { ".pdf" } },
+            { DevicePlatform.MacCatalyst, new[] { "pdf" } }});
 
-            var pickOptions = new PickOptions
-            {
-                PickerTitle = "Wybierz plik PDF",
-                FileTypes = pdfFileType
-            };
+        var pickOptions = new PickOptions
+        {
+            PickerTitle = "Wybierz plik PDF",
+            FileTypes = pdfFileType
+        };
 
-            var result = await FilePicker.Default.PickAsync(pickOptions);
-            if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-            {
-                OrderDto = await _orderService.Create(result.FullPath);
-            }
-            else
-            {
-                await Shell.Current.DisplayAlert("Błąd!", "Nie udało się utworzyć zlecenia.", "OK");
-                await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
-            }
-            IsBusy = false;
-            IsRefreshing = false;
-        
-        
+        var result = await FilePicker.Default.PickAsync(pickOptions);
+        if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            OrderDto = await _orderService.Create(result.FullPath);
+        }
+        else
+        {
+            await Shell.Current.DisplayAlert("Błąd!", "Nie wybrano pliku.", "OK");
+        }
+        IsBusy = false;
+        IsRefreshing = false;
     }
     [RelayCommand]
     public async Task GetAllDrivers()
