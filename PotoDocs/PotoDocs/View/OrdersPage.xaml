@@ -125,9 +125,32 @@
                                         </SwipeItemView>
                                     </SwipeItems>
                                 </SwipeView.LeftItems>
+                                <SwipeView.RightItems>
+                                    <SwipeItems>
+                                        <SwipeItemView>
+                                            <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
+                                                <!-- Gradient w tle -->
+                                                <Grid.Background>
+                                                    <LinearGradientBrush EndPoint="1,0">
+                                                        <GradientStop Color="#BC0000" Offset="0.0" />
+                                                        <GradientStop Color="#8C0000" Offset="1.0" />
+                                                    </LinearGradientBrush>
+                                                </Grid.Background>
+                                                <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="70">
+                                                    <Image Source="icon_delete.png" WidthRequest="30" HeightRequest="30" Margin="0,-4,0,0"/>
+                                                    <Label Text="Usuń" FontSize="14" FontFamily="RobotoBold" TextColor="white" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="8,0,0,0" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                            <SwipeItemView.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteCommand}" 
+                                                    CommandParameter="{Binding .}" />
+                                            </SwipeItemView.GestureRecognizers>
+                                        </SwipeItemView>
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
 
-                                <!-- Główna zawartość -->
-                                <Frame Padding="10" Margin="0,5,0,0" HasShadow="False" BorderColor="LightGrey">
+                            <!-- Główna zawartość -->
+                                <Frame Padding="10" Margin="-6,-2,-6,0" HasShadow="False" BorderColor="LightGrey" HeightRequest="80">
                                     <Grid ColumnDefinitions="220, *" RowDefinitions="Auto">
                                         <!-- Dane po lewej stronie -->
                                         <VerticalStackLayout Grid.Column="0" Spacing="2">

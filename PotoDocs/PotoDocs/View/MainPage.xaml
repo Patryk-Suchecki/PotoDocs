@@ -126,7 +126,7 @@
                                     </SwipeItemView>
                                 </SwipeItems>
                             </SwipeView.RightItems>
-                            <Frame Padding="10" Margin="-6,0,-6,0" HasShadow="False" BorderColor="LightGrey" HeightRequest="80">
+                            <Frame Padding="10" Margin="-6,-2,-6,0" HasShadow="False" BorderColor="LightGrey" HeightRequest="80">
                                 <Grid ColumnDefinitions="220, *" RowDefinitions="Auto">
                                     <VerticalStackLayout Grid.Column="0" Spacing="2">
                                         <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" FontFamily="RobotoMedium" />

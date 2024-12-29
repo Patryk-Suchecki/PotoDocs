@@ -13,7 +13,7 @@ public partial class OrderFormPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-
+        Shell.SetBackgroundColor(this, Color.FromArgb("#CA0000"));
         await _viewModel.GetAllDrivers();
     }
 }
