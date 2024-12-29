@@ -44,6 +44,7 @@ public partial class OrderFormViewModel : BaseViewModel
         _userService = userService;
         _connectivity = connectivity;
     }
+    [RelayCommand]
     public async Task UploadOrderFile()
     {
         IsBusy = true;

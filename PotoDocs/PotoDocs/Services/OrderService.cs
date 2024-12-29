@@ -7,7 +7,7 @@ namespace PotoDocs.Services;
 
 public interface IOrderService
 {
-    Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null);
+    Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
     Task<OrderDto> GetById(int invoiceNumber);
     Task Delete(int invoiceNumber);
     Task<OrderDto> Create(string filePath);
@@ -28,7 +28,7 @@ public class OrderService : IOrderService
         _authService = authService;
     }
 
-    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null)
+    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 

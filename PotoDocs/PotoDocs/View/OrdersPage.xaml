@@ -11,7 +11,7 @@
     Title="{Binding Title}"
     x:DataType="viewmodel:OrdersViewModel">
 
-    <ScrollView>
+    <Grid RowDefinitions="Auto,*,Auto">
         <VerticalStackLayout Padding="10" Spacing="10">
 
             <!-- Nagłówek -->
@@ -58,22 +58,26 @@
                 <Label Text="Data załadunku · Kwota" FontFamily="Roboto" />
                 <Label Text="Status" FontFamily="Roboto" HorizontalOptions="End" />
             </Grid>
+        </VerticalStackLayout>
 
-            <!-- Lista zleceń z RefreshView -->
-            <RefreshView Command="{Binding GetAllCommand}" IsRefreshing="{Binding IsRefreshing}">
-                <CollectionView ItemsSource="{Binding Orders}" SelectionMode="None">
-                    <!-- Szablon dla pustej listy -->
-                    <CollectionView.EmptyView>
-                        <StackLayout Padding="100">
-                            <Image HorizontalOptions="Center"
-                                   Source="nodata.png"
-                                   HeightRequest="160"
-                                   WidthRequest="160"
-                                   VerticalOptions="Center" />
-                        </StackLayout>
-                    </CollectionView.EmptyView>
+        <!-- Lista zleceń z RefreshView -->
+        <RefreshView Grid.Row="1"
+                     Command="{Binding GetAllCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+                        <CollectionView ItemsSource="{Binding Orders}"
+                                        SelectionMode="None">
 
-                    <!-- Szablon danych -->
+                            <!-- Szablon dla pustej listy -->
+                            <CollectionView.EmptyView>
+                                <StackLayout Padding="100">
+                                    <Image HorizontalOptions="Center"
+                                            Source="logo.png"
+                                            HeightRequest="160"
+                                            WidthRequest="160"
+                                            VerticalOptions="Center" />
+                                </StackLayout>
+                            </CollectionView.EmptyView>
+                            <!-- Szablon danych -->
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="model:OrderDto">
                             <SwipeView>
@@ -153,7 +157,25 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </RefreshView>
-
+        <Button Grid.Row="2"
+                Text="Pokaż więcej"
+                Command="{Binding ShowMoreCommand}"
+                TextColor="White"
+                FontFamily="RobotoBold"
+                FontSize="20"
+                CornerRadius="15"
+                WidthRequest="200"
+                HeightRequest="48"
+                HorizontalOptions="Center"
+                Padding="10,5"
+                Margin="0,20,0,20">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="1,0">
+                    <GradientStop Color="#8C0000" Offset="0.0" />
+                    <GradientStop Color="#BC0000" Offset="1.0" />
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
             <!-- Wskaźnik ładowania -->
             <ActivityIndicator Grid.RowSpan="2"
                                Grid.ColumnSpan="2"
@@ -162,6 +184,5 @@
                                IsVisible="{Binding IsBusy}"
                                Color="{StaticResource Primary}"
                                VerticalOptions="Center" />
-        </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 </ContentPage>

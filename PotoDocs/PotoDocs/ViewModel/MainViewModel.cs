@@ -129,6 +129,49 @@ namespace PotoDocs.ViewModel
         [RelayCommand]
         async Task ShowMore()
         {
+            if (IsBusy)
+                return;
+
+            try
+            {
+                if (_connectivity.NetworkAccess != NetworkAccess.Internet)
+                {
+                    await Shell.Current.DisplayAlert("Brak połączenia!",
+                        "Sprawdź połączenie z internetem i spróbuj ponownie.", "OK");
+                    return;
+                }
+
+                IsBusy = true;
+
+                // Pobierz aktualną liczbę wyświetlonych zleceń
+                int currentCount = Orders.Count;
+
+                // Pobierz kolejne 5 zleceń
+                var user = await _userService.GetUser();
+                var newOrders = await _orderService.GetAll((currentCount / 5) + 1, 5, user.Email);
+
+                if (newOrders != null && newOrders.Any())
+                {
+                    foreach (var order in newOrders)
+                    {
+                        Orders.Add(order); // Dodaj nowe zlecenia do istniejącej kolekcji
+                    }
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert("Brak więcej zleceń",
+                        "Wszystkie zlecenia zostały wyświetlone.", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Błąd podczas ładowania kolejnych zleceń: {ex.Message}");
+                await Shell.Current.DisplayAlert("Błąd!", ex.Message, "OK");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }
