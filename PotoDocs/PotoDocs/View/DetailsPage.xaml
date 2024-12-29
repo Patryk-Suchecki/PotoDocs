@@ -11,26 +11,26 @@
             FontFamily="RobotoBold"
             TextColor="#8C0000"
             HorizontalOptions="Start"/>
-        <TableView Intent="Form">
-        <TableRoot>
-            <TableSection>
+        <TableView Intent="Form" HeightRequest="510" >
+            <TableRoot>
+                <TableSection>
 
-                <!-- Numer faktury -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Numer faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Numer faktury -->
+                    <ViewCell Height="200">
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Numer faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand"/>
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Data wystawienia faktury -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Data wystawienia faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.InvoiceIssueDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
-                <!--
+                    <!-- Data wystawienia faktury -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Data wystawienia faktury" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.InvoiceIssueDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
+                    <!--
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Adres załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
@@ -48,7 +48,7 @@
                     </StackLayout>
                 </ViewCell>
 -->
-                <!-- Adres rozładunku 
+                    <!-- Adres rozładunku 
                 <ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Adres rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
@@ -66,133 +66,163 @@
                     </StackLayout>
                 </ViewCell>
 -->
-                <!-- Kierowca -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Kierowca" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.Driver.FirstAndLastName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Kierowca -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Kierowca" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.Driver.FirstAndLastName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- NIP firmy -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="NIP firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.CompanyNIP}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- NIP firmy -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="NIP firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.CompanyNIP}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Nazwa firmy -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Nazwa firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.CompanyName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Nazwa firmy -->
+                    <ViewCell >
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Nazwa firmy" FontAttributes="Bold" HorizontalOptions="Start" />
+                            <Label Text="{Binding OrderDto.CompanyName}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" HeightRequest="40"/>
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Adres firmy -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Adres firmy" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.CompanyAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Adres firmy -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Adres firmy" FontAttributes="Bold" HorizontalOptions="Start" />
+                            <Label Text="{Binding OrderDto.CompanyAddress}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" HeightRequest="40"/>
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Termin płatności -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Termin płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.PaymentDeadline}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Termin płatności -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Termin płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.PaymentDeadline}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Kwota -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Kwota" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.Price}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Kwota -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Kwota" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.Price}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Status zamówienia 
-                                <ViewCell>
+                                <!--<ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Status zamówienia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                        <Label Text="Status zlecenia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
                         <Label Text="{Binding TransportOrderDto.Status}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
-                </ViewCell>
-                -->
+                </ViewCell>-->
 
 
-                <!-- Data załadunku -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Data załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.LoadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Data załadunku -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Data załadunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.LoadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Data rozładunku -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Data rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.UnloadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Data rozładunku -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Data rozładunku" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.UnloadingDate, StringFormat='{0:dd.MM.yyyy}'}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Uwagi -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Uwagi" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.CompanyOrderNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Uwagi -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Uwagi" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.CompanyOrderNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Numer zlecenia -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="Numer zlecenia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- Numer zlecenia -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="Numer zlecenia" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.InvoiceNumber}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- Status płatności 
-                                <ViewCell>
+                                <!--<ViewCell>
                     <StackLayout Orientation="Horizontal" Padding="10">
                         <Label Text="Status płatności" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
                         <Label Text="{Binding TransportOrderDto.PaymentStatus}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
                     </StackLayout>
-                </ViewCell>
-                -->
+                </ViewCell>-->
 
 
-                <!-- PDF URL -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="PDF" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <Label Text="{Binding OrderDto.PDFUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
-                    </StackLayout>
-                </ViewCell>
+                    <!-- PDF URL -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="PDF" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <Label Text="{Binding OrderDto.PDFUrl}" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                        </StackLayout>
+                    </ViewCell>
 
-                <!-- CMR URL -->
-                <ViewCell>
-                    <StackLayout Orientation="Horizontal" Padding="10">
-                        <Label Text="CMR" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
-                        <ListView ItemsSource="{Binding OrderDto.CMRFiles}" HorizontalOptions="End">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <ViewCell>
-                                        <Label Text="{Binding .}" TextColor="Blue" />
-                                    </ViewCell>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackLayout>
-                </ViewCell>
+                    <!-- CMR URL -->
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="CMR" FontAttributes="Bold" HorizontalOptions="StartAndExpand" />
+                            <ListView ItemsSource="{Binding OrderDto.CMRFiles}" HorizontalOptions="End">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <ViewCell>
+                                            <Label Text="{Binding .}" TextColor="Blue" />
+                                        </ViewCell>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackLayout>
+                    </ViewCell>
 
-            </TableSection>
-        </TableRoot>
-    </TableView>
+                </TableSection>
+            </TableRoot>
+        </TableView>
+        <Button Text="Edytuj zlecenie"
+TextColor="White"
+FontFamily="RobotoBold"
+FontSize="20"
+CornerRadius="15"
+WidthRequest="200"
+HeightRequest="48"
+HorizontalOptions="Center"
+Padding="10,5"
+Margin="0,0,0,0">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="1,0">
+                    <GradientStop Color="#8C0000" Offset="0.0" />
+                    <GradientStop Color="#BC0000" Offset="1.0" />
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+        <Button Text="Usuń"
+TextColor="White"
+FontFamily="RobotoBold"
+FontSize="12"
+CornerRadius="10"
+WidthRequest="100"
+HeightRequest="32"
+HorizontalOptions="Center"
+Padding="10,5"
+Margin="0,-10,0,0">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="1,0">
+                    <GradientStop Color="#FF0000" Offset="0.0" />
+                    <GradientStop Color="#FF0000" Offset="1.0" />
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
 
     </VerticalStackLayout>
 </ContentPage>
