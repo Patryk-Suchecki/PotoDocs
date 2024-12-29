@@ -143,12 +143,8 @@ namespace PotoDocs.ViewModel
 
                 IsBusy = true;
 
-                // Pobierz aktualną liczbę wyświetlonych zleceń
-                int currentCount = Orders.Count;
-
-                // Pobierz kolejne 5 zleceń
                 var user = await _userService.GetUser();
-                var newOrders = await _orderService.GetAll((currentCount / 5) + 1, 5, user.Email);
+                var newOrders = await _orderService.GetAll((int)Math.Ceiling((double)Orders.Count / 5) + 1, 5, user.Email);
 
                 if (newOrders != null && newOrders.Any())
                 {

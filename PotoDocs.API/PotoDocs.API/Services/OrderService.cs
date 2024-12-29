@@ -11,7 +11,7 @@ namespace PotoDocs.API.Services
 {
     public interface IOrderService
     {
-        ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null);
+        ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
         ApiResponse<OrderDto> GetById(int id);
         void Delete(int invoiceNumber);
         void Update(int invoiceNumber, OrderDto dto);
@@ -37,7 +37,7 @@ namespace PotoDocs.API.Services
             _invoiceService = invoiceService;
         }
 
-        public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null)
+        public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
         {
             var query = _dbContext.Orders.Include(o => o.Driver)
                                          .Include(o => o.CMRFiles)
@@ -135,7 +135,7 @@ namespace PotoDocs.API.Services
         {
             int invoiceNumber = _dbContext.Orders.Where(o => o.InvoiceIssueDate.Value.Month == date.Month
                                                           && o.InvoiceIssueDate.Value.Year == date.Year).Count() + 1;
-            return int.Parse($"{invoiceNumber}{date.Month}{date.Year}");
+            return int.Parse($"{invoiceNumber:D2}{date.Month:D2}{date.Year}");
         }
 
         public async Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber)

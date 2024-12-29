@@ -133,7 +133,7 @@ public partial class OrdersViewModel : BaseViewModel
 
             IsBusy = true;
 
-            var newOrders = await _orderService.GetAll((Orders.Count / 5) + 1, 5);
+            var newOrders = await _orderService.GetAll((int)Math.Ceiling((double)Orders.Count / 5) + 1);
 
             if (newOrders != null && newOrders.Any())
             {
