@@ -104,7 +104,7 @@
                                 BackgroundColor="White"
                                 Margin="0,10,0,0"
                                 HeightRequest="40">
-                                <local:BorderlessEntry Text="{Binding OrderDto.InvoiceNumber, Mode=TwoWay}"
+                                <Entry Text="{Binding OrderDto.InvoiceNumber, Mode=TwoWay}"
                                     Keyboard="Numeric"
                                     Placeholder="Wprowadź numer faktury"
                                     FontFamily="Roboto"
