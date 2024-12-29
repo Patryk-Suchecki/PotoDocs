@@ -116,5 +116,47 @@ public partial class OrdersViewModel : BaseViewModel
 #endif
         IsBusy = false;
     }
+    [RelayCommand]
+    async Task ShowMore()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            if (_connectivity.NetworkAccess != NetworkAccess.Internet)
+            {
+                await Shell.Current.DisplayAlert("Brak połączenia!",
+                    "Sprawdź połączenie z internetem i spróbuj ponownie.", "OK");
+                return;
+            }
+
+            IsBusy = true;
+
+            var newOrders = await _orderService.GetAll((Orders.Count / 5) + 1, 5);
+
+            if (newOrders != null && newOrders.Any())
+            {
+                foreach (var order in newOrders)
+                {
+                    Orders.Add(order);
+                }
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Brak więcej zleceń",
+                    "Wszystkie zlecenia zostały wyświetlone.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Błąd podczas ładowania kolejnych zleceń: {ex.Message}");
+            await Shell.Current.DisplayAlert("Błąd!", ex.Message, "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }
 

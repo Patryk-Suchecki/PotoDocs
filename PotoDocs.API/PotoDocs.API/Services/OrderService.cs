@@ -11,7 +11,7 @@ namespace PotoDocs.API.Services
 {
     public interface IOrderService
     {
-        ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 100, string? driverEmail = null);
+        ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null);
         ApiResponse<OrderDto> GetById(int id);
         void Delete(int invoiceNumber);
         void Update(int invoiceNumber, OrderDto dto);
@@ -37,7 +37,7 @@ namespace PotoDocs.API.Services
             _invoiceService = invoiceService;
         }
 
-        public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 100, string? driverEmail = null)
+        public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 10, string? driverEmail = null)
         {
             var query = _dbContext.Orders.Include(o => o.Driver)
                                          .Include(o => o.CMRFiles)

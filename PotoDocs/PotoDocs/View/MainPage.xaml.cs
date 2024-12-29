@@ -15,10 +15,8 @@ public partial class MainPage : ContentPage
         InitializeComponent();
     }
 
-    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    protected override async void OnAppearing()
     {
-        base.OnNavigatedTo(args);
-
         var isAuthenticated = await _authService.IsUserAuthenticated();
 
         Dispatcher.Dispatch(async () =>
@@ -27,11 +25,11 @@ public partial class MainPage : ContentPage
             {
                 await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
             }
+            else
+            {
+                base.OnAppearing();
+                await _viewModel.GetAll();
+            }
         });
-    }
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await _viewModel.GetAll();
     }
 }

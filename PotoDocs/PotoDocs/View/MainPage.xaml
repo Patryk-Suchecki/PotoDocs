@@ -1,155 +1,136 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:PotoDocs"
              xmlns:model="clr-namespace:PotoDocs.Shared.Models;assembly=PotoDocs.Shared"
              xmlns:viewmodel="clr-namespace:PotoDocs.ViewModel"
-             xmlns:converter="clr-namespace:PotoDocs.Converters"
              x:Class="PotoDocs.View.MainPage"
+             x:DataType="viewmodel:MainViewModel"
              Title="Strona główna">
-    <VerticalStackLayout Padding="10" Spacing="10">
 
-        
-
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Struktura: nagłówek, lista, przycisk -->
         <!-- Nagłówek -->
-        <Grid ColumnDefinitions="*,Auto" Margin="0,35,0,-10">
-            <HorizontalStackLayout>
-                <Label Text="Ostatnie zlecenia"
-                   FontSize="20"
-                   FontFamily="RobotoMedium"
-                   FontAttributes="Bold"
-                   TextColor="#8C0000"
-                   HorizontalOptions="Start" />
-                <Button
-                Margin="0,-12,0,0"
-                Command="{Binding GetAllCommand}"
-                IsEnabled="{Binding IsNotBusy}"
-                ImageSource="icon_refresh.png"
-                WidthRequest="60"
-                BackgroundColor="Transparent" />
-            </HorizontalStackLayout>
-
-            <Grid ColumnDefinitions="*,Auto" Margin="0,-12,0,0">
-                <Button Text="Dodaj zlecenie"
+        <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="10">
+            <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                <Label Grid.Column="0"
+                       Text="Wszystkie zlecenia"
+                       FontSize="20"
+                       FontFamily="RobotoMedium"
+                       FontAttributes="Bold"
+                       TextColor="#8C0000"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Start" />
+                <Button Grid.Column="1"
+                        Command="{Binding GetAllCommand}"
+                        IsEnabled="{Binding IsNotBusy}"
+                        ImageSource="icon_refresh.png"
+                        WidthRequest="60"
+                        HeightRequest="60"
+                        BackgroundColor="Transparent"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Start" />
+                <Button Grid.Column="2"
+                        Text="Dodaj zlecenie"
+                        Command="{Binding AddCommand}"
                         BackgroundColor="#B20101"
                         TextColor="White"
                         FontFamily="RobotoMedium"
                         FontSize="18"
                         CornerRadius="10"
+                        VerticalOptions="Center"
                         HorizontalOptions="End"
                         Padding="10,5"
                         WidthRequest="158"
-                        HeightRequest="38"/>
+                        HeightRequest="38" />
             </Grid>
-        </Grid>
+        </VerticalStackLayout>
 
-        <!-- Lista ostatnich zleceń -->
-        <CollectionView Grid.Row="1" Grid.ColumnSpan="2" ItemsSource="{Binding Orders}" SelectionMode="None">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="model:OrderDto">
-                    <SwipeView>
-                        <SwipeView.LeftItems>
-                            <SwipeItems Mode="Reveal" >
-                                <SwipeItemView>
-                                    <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
-                                        <!-- Gradient w tle -->
-                                        <Grid.Background>
-                                            <LinearGradientBrush EndPoint="1,0">
-                                                <GradientStop Color="#8C0000" Offset="0.0" />
-                                                <GradientStop Color="#BC0000" Offset="1.0" />
-                                            </LinearGradientBrush>
-                                        </Grid.Background>
+        <!-- Lista w RefreshView -->
+        <RefreshView Grid.Row="1"
+                     Command="{Binding GetAllCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Orders}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <StackLayout Padding="100">
+                        <Image HorizontalOptions="Center"
+                               Source="logo.png"
+                               HeightRequest="160"
+                               WidthRequest="160"
+                               VerticalOptions="Center" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:OrderDto">
+                        <SwipeView>
+                            <!-- Opcje Swipe -->
+                            <SwipeView.LeftItems>
+                                <SwipeItems Mode="Reveal">
+                                    <SwipeItemView>
+                                        <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
+                                            <Grid.Background>
+                                                <LinearGradientBrush EndPoint="1,0">
+                                                    <GradientStop Color="#8C0000" Offset="0.0" />
+                                                    <GradientStop Color="#BC0000" Offset="1.0" />
+                                                </LinearGradientBrush>
+                                            </Grid.Background>
+                                            <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image Source="icon_edit.png" WidthRequest="36" HeightRequest="36" Margin="0,-10,0,0" />
+                                                <Label Text="Edytuj" FontSize="14" FontFamily="RobotoBold" TextColor="White" HorizontalTextAlignment="Center" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                        <SwipeItemView.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=EditCommand}"
+                                                                  CommandParameter="{Binding .}" />
+                                        </SwipeItemView.GestureRecognizers>
+                                    </SwipeItemView>
+                                    <SwipeItemView>
+                                        <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
+                                            <Grid.Background>
+                                                <LinearGradientBrush EndPoint="1,0">
+                                                    <GradientStop Color="#BC0000" Offset="0.0" />
+                                                    <GradientStop Color="#8C0000" Offset="1.0" />
+                                                </LinearGradientBrush>
+                                            </Grid.Background>
+                                            <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image Source="icon_download.svg" WidthRequest="30" HeightRequest="30" Margin="0,-4,0,0" />
+                                                <Label Text="Faktura" FontSize="14" FontFamily="RobotoBold" TextColor="White" HorizontalTextAlignment="Center" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                        <SwipeItemView.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DownloadInvoiceCommand}"
+                                                                  CommandParameter="{Binding .}" />
+                                        </SwipeItemView.GestureRecognizers>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.LeftItems>
+                            <Frame Padding="10" Margin="0,5,0,0" HasShadow="False" BorderColor="LightGrey">
+                                <Grid ColumnDefinitions="220, *" RowDefinitions="Auto">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                        <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" FontFamily="RobotoMedium" />
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="{Binding LoadingDate, StringFormat='Zał.: {0:dd.MM.yyyy}'}" FontSize="12" TextColor="Gray" FontFamily="RobotoMedium" />
+                                            <Label Text="•" FontSize="14" TextColor="Gray" VerticalOptions="Center" />
+                                            <Label Text="{Binding Price, StringFormat='{0:0.00}€'}" FontSize="12" TextColor="Gray" FontFamily="RobotoMedium" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2" HorizontalOptions="End">
+                                        <Label Text="{Binding Driver.FirstAndLastName}" FontSize="14" FontFamily="RobotoBold" HorizontalTextAlignment="End" />
+                                        <Label Text="{Binding ., Converter={StaticResource OrderStatusConverter}}" FontSize="14" FontFamily="RobotoBold" TextColor="{Binding ., Converter={StaticResource OrderStatusColorConverter}}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DetailsCommand}" CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
 
-                                        <!-- Zawartość widoku -->
-                                        <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Image Source="icon_edit.png" WidthRequest="36" HeightRequest="36" Margin="0,-10,0,0" />
-                                            <Label Text="Edytuj" FontSize="14" FontFamily="RobotoBold" TextColor="White" HorizontalTextAlignment="Center" />
-                                        </VerticalStackLayout>
-                                    </Grid>
-                                    <SwipeItemView.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=EditCommand}" 
-                              CommandParameter="{Binding .}" />
-                                    </SwipeItemView.GestureRecognizers>
-                                </SwipeItemView>
-                                <SwipeItemView>
-                                    <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
-                                        <!-- Gradient w tle -->
-                                        <Grid.Background>
-                                            <LinearGradientBrush EndPoint="1,0">
-                                                <GradientStop Color="#BC0000" Offset="0.0" />
-                                                <GradientStop Color="#8C0000" Offset="1.0" />
-                                            </LinearGradientBrush>
-                                        </Grid.Background>
-                                        <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="70">
-                                            <Image Source="icon_download.svg" WidthRequest="30" HeightRequest="30" Margin="0,-4,0,0"/>
-                                            <Label Text="Faktura" FontSize="14" FontFamily="RobotoBold" TextColor="white" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="0,0,0,0" />
-                                        </VerticalStackLayout>
-                                    </Grid>
-                                    <SwipeItemView.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DownloadInvoiceCommand}" 
-                                          CommandParameter="{Binding .}" />
-                                    </SwipeItemView.GestureRecognizers>
-                                </SwipeItemView>
-                            </SwipeItems>
-                        </SwipeView.LeftItems>
-                        <SwipeView.RightItems>
-                            <SwipeItems>
-                                <SwipeItemView>
-                                    <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
-                                        <!-- Gradient w tle -->
-                                        <Grid.Background>
-                                            <LinearGradientBrush EndPoint="1,0">
-                                                <GradientStop Color="#BC0000" Offset="0.0" />
-                                                <GradientStop Color="#8C0000" Offset="1.0" />
-                                            </LinearGradientBrush>
-                                        </Grid.Background>
-                                        <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="70">
-                                            <Image Source="icon_delete.png" WidthRequest="30" HeightRequest="30" Margin="0,-4,0,0"/>
-                                            <Label Text="Usuń" FontSize="14" FontFamily="RobotoBold" TextColor="white" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="8,0,0,0" />
-                                        </VerticalStackLayout>
-                                    </Grid>
-                                    <SwipeItemView.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteCommand}" 
-                                        CommandParameter="{Binding .}" />
-                                    </SwipeItemView.GestureRecognizers>
-                                </SwipeItemView>
-                            </SwipeItems>
-                        </SwipeView.RightItems>
-                        <Frame Padding="10" Margin="-6,0,-6,0" HasShadow="False" BorderColor="LightGrey">
-                            <Grid ColumnDefinitions="220, *" RowDefinitions="Auto">
-                                <!-- Dane po lewej stronie -->
-                                <VerticalStackLayout Grid.Column="0" Spacing="2" Grid.RowSpan="3">
-                                    <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" FontFamily="RobotoMedium" />
-
-                                    <HorizontalStackLayout Spacing="5">
-                                        <Label Text="{Binding LoadingDate, StringFormat='Zał.: {0:dd.MM.yyyy}'}" 
-                                           FontSize="12" 
-                                           TextColor="Gray" 
-                                           FontFamily="RobotoMedium" />
-                                        <Label Text="•" FontSize="14" TextColor="Gray" VerticalOptions="Center" />
-                                        <Label Text="{Binding Price, StringFormat='{0:0.00}€'}" 
-                                           FontSize="12" 
-                                           TextColor="Gray" 
-                                           FontFamily="RobotoMedium" />
-                                    </HorizontalStackLayout>
-
-                                </VerticalStackLayout>
-                                <!-- Dane po prawej stronie -->
-                                <VerticalStackLayout Grid.Column="1" Grid.Row="0" VerticalOptions="Center" Spacing="2" HorizontalOptions="End">
-                                    <Label Text="{Binding Driver.FirstAndLastName}" FontSize="14" FontFamily="RobotoBold" HorizontalTextAlignment="End"/>
-                                    <Label Text="{Binding ., Converter={StaticResource OrderStatusConverter}}" FontSize="14" FontFamily="RobotoBold" HorizontalTextAlignment="End" TextColor="{Binding ., Converter={StaticResource OrderStatusColorConverter}}" />
-                                </VerticalStackLayout>
-                            </Grid>
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DetailsCommand}" CommandParameter="{Binding .}" />
-                            </Frame.GestureRecognizers>
-                        </Frame>
-                    </SwipeView>
-
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <Button Text="Pokaż więcej"
+        <!-- Przycisk Pokaż więcej -->
+        <Button Grid.Row="2"
+                Text="Pokaż więcej"
                 Command="{Binding ShowMoreCommand}"
                 TextColor="White"
                 FontFamily="RobotoBold"
@@ -158,8 +139,7 @@
                 WidthRequest="200"
                 HeightRequest="48"
                 HorizontalOptions="Center"
-                Padding="10,5"
-                Margin="0,10,0,0">
+                Padding="10,5">
             <Button.Background>
                 <LinearGradientBrush EndPoint="1,0">
                     <GradientStop Color="#8C0000" Offset="0.0" />
@@ -167,5 +147,5 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

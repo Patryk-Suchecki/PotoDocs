@@ -37,6 +37,19 @@ public partial class OrderFormViewModel : BaseViewModel
             OnPropertyChanged();
         }
     }
+    private string headerText;
+    public string HeaderText
+    {
+        get => headerText;
+        set => SetProperty(ref headerText, value);
+    }
+
+    private string buttonText;
+    public string ButtonText
+    {
+        get => buttonText;
+        set => SetProperty(ref buttonText, value);
+    }
 
     public OrderFormViewModel(IOrderService orderService, IUserService userService, IConnectivity connectivity)
     {
@@ -44,37 +57,36 @@ public partial class OrderFormViewModel : BaseViewModel
         _userService = userService;
         _connectivity = connectivity;
     }
+    [RelayCommand]
     public async Task UploadOrderFile()
     {
-        
-            IsBusy = true;
-            IsRefreshing = true;
-            var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>{
-                { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
-                { DevicePlatform.Android, new[] { "application/pdf" } },
-                { DevicePlatform.WinUI, new[] { ".pdf" } },
-                { DevicePlatform.MacCatalyst, new[] { "pdf" } }});
+        IsBusy = true;
+        IsRefreshing = true;
+        var pdfFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>{
+            { DevicePlatform.iOS, new[] { "com.adobe.pdf" } },
+            { DevicePlatform.Android, new[] { "application/pdf" } },
+            { DevicePlatform.WinUI, new[] { ".pdf" } },
+            { DevicePlatform.MacCatalyst, new[] { "pdf" } }});
 
-            var pickOptions = new PickOptions
-            {
-                PickerTitle = "Wybierz plik PDF",
-                FileTypes = pdfFileType
-            };
+        var pickOptions = new PickOptions
+        {
+            PickerTitle = "Wybierz plik PDF",
+            FileTypes = pdfFileType
+        };
 
-            var result = await FilePicker.Default.PickAsync(pickOptions);
-            if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-            {
-                OrderDto = await _orderService.Create(result.FullPath);
-            }
-            else
-            {
-                await Shell.Current.DisplayAlert("Błąd!", "Nie udało się utworzyć zlecenia.", "OK");
-                await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
-            }
-            IsBusy = false;
-            IsRefreshing = false;
-        
-        
+        var result = await FilePicker.Default.PickAsync(pickOptions);
+        if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            OrderDto = await _orderService.Create(result.FullPath);
+            HeaderText = "Edytuj zlecenie";
+            ButtonText = "Zapisz zlecenie";
+        }
+        else
+        {
+            await Shell.Current.DisplayAlert("Błąd!", "Nie wybrano pliku.", "OK");
+        }
+        IsBusy = false;
+        IsRefreshing = false;
     }
     [RelayCommand]
     public async Task GetAllDrivers()
@@ -99,6 +111,17 @@ public partial class OrderFormViewModel : BaseViewModel
                 Users.Add(user);
             }
             SelectedDriver = OrderDto?.Driver != null ? Users.FirstOrDefault(u => u.Email == OrderDto.Driver.Email) : null;
+
+            if (OrderDto?.PDFUrl == null)
+            {
+                HeaderText = "Nowe zlecenie";
+                ButtonText = "Utwórz zlecenie";
+            }
+            else
+            {
+                HeaderText = "Edytuj zlecenie";
+                ButtonText = "Zapisz zlecenie";
+            }
         }
         catch (Exception ex)
         {
