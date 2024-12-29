@@ -12,7 +12,7 @@
         <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="10">
             <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
                 <Label Grid.Column="0"
-                       Text="Wszystkie zlecenia"
+                       Text="Ostatnie zlecenia"
                        FontSize="20"
                        FontFamily="RobotoMedium"
                        FontAttributes="Bold"
@@ -39,7 +39,7 @@
                         VerticalOptions="Center"
                         HorizontalOptions="End"
                         Padding="10,5"
-                        WidthRequest="158"
+                        WidthRequest="142"
                         HeightRequest="38" />
             </Grid>
         </VerticalStackLayout>
@@ -78,7 +78,7 @@
                                                 <Label Text="Edytuj" FontSize="14" FontFamily="RobotoBold" TextColor="White" HorizontalTextAlignment="Center" />
                                             </VerticalStackLayout>
                                         </Grid>
-                                        <SwipeItemView.GestureRecognizers>
+                                        <SwipeItemView.GestureRecognizers> 
                                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=EditCommand}"
                                                                   CommandParameter="{Binding .}" />
                                         </SwipeItemView.GestureRecognizers>
@@ -103,7 +103,30 @@
                                     </SwipeItemView>
                                 </SwipeItems>
                             </SwipeView.LeftItems>
-                            <Frame Padding="10" Margin="0,5,0,0" HasShadow="False" BorderColor="LightGrey">
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItemView>
+                                        <Grid Padding="8" Margin="0,0,0,0" WidthRequest="90">
+                                            <!-- Gradient w tle -->
+                                            <Grid.Background>
+                                                <LinearGradientBrush EndPoint="1,0">
+                                                    <GradientStop Color="#BC0000" Offset="0.0" />
+                                                    <GradientStop Color="#8C0000" Offset="1.0" />
+                                                </LinearGradientBrush>
+                                            </Grid.Background>
+                                            <VerticalStackLayout Padding="10" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="70">
+                                                <Image Source="icon_delete.png" WidthRequest="30" HeightRequest="30" Margin="0,-4,0,0"/>
+                                                <Label Text="Usuń" FontSize="14" FontFamily="RobotoBold" TextColor="white" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="8,0,0,0" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                        <SwipeItemView.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DeleteCommand}" 
+                 CommandParameter="{Binding .}" />
+                                        </SwipeItemView.GestureRecognizers>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Frame Padding="10" Margin="-6,0,-6,0" HasShadow="False" BorderColor="LightGrey" HeightRequest="80">
                                 <Grid ColumnDefinitions="220, *" RowDefinitions="Auto">
                                     <VerticalStackLayout Grid.Column="0" Spacing="2">
                                         <Label Text="{Binding CompanyName}" FontAttributes="Bold" FontSize="16" FontFamily="RobotoMedium" />
