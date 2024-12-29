@@ -151,7 +151,10 @@
                                             <Label Text="{Binding ., Converter={StaticResource OrderStatusConverter}}" FontSize="14" FontFamily="RobotoBold" TextColor="{Binding ., Converter={StaticResource OrderStatusColorConverter}}" />
                                         </VerticalStackLayout>
                                     </Grid>
-                                </Frame>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrdersViewModel}}, Path=DetailsCommand}" CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                            </Frame>
                             </SwipeView>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

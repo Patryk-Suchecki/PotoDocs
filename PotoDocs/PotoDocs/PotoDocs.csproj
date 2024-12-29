@@ -137,4 +137,8 @@
 
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionpotoexpressdocsHideInfoBar="True" /></VisualStudio></ProjectExtensions>
 
+	<ItemGroup>
+	  <EditorConfigFiles Remove="C:\Users\Patryk\source\repos\PotoDocs\PotoDocs\PotoDocs\Converters\.editorconfig" />
+	</ItemGroup>
+
 </Project>

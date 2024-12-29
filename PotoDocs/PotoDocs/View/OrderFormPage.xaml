@@ -16,14 +16,14 @@
 
         <!-- Napis "Nowe zlecenie" -->
         <Label Grid.Row="0"
-               Text="Nowe zlecenie"
-               FontSize="32"
+               Text="{Binding HeaderText}"
+            FontSize="32"
                FontFamily="RobotoBold"
                TextColor="White"
                HorizontalOptions="Start"
                VerticalOptions="Start"
-               Margin="15,-10,0,0"/>
-        <ScrollView Grid.Row="1">
+               Margin="20,10,0,0" />
+            <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="20" Spacing="15">
         <Frame Margin="5,10,5,10" CornerRadius="15">
             <Grid RowDefinitions="Auto,Auto,*">
@@ -445,7 +445,7 @@
                         BackgroundColor="Green"
                         TextColor="White" />-->
 
-                        <Button Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}" Text="Utwórz zlecenie"
+                            <Button Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}" Text="{Binding ButtonText}"
                             TextColor="White"
                             FontFamily="RobotoBold"
                             FontSize="20"

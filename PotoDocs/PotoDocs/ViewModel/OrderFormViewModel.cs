@@ -37,6 +37,19 @@ public partial class OrderFormViewModel : BaseViewModel
             OnPropertyChanged();
         }
     }
+    private string headerText;
+    public string HeaderText
+    {
+        get => headerText;
+        set => SetProperty(ref headerText, value);
+    }
+
+    private string buttonText;
+    public string ButtonText
+    {
+        get => buttonText;
+        set => SetProperty(ref buttonText, value);
+    }
 
     public OrderFormViewModel(IOrderService orderService, IUserService userService, IConnectivity connectivity)
     {
@@ -65,6 +78,8 @@ public partial class OrderFormViewModel : BaseViewModel
         if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
         {
             OrderDto = await _orderService.Create(result.FullPath);
+            HeaderText = "Edytuj zlecenie";
+            ButtonText = "Zapisz zlecenie";
         }
         else
         {
@@ -96,6 +111,17 @@ public partial class OrderFormViewModel : BaseViewModel
                 Users.Add(user);
             }
             SelectedDriver = OrderDto?.Driver != null ? Users.FirstOrDefault(u => u.Email == OrderDto.Driver.Email) : null;
+
+            if (OrderDto?.PDFUrl == null)
+            {
+                HeaderText = "Nowe zlecenie";
+                ButtonText = "Utwórz zlecenie";
+            }
+            else
+            {
+                HeaderText = "Edytuj zlecenie";
+                ButtonText = "Zapisz zlecenie";
+            }
         }
         catch (Exception ex)
         {
