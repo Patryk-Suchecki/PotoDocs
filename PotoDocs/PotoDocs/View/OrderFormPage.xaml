@@ -23,31 +23,29 @@
                HorizontalOptions="Start"
                VerticalOptions="Start"
                Margin="20,10,0,0" />
-            <ScrollView Grid.Row="1">
+        <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="20" Spacing="15">
-        <Frame Margin="5,10,5,10" CornerRadius="15">
-            <Grid RowDefinitions="Auto,Auto,*">
-                <VerticalStackLayout Grid.Row="2" Padding="5" Spacing="5">
+                <Frame Margin="5,10,5,10" CornerRadius="15">
+                    <Grid RowDefinitions="Auto,Auto,*">
+                        <VerticalStackLayout Grid.Row="2" Padding="5" Spacing="5">
+                            <Label Text="Pliki" FontFamily="RobotoMedium" FontSize="20" TextColor="#8C0000" />
 
-
-                        <Label Text="Pliki" FontFamily="RobotoMedium" FontSize="20" TextColor="#8C0000" />
-
-                        <Frame Padding="0" CornerRadius="7" HasShadow="False" HeightRequest="40">
-                            <Frame.Background>
-                                <LinearGradientBrush EndPoint="0,1">
-                                    <GradientStop Color="#CA0000" Offset="0.0" />
-                                    <GradientStop Color="#640000" Offset="1.0" />
-                                </LinearGradientBrush>
-                            </Frame.Background>
-                            <Grid ColumnDefinitions="*,Auto" Padding="10">
-                                <Label Text="PDF"
+                            <Frame Padding="0" CornerRadius="7" HasShadow="False" HeightRequest="40">
+                                <Frame.Background>
+                                    <LinearGradientBrush EndPoint="0,1">
+                                        <GradientStop Color="#CA0000" Offset="0.0" />
+                                        <GradientStop Color="#640000" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Frame.Background>
+                                <Grid ColumnDefinitions="*,Auto" Padding="10">
+                                    <Label Text="PDF"
                                 TextColor="White"
                                 FontSize="16"
                                 FontFamily="RobotoBold"
                                 VerticalOptions="Center"
                                 Margin="0,-2,0,0"
                                 Grid.Column="0"/>
-                                <Button Text="Dodaj plik"
+                                    <Button Text="Dodaj plik"
                                 HeightRequest="30"
                                 WidthRequest="90"
                                 CornerRadius="5"
@@ -59,21 +57,21 @@
                                 HorizontalOptions="End"
                                 Grid.Column="1"
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:OrderFormViewModel}}, Path=UploadOrderFileCommand}"/>
-                            </Grid>
-                        </Frame>
+                                </Grid>
+                            </Frame>
 
-                        <Label Text="Informacje ogólne" FontFamily="RobotoMedium" FontSize="20" TextColor="#8C0000" Margin="0,30,0,0"/>
+                            <Label Text="Informacje ogólne" FontFamily="RobotoMedium" FontSize="20" TextColor="#8C0000" Margin="0,30,0,0"/>
 
-                        <!-- "Kierowca" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
+                            <!-- "Kierowca" -->
+                            <Grid>
+                                <!-- Frame z obramowaniem -->
+                                <Frame CornerRadius="5"
                         BorderColor="#8C0000"
                         Padding="10,5"
                         BackgroundColor="White"
                         Margin="0,10,0,0"
                             HeightRequest="40">
-                                <Picker ItemsSource="{Binding Users}"
+                                    <Picker ItemsSource="{Binding Users}"
                             SelectedItem="{Binding SelectedDriver, Mode=TwoWay}"
                             ItemDisplayBinding="{Binding FirstAndLastName}"
                             Title="Wybierz kierowcę"
@@ -81,10 +79,10 @@
                             FontSize="14"
                             BackgroundColor="Transparent"
                                 Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
+                                </Frame>
 
-                            <!-- Napis "Kierowca" -->
-                            <Label Text="Kierowca"
+                                <!-- Napis "Kierowca" -->
+                                <Label Text="Kierowca"
                         FontFamily="Roboto"
                         FontSize="14"
                         TextColor="#8C0000"
@@ -93,26 +91,26 @@
                         HorizontalOptions="Start"
                         VerticalOptions="Start"
                         Margin="10,0,0,0" />
-                        </Grid>
-                        <!-- "Numer faktury" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
+                            </Grid>
+                            <!-- "Numer faktury" -->
+                            <Grid>
+                                <!-- Frame z obramowaniem -->
+                                <Frame CornerRadius="5"
                         BorderColor="#8C0000"
                         Padding="10,5"
                         BackgroundColor="White"
                         Margin="0,10,0,0"
                         HeightRequest="40">
-                                <Entry Text="{Binding OrderDto.InvoiceNumber, Mode=TwoWay}"
+                                    <Entry Text="{Binding OrderDto.InvoiceNumber, Mode=TwoWay}"
                             Keyboard="Numeric"
                             Placeholder="Wprowadź numer faktury"
                             FontFamily="Roboto"
                             FontSize="14"
                             BackgroundColor="Transparent"
                             Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
+                                </Frame>
 
-                            <Label Text="Numer faktury"
+                                <Label Text="Numer faktury"
                         FontFamily="Roboto"
                         FontSize="14"
                         TextColor="#8C0000"
@@ -121,83 +119,83 @@
                         HorizontalOptions="Start"
                         VerticalOptions="Start"
                         Margin="10,0,0,0" />
-                            <Label Text="{Binding ValidationErrors[InvoiceNumber]}" TextColor="Red" FontSize="12" />
-                        </Grid>
-                        <!-- "Nazwa firmy" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
-                        BorderColor="#8C0000"
-                        Padding="10,5"
-                        BackgroundColor="White"
-                        Margin="0,10,0,0"
-                        HeightRequest="40">
-                                <Entry Text="{Binding OrderDto.CompanyName, Mode=TwoWay}" Placeholder="Wprowadź nazwę firmy"
-                            FontFamily="Roboto"
-                            FontSize="14"
-                            BackgroundColor="Transparent"
-                            Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
-
-                            <Label Text="Nazwa firmy"
-                        FontFamily="Roboto"
-                        FontSize="14"
-                        TextColor="#8C0000"
-                        BackgroundColor="White"
-                        Padding="2,0"
-                        HorizontalOptions="Start"
-                        VerticalOptions="Start"
-                        Margin="10,0,0,0" />
-                            <Label Text="{Binding ValidationErrors[CompanyName]}" TextColor="Red" FontSize="12" />
-                        </Grid>
-                        <!-- "NIP" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
-                        BorderColor="#8C0000"
-                        Padding="10,5"
-                        BackgroundColor="White"
-                        Margin="0,10,0,0"
-                        HeightRequest="40">
-                                <Entry Text="{Binding OrderDto.CompanyNIP, Mode=TwoWay}" Placeholder="Wprowadź NIP"
-                            FontFamily="Roboto"
-                            FontSize="14"
-                            BackgroundColor="Transparent"
-                            Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
-
-                            <Label Text="NIP"
-                        FontFamily="Roboto"
-                        FontSize="14"
-                        TextColor="#8C0000"
-                        BackgroundColor="White"
-                        Padding="2,0"
-                        HorizontalOptions="Start"
-                        VerticalOptions="Start"
-                        Margin="10,0,0,0" />
-                            <Label Text="{Binding ValidationErrors[CompanyNIP]}" TextColor="Red" FontSize="12" />
-                        </Grid>
-
-                        <Label Text="Informacje dodatkowe" FontFamily="RobotoMedium" FontSize="20" TextColor="#8C0000" Margin="0,20,0,0"/>
-
-                        <HorizontalStackLayout HorizontalOptions="Start" Spacing="30">
+                                <Label Text="{Binding ValidationErrors[InvoiceNumber]}" TextColor="Red" FontSize="12" />
+                            </Grid>
+                            <!-- "Nazwa firmy" -->
                             <Grid>
                                 <!-- Frame z obramowaniem -->
                                 <Frame CornerRadius="5"
+                        BorderColor="#8C0000"
+                        Padding="10,5"
+                        BackgroundColor="White"
+                        Margin="0,10,0,0"
+                        HeightRequest="40">
+                                    <Entry Text="{Binding OrderDto.CompanyName, Mode=TwoWay}" Placeholder="Wprowadź nazwę firmy"
+                            FontFamily="Roboto"
+                            FontSize="14"
+                            BackgroundColor="Transparent"
+                            Style="{StaticResource NoUnderlinePickerStyle}"/>
+                                </Frame>
+
+                                <Label Text="Nazwa firmy"
+                        FontFamily="Roboto"
+                        FontSize="14"
+                        TextColor="#8C0000"
+                        BackgroundColor="White"
+                        Padding="2,0"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Start"
+                        Margin="10,0,0,0" />
+                                <Label Text="{Binding ValidationErrors[CompanyName]}" TextColor="Red" FontSize="12" />
+                            </Grid>
+                            <!-- "NIP" -->
+                            <Grid>
+                                <!-- Frame z obramowaniem -->
+                                <Frame CornerRadius="5"
+                        BorderColor="#8C0000"
+                        Padding="10,5"
+                        BackgroundColor="White"
+                        Margin="0,10,0,0"
+                        HeightRequest="40">
+                                    <Entry Text="{Binding OrderDto.CompanyNIP, Mode=TwoWay}" Placeholder="Wprowadź NIP"
+                            FontFamily="Roboto"
+                            FontSize="14"
+                            BackgroundColor="Transparent"
+                            Style="{StaticResource NoUnderlinePickerStyle}"/>
+                                </Frame>
+
+                                <Label Text="NIP"
+                        FontFamily="Roboto"
+                        FontSize="14"
+                        TextColor="#8C0000"
+                        BackgroundColor="White"
+                        Padding="2,0"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Start"
+                        Margin="10,0,0,0" />
+                                <Label Text="{Binding ValidationErrors[CompanyNIP]}" TextColor="Red" FontSize="12" />
+                            </Grid>
+
+                            <Label Text="Informacje dodatkowe" FontFamily="RobotoMedium" FontSize="20" TextColor="#8C0000" Margin="0,20,0,0"/>
+
+                            <HorizontalStackLayout HorizontalOptions="Start" Spacing="30">
+                                <Grid>
+                                    <!-- Frame z obramowaniem -->
+                                    <Frame CornerRadius="5"
                                     BorderColor="#8C0000"
                                     Padding="10,5"
                                     BackgroundColor="White"
                                     Margin="0,10,0,0"
                                     HeightRequest="40"
                                        WidthRequest="130">
-                                    <DatePicker Date="{Binding OrderDto.LoadingDate, Mode=TwoWay}" Format="dd-MM-yyyy"
+                                        <DatePicker Date="{Binding OrderDto.LoadingDate, Mode=TwoWay}" Format="dd-MM-yyyy"
                                         FontFamily="Roboto"
                                         FontSize="14"
                                         BackgroundColor="Transparent"
                                         Style="{StaticResource NoUnderlinePickerStyle}"/>
-                                </Frame>
+                                    </Frame>
 
-                                <Label Text="Data załadunku"
+                                    <Label Text="Data załadunku"
                                     FontFamily="Roboto"
                                     FontSize="14"
                                     TextColor="#8C0000"
@@ -206,24 +204,24 @@
                                     HorizontalOptions="Start"
                                     VerticalOptions="Start"
                                     Margin="10,0,0,0" />
-                            </Grid>
-                            <Grid>
-                                <!-- Frame z obramowaniem -->
-                                <Frame CornerRadius="5"
+                                </Grid>
+                                <Grid>
+                                    <!-- Frame z obramowaniem -->
+                                    <Frame CornerRadius="5"
                                     BorderColor="#8C0000"
                                     Padding="10,5"
                                     BackgroundColor="White"
                                     Margin="0,10,0,0"
                                     HeightRequest="40"
                                        WidthRequest="130">
-                                    <DatePicker Date="{Binding OrderDto.UnloadingDate, Mode=TwoWay}" Format="dd-MM-yyyy"
+                                        <DatePicker Date="{Binding OrderDto.UnloadingDate, Mode=TwoWay}" Format="dd-MM-yyyy"
                                         FontFamily="Roboto"
                                         FontSize="14"
                                         BackgroundColor="Transparent"
                                         Style="{StaticResource NoUnderlinePickerStyle}"/>
-                                </Frame>
+                                    </Frame>
 
-                                <Label Text="Data rozładunku"
+                                    <Label Text="Data rozładunku"
                                     FontFamily="Roboto"
                                     FontSize="14"
                                     TextColor="#8C0000"
@@ -232,110 +230,110 @@
                                     HorizontalOptions="Start"
                                     VerticalOptions="Start"
                                     Margin="10,0,0,0" />
-                            </Grid>
-                        </HorizontalStackLayout>
+                                </Grid>
+                            </HorizontalStackLayout>
 
-                        <!-- "Data wystawienia faktury" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
-                                BorderColor="#8C0000"
-                                Padding="10,5"
-                                BackgroundColor="White"
-                                Margin="0,10,0,0"
-                                HeightRequest="40">
-                                <DatePicker Date="{Binding OrderDto.InvoiceIssueDate, Mode=TwoWay}" Format="dd-MM-yyyy"
-                                    FontFamily="Roboto"
-                                    FontSize="14"
-                                    BackgroundColor="Transparent"
-                                    Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
-
-                            <Label Text="Data wystawienia faktury"
-                                FontFamily="Roboto"
-                                FontSize="14"
-                                TextColor="#8C0000"
-                                BackgroundColor="White"
-                                Padding="2,0"
-                                HorizontalOptions="Start"
-                                VerticalOptions="Start"
-                                Margin="10,0,0,0" />
-                            <Label Text="{Binding ValidationErrors[CompanyNIP]}" TextColor="Red" FontSize="12" />
-                        </Grid>
-
-                        <!-- "Adres firmy" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
-                                BorderColor="#8C0000"
-                                Padding="10,5"
-                                BackgroundColor="White"
-                                Margin="0,10,0,0"
-                                HeightRequest="40">
-                                <Entry Text="{Binding OrderDto.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy"
-                                    FontFamily="Roboto"
-                                    FontSize="14"
-                                    BackgroundColor="Transparent"
-                                    Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
-
-                            <Label Text="Adres firmy"
-                                FontFamily="Roboto"
-                                FontSize="14"
-                                TextColor="#8C0000"
-                                BackgroundColor="White"
-                                Padding="2,0"
-                                HorizontalOptions="Start"
-                                VerticalOptions="Start"
-                                Margin="10,0,0,0" />
-                            <Label Text="{Binding ValidationErrors[CompanyAddress]}" TextColor="Red" FontSize="12" />
-                        </Grid>
-
-                        <!-- "Kraj" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
-                                BorderColor="#8C0000"
-                                Padding="10,5"
-                                BackgroundColor="White"
-                                Margin="0,10,0,0"
-                                HeightRequest="40">
-                                <Entry Text="{Binding OrderDto.CompanyCountry, Mode=TwoWay}" Placeholder="Wprowadź kraj"
-                                    FontFamily="Roboto"
-                                    FontSize="14"
-                                    BackgroundColor="Transparent"
-                                    Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
-
-                            <Label Text="Kraj"
-                                FontFamily="Roboto"
-                                FontSize="14"
-                                TextColor="#8C0000"
-                                BackgroundColor="White"
-                                Padding="2,0"
-                                HorizontalOptions="Start"
-                                VerticalOptions="Start"
-                                Margin="10,0,0,0" />
-                        </Grid>
-
-                        <HorizontalStackLayout HorizontalOptions="Start" Spacing="30">
+                            <!-- "Data wystawienia faktury" -->
                             <Grid>
                                 <!-- Frame z obramowaniem -->
                                 <Frame CornerRadius="5"
+                                BorderColor="#8C0000"
+                                Padding="10,5"
+                                BackgroundColor="White"
+                                Margin="0,10,0,0"
+                                HeightRequest="40">
+                                    <DatePicker Date="{Binding OrderDto.InvoiceIssueDate, Mode=TwoWay}" Format="dd-MM-yyyy"
+                                    FontFamily="Roboto"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"
+                                    Style="{StaticResource NoUnderlinePickerStyle}"/>
+                                </Frame>
+
+                                <Label Text="Data wystawienia faktury"
+                                FontFamily="Roboto"
+                                FontSize="14"
+                                TextColor="#8C0000"
+                                BackgroundColor="White"
+                                Padding="2,0"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Start"
+                                Margin="10,0,0,0" />
+                                <Label Text="{Binding ValidationErrors[CompanyNIP]}" TextColor="Red" FontSize="12" />
+                            </Grid>
+
+                            <!-- "Adres firmy" -->
+                            <Grid>
+                                <!-- Frame z obramowaniem -->
+                                <Frame CornerRadius="5"
+                                BorderColor="#8C0000"
+                                Padding="10,5"
+                                BackgroundColor="White"
+                                Margin="0,10,0,0"
+                                HeightRequest="40">
+                                    <Entry Text="{Binding OrderDto.CompanyAddress, Mode=TwoWay}" Placeholder="Wprowadź adres firmy"
+                                    FontFamily="Roboto"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"
+                                    Style="{StaticResource NoUnderlinePickerStyle}"/>
+                                </Frame>
+
+                                <Label Text="Adres firmy"
+                                FontFamily="Roboto"
+                                FontSize="14"
+                                TextColor="#8C0000"
+                                BackgroundColor="White"
+                                Padding="2,0"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Start"
+                                Margin="10,0,0,0" />
+                                <Label Text="{Binding ValidationErrors[CompanyAddress]}" TextColor="Red" FontSize="12" />
+                            </Grid>
+
+                            <!-- "Kraj" -->
+                            <Grid>
+                                <!-- Frame z obramowaniem -->
+                                <Frame CornerRadius="5"
+                                BorderColor="#8C0000"
+                                Padding="10,5"
+                                BackgroundColor="White"
+                                Margin="0,10,0,0"
+                                HeightRequest="40">
+                                    <Entry Text="{Binding OrderDto.CompanyCountry, Mode=TwoWay}" Placeholder="Wprowadź kraj"
+                                    FontFamily="Roboto"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"
+                                    Style="{StaticResource NoUnderlinePickerStyle}"/>
+                                </Frame>
+
+                                <Label Text="Kraj"
+                                FontFamily="Roboto"
+                                FontSize="14"
+                                TextColor="#8C0000"
+                                BackgroundColor="White"
+                                Padding="2,0"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Start"
+                                Margin="10,0,0,0" />
+                            </Grid>
+
+                            <HorizontalStackLayout HorizontalOptions="Start" Spacing="30">
+                                <Grid>
+                                    <!-- Frame z obramowaniem -->
+                                    <Frame CornerRadius="5"
                                     BorderColor="#8C0000"
                                     Padding="10,5"
                                     BackgroundColor="White"
                                     Margin="0,10,0,0"
                                     HeightRequest="40"
                                         WidthRequest="130">
-                                    <Entry Text="{Binding OrderDto.Price, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Kwota"
+                                        <Entry Text="{Binding OrderDto.Price, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Kwota"
                                         FontFamily="Roboto"
                                         FontSize="14"
                                         BackgroundColor="Transparent"
                                         Style="{StaticResource NoUnderlinePickerStyle}"/>
-                                </Frame>
+                                    </Frame>
 
-                                <Label Text="Kwota netto"
+                                    <Label Text="Kwota netto"
                                     FontFamily="Roboto"
                                     FontSize="14"
                                     TextColor="#8C0000"
@@ -344,25 +342,25 @@
                                     HorizontalOptions="Start"
                                     VerticalOptions="Start"
                                     Margin="10,0,0,0" />
-                                <Label Text="{Binding ValidationErrors[Price]}" TextColor="Red" FontSize="12" />
-                            </Grid>
-                            <Grid>
-                                <!-- Frame z obramowaniem -->
-                                <Frame CornerRadius="5"
+                                    <Label Text="{Binding ValidationErrors[Price]}" TextColor="Red" FontSize="12" />
+                                </Grid>
+                                <Grid>
+                                    <!-- Frame z obramowaniem -->
+                                    <Frame CornerRadius="5"
                                     BorderColor="#8C0000"
                                     Padding="10,5"
                                     BackgroundColor="White"
                                     Margin="0,10,0,0"
                                     HeightRequest="40"
                                        WidthRequest="130">
-                                    <Entry Text="{Binding OrderDto.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Dni"
+                                        <Entry Text="{Binding OrderDto.PaymentDeadline, Mode=TwoWay}" Keyboard="Numeric" Placeholder="Dni"
                                         FontFamily="Roboto"
                                         FontSize="14"
                                         BackgroundColor="Transparent"
                                         Style="{StaticResource NoUnderlinePickerStyle}"/>
-                                </Frame>
+                                    </Frame>
 
-                                <Label Text="Dni do płatności"
+                                    <Label Text="Dni do płatności"
                                     FontFamily="Roboto"
                                     FontSize="14"
                                     TextColor="#8C0000"
@@ -371,26 +369,26 @@
                                     HorizontalOptions="Start"
                                     VerticalOptions="Start"
                                     Margin="10,0,0,0" />
-                            </Grid>
-                        </HorizontalStackLayout>
+                                </Grid>
+                            </HorizontalStackLayout>
 
-                        <!-- "Uwagi" -->
-                        <Grid>
-                            <!-- Frame z obramowaniem -->
-                            <Frame CornerRadius="5"
+                            <!-- "Uwagi" -->
+                            <Grid>
+                                <!-- Frame z obramowaniem -->
+                                <Frame CornerRadius="5"
                                 BorderColor="#8C0000"
                                 Padding="10,5"
                                 BackgroundColor="White"
                                 Margin="0,10,0,0"
                                 HeightRequest="40">
-                                <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi"
+                                    <Entry Text="{Binding OrderDto.CompanyOrderNumber, Mode=TwoWay}" Placeholder="Wprowadź uwagi"
                                     FontFamily="Roboto"
                                     FontSize="14"
                                     BackgroundColor="Transparent"
                                     Style="{StaticResource NoUnderlinePickerStyle}"/>
-                            </Frame>
+                                </Frame>
 
-                            <Label Text="Uwagi"
+                                <Label Text="Uwagi"
                                 FontFamily="Roboto"
                                 FontSize="14"
                                 TextColor="#8C0000"
@@ -399,17 +397,17 @@
                                 HorizontalOptions="Start"
                                 VerticalOptions="Start"
                                 Margin="10,0,0,0" />
-                        </Grid>
+                            </Grid>
 
 
-                        <Label Text="Zlecenie:" FontAttributes="Bold" Margin="0,10,0,0"/>
-                        <Label Text="{Binding OrderDto.PDFUrl}" TextColor="Blue" FontAttributes="Bold">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding NavigateToPdfCommand}" CommandParameter="{Binding OrderDto.PDFUrl}" />
-                            </Label.GestureRecognizers>
-                        </Label>
+                            <Label Text="Zlecenie:" FontAttributes="Bold" Margin="0,10,0,0"/>
+                            <Label Text="{Binding OrderDto.PDFUrl}" TextColor="Blue" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding NavigateToPdfCommand}" CommandParameter="{Binding OrderDto.PDFUrl}" />
+                                </Label.GestureRecognizers>
+                            </Label>
 
-                        <!--<HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
+                            <!--<HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
                     <Label Text="Opłacona:"
                            FontSize="16"
                            VerticalOptions="Center"/>
@@ -454,16 +452,16 @@
                             HeightRequest="48"
                             HorizontalOptions="Center"
                             Padding="10,5">
-                            <Button.Background>
-                                <LinearGradientBrush EndPoint="1,0">
-                                    <GradientStop Color="#8C0000" Offset="0.0" />
-                                    <GradientStop Color="#BC0000" Offset="1.0" />
-                                </LinearGradientBrush>
-                            </Button.Background>
-                        </Button>
+                                <Button.Background>
+                                    <LinearGradientBrush EndPoint="1,0">
+                                        <GradientStop Color="#8C0000" Offset="0.0" />
+                                        <GradientStop Color="#BC0000" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
 
-                    </VerticalStackLayout>
-            </Grid>
+                        </VerticalStackLayout>
+                    </Grid>
                 </Frame>
             </VerticalStackLayout>
         </ScrollView>
