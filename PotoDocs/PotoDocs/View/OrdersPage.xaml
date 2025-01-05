@@ -194,7 +194,7 @@
                 HeightRequest="48"
                 HorizontalOptions="Center"
                 Padding="10,5"
-                Margin="0,20,0,20">
+                Margin="0,20,0,30">
             <Button.Background>
                 <LinearGradientBrush EndPoint="1,0">
                     <GradientStop Color="#8C0000" Offset="0.0" />
