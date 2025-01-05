@@ -198,7 +198,7 @@ public partial class OrderFormViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    async Task AddCMRs()
+    public async Task AddCMRs()
     {
         try
         {

@@ -7,14 +7,24 @@
              x:DataType="viewmodel:DriversViewModel"
              x:Class="PotoDocs.View.DriversPage"
              Title="Kierowcy">
-    <Grid
-        ColumnDefinitions="*,*"
-        ColumnSpacing="5"
-        RowDefinitions="*,Auto"
-        RowSpacing="0">
-
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Struktura: nagłówek, lista, przycisk -->
+        <!-- Nagłówek -->
+        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+            <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                <Label Grid.Column="0"
+                   Text="Kierowcy"
+                   FontSize="20"
+                   FontFamily="RobotoMedium"
+                   FontAttributes="Bold"
+                   TextColor="#8C0000"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Start" />
+            </Grid>
+        </VerticalStackLayout>
         <!-- Odświeżanie -->
         <RefreshView
+            Grid.Row="1"
             Grid.ColumnSpan="2"
             Command="{Binding GetUsersCommand}"
             IsRefreshing="{Binding IsRefreshing}">
