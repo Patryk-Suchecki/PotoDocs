@@ -10,7 +10,7 @@
     <Grid RowDefinitions="Auto,*,Auto">
         <!-- Struktura: nagłówek, lista, przycisk -->
         <!-- Nagłówek -->
-        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+        <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="10">
             <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
                 <Label Grid.Column="0"
                    Text="Kierowcy"
@@ -21,11 +21,15 @@
                    VerticalOptions="Center"
                    HorizontalOptions="Start" />
             </Grid>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,-5">
+                <Label Text="Imię i nazwisko" FontFamily="Roboto" />
+                <Label Text="Rola" FontFamily="Roboto" HorizontalOptions="End" />
+            </Grid>
         </VerticalStackLayout>
+        
         <!-- Odświeżanie -->
         <RefreshView
             Grid.Row="1"
-            Grid.ColumnSpan="2"
             Command="{Binding GetUsersCommand}"
             IsRefreshing="{Binding IsRefreshing}">
             <CollectionView
@@ -37,7 +41,7 @@
                     <StackLayout Padding="100">
                         <Image
                             HorizontalOptions="Center"
-                            Source="nodata.png"
+                            Source="logo.png"
                             HeightRequest="160"
                             WidthRequest="160"
                             VerticalOptions="Center" />
@@ -46,12 +50,15 @@
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:UserDto">
-                        <Frame Padding="10" Margin="5" HasShadow="True" BorderColor="LightGray">
+                        <Frame Padding="10" Margin="-6,-2,-6,0" HasShadow="False" BorderColor="LightGray">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                 <HorizontalStackLayout Grid.Column="0" Spacing="5">
-                                    <Label Text="{Binding FirstName}" FontAttributes="Bold" FontSize="16" />
-                                    <Label Text="{Binding LastName}" FontAttributes="Bold" FontSize="16" />
-                                    <Label Text="{Binding Role}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding FirstName}" FontFamily="RobotoMedium" FontSize="16" />
+                                    <Label Text="{Binding LastName}" FontFamily="RobotoMedium" FontSize="16" />
+                                    
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Grid.Column="1">
+                                    <Label Text="{Binding Role}" FontFamily="RobotoMedium" FontSize="16" />
                                 </HorizontalStackLayout>
                             </Grid>
                             <Frame.GestureRecognizers>
@@ -64,15 +71,24 @@
         </RefreshView>
 
         <Button
-            Grid.Row="1"
-            Grid.Column="1"
-            Margin="8"
+            Grid.Row="2"
+            Text="Dodaj użytkownika"
+            FontFamily="RobotoBold"
+            TextColor="White"
+            CornerRadius="15"
+            FontSize="16"
+            Margin="0,20,0,30"
             Command="{Binding GoToNewUserCommand}"
             IsEnabled="{Binding IsNotBusy}"
-            ImageSource="icon_add_driver.png"
-            WidthRequest="80"
-            HeightRequest="80"
-            BackgroundColor="Transparent" />
+            WidthRequest="200"
+            HeightRequest="48">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="1,0">
+                    <GradientStop Color="#8C0000" Offset="0.0" />
+                    <GradientStop Color="#BC0000" Offset="1.0" />
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
 
         <!-- Wskaźnik ładowania -->
         <ActivityIndicator
