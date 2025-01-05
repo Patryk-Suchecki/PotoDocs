@@ -4,15 +4,24 @@
              xmlns:vm="clr-namespace:PotoDocs.ViewModel"
              x:Class="PotoDocs.View.SettingsPage"
              Title="Ustawienia"
-             BackgroundColor="Black"
              x:DataType="vm:SettingsViewModel">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="30">
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <Label Grid.Row="0"
+           Text="Ustawienia"
+           FontSize="24"
+           FontFamily="RobotoBold"
+           TextColor="#640000"
+           HorizontalOptions="Start"
+           VerticalOptions="Start"
+           Margin="20,10,0,0" />
+        
+        <VerticalStackLayout Padding="20" Spacing="10" Grid.Row="1">
             <!-- Odświeżanie -->
             <!-- Sekcja Profil -->
-            <VerticalStackLayout Padding="20" Spacing="30">
-                <RefreshView Command="{Binding GetUserCommand}" IsRefreshing="{Binding IsRefreshing}">
+            <Frame Padding="20" BorderColor="Black">
+                <RefreshView Command="{Binding GetUserCommand}" IsRefreshing="{Binding IsRefreshing}" Grid.Row="1">
                     <VerticalStackLayout Spacing="20">
                         <Label Text="Profil" FontSize="18" FontAttributes="Bold" />
 
@@ -37,7 +46,7 @@
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </RefreshView>
-            </VerticalStackLayout>
+            </Frame>
 
             <!-- Sekcja zmiany hasła -->
             <VerticalStackLayout Spacing="20">
@@ -85,5 +94,5 @@
                                Color="{StaticResource Primary}"
                                VerticalOptions="Center" />
         </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 </ContentPage>
