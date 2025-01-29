@@ -79,7 +79,7 @@ public static class MauiProgramExtensions
 #if WINDOWS
         services.AddHttpClient(AppConstants.HttpClientName, httpClient =>
         {
-            var baseAddress = "https://localhost:7157";
+            var baseAddress = "https://api.poto-express.com";
 
             httpClient.BaseAddress = new Uri(baseAddress);
         });

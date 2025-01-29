@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs.API", "PotoDocs.AP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs", "PotoDocs\PotoDocs\PotoDocs.csproj", "{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PotoDocs.Blazor", "PotoDocs.Blazor\PotoDocs.Blazor.csproj", "{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

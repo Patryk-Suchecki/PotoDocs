@@ -1,0 +1,126 @@
+﻿@using PotoDocs.Blazor.Services
+@using PotoDocs.Shared.Models
+
+@page "/orders"
+@inject IOrderService OrderService
+@inject NavigationManager Navigation
+
+<PageTitle>Wszystkie zlecenia</PageTitle>
+
+<div class="orders-container">
+    <div class="header">
+        <h2>Wszystkie zlecenia</h2>
+        <button class="refresh-button" @onclick="GetAllOrders">🔄 Odśwież</button>
+    </div>
+
+    <div class="search-filter">
+        <input @bind-value="searchQuery" placeholder="Wyszukaj..." class="search-input" />
+        <button class="filter-button">Filtry</button>
+    </div>
+
+    <div class="orders-header">
+        <span>Nazwa firmy</span>
+        <span>Kierowca</span>
+        <span>Data załadunku</span>
+        <span>Status</span>
+    </div>
+
+    <div class="orders-list">
+        @if (IsLoading)
+        {
+            <div class="loading-indicator">Ładowanie...</div>
+        }
+        else if (Orders is null || !Orders.Any())
+        {
+            <div class="empty-view">
+                <img src="images/logo.png" alt="Logo" />
+                <p>Brak zleceń do wyświetlenia.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var order in Orders)
+            {
+                <div class="order-item">
+                    <div class="order-info">
+                        <p>@order.CompanyName</p>
+                        <p>@order.Driver.FirstAndLastName</p>
+                        <p>@order.LoadingDate?.ToString("dd.MM.yyyy")</p>
+                    </div>
+                    <div class="order-actions">
+                        <button @onclick="() => EditOrder(order)">✏️ Edytuj</button>
+                        <button @onclick="() => DownloadInvoice(order)">⬇️ Faktura</button>
+                        <button @onclick="() => DeleteOrder(order)">🗑️ Usuń</button>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <button @onclick="LoadMoreOrders" class="load-more-button">Pokaż więcej</button>
+</div>
+
+@code {
+    private List<OrderDto> Orders { get; set; } = new();
+    private bool IsLoading = false;
+    private string? searchQuery;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllOrders();
+    }
+
+    private async Task GetAllOrders()
+    {
+        IsLoading = true;
+        try
+        {
+            Orders = (await OrderService.GetAll()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task LoadMoreOrders()
+    {
+        IsLoading = true;
+        try
+        {
+            var newOrders = await OrderService.GetAll(Orders.Count / 5 + 1);
+            if (newOrders?.Any() ?? false)
+            {
+                Orders.AddRange(newOrders);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task EditOrder(OrderDto order)
+    {
+        Navigation.NavigateTo($"/edit-order/{order.InvoiceNumber}");
+    }
+
+    private async Task DownloadInvoice(OrderDto order)
+    {
+        await OrderService.DownloadInvoice(order.InvoiceNumber);
+    }
+
+    private async Task DeleteOrder(OrderDto order)
+    {
+        await OrderService.Delete(order.InvoiceNumber);
+        await GetAllOrders();
+    }
+}

@@ -1,0 +1,48 @@
+﻿@page "/login"
+@using PotoDocs.Blazor.Services
+@using PotoDocs.Shared.Models
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <img src="images/logo.png" alt="Logo" class="logo" />
+
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+
+        <div class="input-group">
+            <input @bind-value="loginModel.Email" class="input-text" placeholder="E-mail" />
+            <label class="input-text-label">E-mail</label>
+        </div>
+
+        <div class="input-group">
+            <input @bind-value="loginModel.Password" class="input-text" type="password" placeholder="Hasło" />
+            <label class="input-text-label">Hasło</label>
+        </div>
+
+        <DataAnnotationsValidator />
+        <ValidationSummary class="validation-summary" />
+
+        <button type="submit" class="login-button">Logowanie</button>
+    </EditForm>
+
+    <img src="images/caranim.gif" alt="Truck" class="truck-image" />
+</div>
+
+@code {
+    private LoginDto loginModel = new LoginDto();
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = null;
+        var result = await AuthService.LoginAsync(loginModel);
+        if (string.IsNullOrEmpty(result))
+        {
+            Navigation.NavigateTo("/", true);
+        }
+        else
+        {
+            errorMessage = result;
+        }
+    }
+}
