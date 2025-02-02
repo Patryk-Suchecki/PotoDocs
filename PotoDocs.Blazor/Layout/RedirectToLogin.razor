@@ -1,5 +1,5 @@
-﻿@inject NavigationManager Navigation
-@inject JwtAuthenticationStateProvider AuthStateProvider
+﻿@inject JwtAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
 @code {
     protected override async Task OnInitializedAsync()
@@ -7,7 +7,7 @@
         var isAuthenticated = await AuthStateProvider.IsUserAuthenticated();
         if (!isAuthenticated)
         {
-            Navigation.NavigateTo("/login", true);
+            Navigation.NavigateTo("/logowanie", true);
         }
     }
 }

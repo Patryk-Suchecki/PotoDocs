@@ -29,22 +29,29 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
 
-        // Jeśli token wygasł, wyloguj użytkownika i przekieruj na login
-        if (jwtToken.ValidTo < DateTime.UtcNow)
+            if (jwtToken.ValidTo < DateTime.UtcNow)
+            {
+                await Logout();
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType");
+            var user = new ClaimsPrincipal(identity);
+
+            return new AuthenticationState(user);
+        }
+        catch
         {
             await Logout();
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
-
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        var identity = new ClaimsIdentity(jwtToken.Claims, "jwtAuthType");
-        var user = new ClaimsPrincipal(identity);
-
-        return new AuthenticationState(user);
     }
 
     public async Task Login(string token)

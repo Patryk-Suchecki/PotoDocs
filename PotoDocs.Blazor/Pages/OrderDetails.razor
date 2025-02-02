@@ -1,5 +1,4 @@
-﻿@using PotoDocs.Blazor.Services
-@using PotoDocs.Shared.Models
+﻿@attribute [Authorize]
 @page "/zlecenie/szczegoly/{OrderId:int}"
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
