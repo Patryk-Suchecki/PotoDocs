@@ -78,6 +78,7 @@ public partial class OrderFormViewModel : BaseViewModel
         if (result != null && result.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
         {
             OrderDto = await _orderService.Create(result.FullPath);
+            InvoiceNumber = OrderDto.InvoiceNumber;
             HeaderText = "Edytuj zlecenie";
             ButtonText = "Zapisz zlecenie";
         }

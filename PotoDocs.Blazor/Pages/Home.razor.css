@@ -1,0 +1,117 @@
+﻿/* Nagłówek */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .header h1 {
+        font-size: 24px;
+        color: #8C0000;
+        margin: 0;
+    }
+
+/* Kontrolki */
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+.refresh-button img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.add-button {
+    background-color: #B20101;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Kontener zleceń */
+.orders-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Karta zlecenia */
+.order-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #f9f9f9;
+}
+
+.order-details h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.order-details p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Akcje zlecenia */
+.order-actions button {
+    margin-left: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.edit-button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.invoice-button {
+    background-color: #28A745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.delete-button {
+    background-color: #DC3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+/* Pokaż więcej */
+.show-more {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.show-more-button {
+    background-color: #8C0000;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Spinner */
+.loading-spinner img {
+    width: 50px;
+    height: 50px;
+    display: block;
+    margin: 0 auto;
+}

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using PotoDocs.API.Entities;
-using PotoDocs.API.Migrations;
 using PotoDocs.API.Models;
-using PotoDocs.Shared.Models;
 
 namespace PotoDocs.API
 {
