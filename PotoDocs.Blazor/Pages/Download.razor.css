@@ -1,0 +1,47 @@
+﻿.form-container {
+    background: linear-gradient(to bottom, #CA0000, #640000);
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 350px;
+    margin: auto;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    font-weight: bold;
+    color: #8C0000;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #8C0000;
+    border-radius: 5px;
+}
+
+.btn-submit {
+    background: linear-gradient(to right, #8C0000, #BC0000);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 15px;
+    width: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+    .btn-submit:disabled {
+        background: gray;
+        cursor: not-allowed;
+    }
+
+.spinner-border {
+    margin: 10px auto;
+    display: block;
+}

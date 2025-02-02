@@ -1,0 +1,58 @@
+﻿.header {
+    font-size: 24px;
+    color: #640000;
+    font-family: 'RobotoBold';
+    margin: 20px 0;
+}
+
+.settings-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+    .section h4 {
+        color: #8C0000;
+        font-family: 'RobotoBold';
+        margin-bottom: 10px;
+    }
+
+.profile-info p {
+    margin: 5px 0;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background-color: #8C0000;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+    .btn-primary:hover {
+        background-color: #BC0000;
+    }
+
+input[type="checkbox"] {
+    margin-right: 10px;
+}

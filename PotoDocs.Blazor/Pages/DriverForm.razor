@@ -1,0 +1,140 @@
+﻿@using PotoDocs.Blazor.Services
+@using PotoDocs.Shared.Models
+@using System.ComponentModel.DataAnnotations
+@using System.Collections.Generic
+@page "/kierowca"
+@inject IRoleService RoleService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<h3>@(PageTitle ?? "Nowy użytkownik")</h3>
+
+<EditForm Model="@UserDto" OnValidSubmit="Save" class="form-container">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- Imię -->
+    <div class="form-group">
+        <label>Imię</label>
+        <InputText @bind-Value="UserDto.FirstName" class="form-control" placeholder="Wprowadź imię" />
+        <ValidationMessage For="@(() => UserDto.FirstName)" />
+    </div>
+
+    <!-- Nazwisko -->
+    <div class="form-group">
+        <label>Nazwisko</label>
+        <InputText @bind-Value="UserDto.LastName" class="form-control" placeholder="Wprowadź nazwisko" />
+        <ValidationMessage For="@(() => UserDto.LastName)" />
+    </div>
+
+    <!-- E-mail -->
+    <div class="form-group">
+        <label>E-mail</label>
+        <InputText @bind-Value="UserDto.Email" class="form-control" placeholder="Wprowadź E-mail" />
+        <ValidationMessage For="@(() => UserDto.Email)" />
+    </div>
+
+    <!-- Rola -->
+    <div class="form-group">
+        <label>Rola</label>
+        <select @bind="SelectedRole" class="form-control">
+            <option value="">Wybierz rolę</option>
+            @foreach (var role in Roles)
+            {
+                <option value="@role">@role</option>
+            }
+        </select>
+        <ValidationMessage For="@(() => UserDto.Role)" />
+    </div>
+
+    <!-- Przyciski -->
+    <button type="button" class="btn btn-secondary" @onclick="GeneratePassword" disabled="@IsBusy">Generuj hasło</button>
+    <button type="submit" class="btn btn-primary" disabled="@IsBusy">Zapisz</button>
+</EditForm>
+
+@code {
+    private UserDto UserDto { get; set; } = new UserDto();
+    private List<string> Roles { get; set; } = new();
+    private string SelectedRole
+    {
+        get => UserDto.Role;
+        set => UserDto.Role = value;
+    }
+
+    private bool IsBusy { get; set; } = false;
+    private string PageTitle { get; set; } = "Nowy użytkownik";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetRoles();
+    }
+
+    private async Task GetRoles()
+    {
+        try
+        {
+            IsBusy = true;
+            Roles = (await RoleService.GetRoles()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy pobieraniu ról: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (!Validate()) return;
+
+        try
+        {
+            IsBusy = true;
+            await UserService.RegisterAsync(UserDto);
+            Navigation.NavigateTo("/drivers");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy zapisywaniu użytkownika: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task GeneratePassword()
+    {
+        if (string.IsNullOrWhiteSpace(UserDto.Email))
+        {
+            Console.WriteLine("Wprowadź e-mail przed generowaniem hasła.");
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await UserService.GeneratePassword(UserDto.Email);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy generowaniu hasła: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool Validate()
+    {
+        var context = new ValidationContext(UserDto);
+        var validationResults = new List<ValidationResult>();
+        bool isValid = Validator.TryValidateObject(UserDto, context, validationResults, true);
+
+        return isValid;
+    }
+}

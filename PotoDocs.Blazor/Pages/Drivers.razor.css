@@ -1,0 +1,62 @@
+﻿.header {
+    font-size: 20px;
+    font-weight: bold;
+    color: #8C0000;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.loading,
+.empty-state {
+    text-align: center;
+    color: #666;
+    margin: 20px 0;
+}
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    font-weight: bold;
+    font-size: 16px;
+    color: #000;
+}
+
+    .user-card:hover {
+        background-color: #f9f9f9;
+        transform: scale(1.02);
+    }
+
+.btn-add {
+    background-color: #8C0000;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: block;
+    margin: 30px auto;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+    .btn-add:hover {
+        background-color: #A30000;
+        transform: scale(1.05);
+    }
+
+    .btn-add:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }

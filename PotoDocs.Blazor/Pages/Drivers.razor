@@ -1,0 +1,77 @@
+﻿@using PotoDocs.Blazor.Services
+@using PotoDocs.Shared.Models
+@page "/kierowcy"
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<h3 class="header">Kierowcy</h3>
+
+<!-- Wskaźnik ładowania -->
+@if (IsBusy)
+{
+    <div class="loading">
+        <p>Ładowanie...</p>
+    </div>
+}
+
+<!-- Lista kierowców -->
+@if (Users?.Count > 0)
+{
+    <div class="user-list">
+        @foreach (var user in Users)
+        {
+            <div class="user-card" @onclick="() => GoToEditUser(user)">
+                <strong>@user.FirstName @user.LastName</strong>
+            </div>
+        }
+    </div>
+}
+else if (!IsBusy)
+{
+    <div class="empty-state">
+        <p>Brak kierowców do wyświetlenia.</p>
+    </div>
+}
+
+<!-- Przycisk dodawania użytkownika -->
+<button class="btn-add" @onclick="GoToNewUser" disabled="@IsBusy">Dodaj nowego kierowcę</button>
+
+@code {
+    private bool IsBusy { get; set; } = false;
+    private List<UserDto> Users { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUsersAsync();
+    }
+
+    private async Task GetUsersAsync()
+    {
+        try
+        {
+            IsBusy = true;
+            Users = (await UserService.GetAll()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd podczas pobierania użytkowników: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void GoToNewUser()
+    {
+        Navigation.NavigateTo("/kierowca?title=Dodaj kierowcę");
+    }
+
+    private void GoToEditUser(UserDto user)
+    {
+        if (user != null)
+        {
+            Navigation.NavigateTo($"/kierowca?userId={user.Email}&title=Edytuj kierowcę");
+        }
+    }
+}
