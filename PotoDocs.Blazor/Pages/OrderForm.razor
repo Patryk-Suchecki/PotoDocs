@@ -1,0 +1,120 @@
+﻿@using PotoDocs.Blazor.Services
+@using PotoDocs.Shared.Models
+@inject IOrderService OrderService
+@inject NavigationManager Navigation
+
+@page "/order-form"
+
+<h3>@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
+
+<EditForm Model="@OrderDto" OnValidSubmit="HandleValidSubmit" class="form-container">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- Pliki -->
+    <div class="section">
+        <label class="section-title">Pliki</label>
+
+        <div class="file-group">
+            <label>PDF</label>
+            <InputFile OnChange="HandlePDFUpload" />
+            @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
+            {
+                <p><a href="@OrderDto.PDFUrl" target="_blank">jakisprzykladowyplik.pdf</a></p>
+                <button type="button" @onclick='() => RemoveFile("pdf")' class="btn-danger">Usuń</button>
+            }
+        </div>
+
+        <div class="file-group">
+            <label>CMR</label>
+            <InputFile OnChange="HandleCMRUpload" multiple />
+            @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
+            {
+                <ul>
+                    @foreach (var file in OrderDto.CMRFiles)
+                    {
+                        <li>
+                            <a href="#">@file</a>
+                            <button type="button" class="btn-danger" @onclick="() => RemoveCMR(file)">Usuń</button>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <!-- Informacje ogólne -->
+    <div class="section">
+        <label class="section-title">Informacje ogólne</label>
+        <InputText @bind-Value="OrderDto.CompanyNIP" placeholder="NIP" />
+        <InputText @bind-Value="OrderDto.CompanyName" placeholder="Nazwa firmy" />
+        <InputNumber @bind-Value="OrderDto.InvoiceNumber" placeholder="Numer faktury" />
+    </div>
+
+    <!-- Informacje dodatkowe -->
+    <div class="section">
+        <label class="section-title">Informacje dodatkowe</label>
+        <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" />
+        <InputText @bind-Value="OrderDto.Currency" placeholder="Waluta" />
+        <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" />
+        <InputText @bind-Value="OrderDto.LoadingAddress" placeholder="Adres załadunku" />
+        <InputText @bind-Value="OrderDto.UnloadingAddress" placeholder="Adres rozładunku" />
+        <InputDate @bind-Value="OrderDto.LoadingDate" />
+        <InputDate @bind-Value="OrderDto.UnloadingDate" />
+        <InputText @bind-Value="OrderDto.CompanyOrderNumber" placeholder="Numer zlecenia" />
+    </div>
+
+    <!-- Informacje końcowe -->
+    <div class="section">
+        <label class="section-title">Informacje końcowe</label>
+        <InputDate @bind-Value="OrderDto.InvoiceIssueDate" />
+        <InputCheckbox @bind-Value="HasPaidValue" /> Płatność dokonana
+    </div>
+
+    <button type="submit" class="btn-submit">Potwierdź</button>
+</EditForm>
+
+@code {
+    private OrderDto OrderDto { get; set; } = new();
+
+    private bool HasPaidValue
+    {
+        get => OrderDto.HasPaid ?? false;
+        set => OrderDto.HasPaid = value;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (OrderDto.InvoiceNumber == 0)
+            await OrderService.Create(OrderDto.PDFUrl);
+        else
+            await OrderService.Update(OrderDto, OrderDto.InvoiceNumber);
+
+        Navigation.NavigateTo("/orders");
+    }
+
+    private async Task HandlePDFUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        using var stream = file.OpenReadStream();
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        OrderDto.PDFUrl = Convert.ToBase64String(ms.ToArray());
+    }
+
+    private async Task HandleCMRUpload(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            using var stream = file.OpenReadStream();
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+
+            OrderDto.CMRFiles ??= new List<string>();
+            OrderDto.CMRFiles.Add(file.Name);
+        }
+    }
+
+    private void RemoveCMR(string fileName) => OrderDto.CMRFiles?.Remove(fileName);
+    private void RemoveFile(string fileType) => OrderDto.PDFUrl = null;
+}
