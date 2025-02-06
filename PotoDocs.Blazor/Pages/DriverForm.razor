@@ -2,6 +2,7 @@
 @page "/kierowca"
 @inject IRoleService RoleService
 @inject IUserService UserService
+@inject IToastService toastService
 @inject NavigationManager Navigation
 
 <h3>@(PageTitle ?? "Nowy użytkownik")</h3>
@@ -50,6 +51,9 @@
 </EditForm>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string User { get; set; }
     private UserDto UserDto { get; set; } = new UserDto();
     private List<string> Roles { get; set; } = new();
     private string SelectedRole
@@ -64,6 +68,10 @@
     protected override async Task OnInitializedAsync()
     {
         await GetRoles();
+        if (!string.IsNullOrEmpty(User))
+        {
+            UserDto = JsonSerializer.Deserialize<UserDto>(Uri.UnescapeDataString(User));
+        }
     }
 
     private async Task GetRoles()
@@ -75,7 +83,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd przy pobieraniu ról: {ex.Message}");
+            toastService.ShowError($"Błąd przy pobieraniu ról: {ex.Message}");
         }
         finally
         {
@@ -91,11 +99,12 @@
         {
             IsBusy = true;
             await UserService.RegisterAsync(UserDto);
-            Navigation.NavigateTo("/drivers");
+            Navigation.NavigateTo("/kierowcy");
+            toastService.ShowSuccess($"Użytkownik zapisany");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd przy zapisywaniu użytkownika: {ex.Message}");
+            toastService.ShowError($"Błąd przy zapisywaniu użytkownika: {ex.Message}");
         }
         finally
         {
@@ -107,7 +116,7 @@
     {
         if (string.IsNullOrWhiteSpace(UserDto.Email))
         {
-            Console.WriteLine("Wprowadź e-mail przed generowaniem hasła.");
+            toastService.ShowError("Wprowadź e-mail przed generowaniem hasła.");
             return;
         }
 
@@ -115,10 +124,11 @@
         {
             IsBusy = true;
             await UserService.GeneratePassword(UserDto.Email);
+            toastService.ShowError("Wygenerowano nowe hasło.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd przy generowaniu hasła: {ex.Message}");
+            toastService.ShowError($"Błąd przy generowaniu hasła: {ex.Message}");
         }
         finally
         {

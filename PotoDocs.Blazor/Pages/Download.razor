@@ -2,6 +2,7 @@
 @page "/pobieranie"
 @inject IOrderService OrderService
 @inject IJSRuntime JS
+@inject IToastService toastService
 
 <h3>Pobieranie</h3>
 
@@ -68,14 +69,14 @@
             IsBusy = true;
             var outputPath = await OrderService.DownloadInvoices(DownloadDto);
 
-            using var fileStream = new MemoryStream(File.ReadAllBytes(outputPath));
+            using var fileStream = new MemoryStream(outputPath);
             using var streamRef = new DotNetStreamReference(stream: fileStream);
 
             await JS.InvokeVoidAsync("downloadFileFromStream", "faktury.zip", streamRef);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd: {ex.Message}");
+            toastService.ShowError($"Błąd: {ex.Message}");
         }
         finally
         {

@@ -1,6 +1,9 @@
 ﻿@attribute [Authorize]
 @page "/"
 @inject IOrderService OrderService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject IToastService toastService
 
 <PageTitle>Ostatnie zlecenia</PageTitle>
 
@@ -8,7 +11,7 @@
     <h1>Ostatnie zlecenia</h1>
     <div class="controls">
         <button class="refresh-button" @onclick="RefreshOrders" disabled="@IsRefreshing">
-            <img src="icon_refresh.png" alt="Odśwież" />
+            <img src="images/icon_refresh.png" alt="Odśwież" />
         </button>
         <button class="add-button" @onclick="AddOrder">Dodaj zlecenie</button>
     </div>
@@ -18,7 +21,7 @@
     @if (IsRefreshing)
     {
         <div class="loading-spinner">
-            <img src="icon_spinner.png" alt="Ładowanie..." />
+            <img src="images/icon_refresh.png" alt="Ładowanie..." />
         </div>
     }
     else if (Orders == null || !Orders.Any())
@@ -50,9 +53,11 @@
 <div class="show-more">
     <button class="show-more-button" @onclick="ShowMoreOrders">Pokaż więcej</button>
 </div>
+<a @ref="downloadLink" style="display:none"></a> <!-- Ukryty link do pobrania -->
 
 @code {
     private IEnumerable<OrderDto> Orders;
+    private ElementReference downloadLink;
     private bool IsRefreshing = false;
 
     protected override async Task OnInitializedAsync()
@@ -75,17 +80,46 @@
 
     private void AddOrder()
     {
-        Console.WriteLine("Dodaj zlecenie - funkcjonalność do zaimplementowania");
+        Navigation.NavigateTo("/zlecenie/edycja");
     }
 
     private void EditOrder(OrderDto order)
     {
-        Console.WriteLine($"Edytowanie zlecenia: {order.InvoiceNumber}");
+        if (order != null)
+        {
+            var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
+            Navigation.NavigateTo($"/zlecenie/edycja?order={orderJson}");
+        }
     }
 
-    private void DownloadInvoice(OrderDto order)
+    private async Task DownloadInvoice(OrderDto order)
     {
-        Console.WriteLine($"Pobieranie faktury dla zlecenia: {order.InvoiceNumber}");
+        if (order == null) return;
+
+        try
+        {
+            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
+            var base64File = Convert.ToBase64String(fileBytes);
+            var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
+
+            downloadLink = new ElementReference();
+            var href = $"data:application/pdf;base64,{base64File}";
+
+            await Task.Yield();
+
+            downloadLink = (ElementReference)(object)new
+            {
+                href,
+                download = fileName
+            };
+
+            await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('a[download=\"{fileName}\"]').click()");
+            toastService.ShowSuccess($"Pomyślnie pobrano plik {fileName}.");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd podczas pobierania faktury: {ex.Message}");
+        }
     }
 
     private async Task DeleteOrder(OrderDto order)
@@ -97,12 +131,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas usuwania zlecenia: {ex.Message}");
+            toastService.ShowError($"Błąd podczas usuwania zlecenia: {ex.Message}");
         }
     }
 
     private void ShowMoreOrders()
     {
-        Console.WriteLine("Załaduj więcej zleceń - funkcjonalność do zaimplementowania");
+        toastService.ShowSuccess("Załaduj więcej zleceń - funkcjonalność do zaimplementowania");
     }
 }

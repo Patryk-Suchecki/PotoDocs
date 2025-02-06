@@ -3,9 +3,10 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development",
+            "ASPNETCORE_BROWSERLINK_ENABLED": "false"
+        },
       "dotnetRunMessages": true,
       "hotReloadProfile": "blazorwasm",
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",

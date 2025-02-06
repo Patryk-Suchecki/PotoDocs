@@ -3,6 +3,7 @@
 @inject IUserService UserService
 @inject NavigationManager Navigation
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IToastService toastService
 
 <h3 class="header">Ustawienia</h3>
 
@@ -84,7 +85,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd: {ex.Message}");
+            toastService.ShowError($"Błąd: {ex.Message}");
         }
     }
 
@@ -94,11 +95,12 @@ else
         {
             ChangePasswordDto.Email = UserDto.Email;
             await UserService.ChangePassword(ChangePasswordDto);
-            Navigation.NavigateTo("/login");
+            toastService.ShowSuccess($"Hasło zostało zmienione, zaloguj się ponownie");
+            Navigation.NavigateTo("/logowanie");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd zmiany hasła: {ex.Message}");
+            toastService.ShowError($"Błąd zmiany hasła: {ex.Message}");
         }
     }
 
@@ -112,5 +114,6 @@ else
     {
         AreNotificationsEnabled = (bool)e.Value;
         await LocalStorage.SetItemAsync("AreNotificationsEnabled", AreNotificationsEnabled);
+        toastService.ShowSuccess($"{AreNotificationsEnabled}");
     }
 }

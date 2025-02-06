@@ -1,5 +1,5 @@
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components;
+using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -17,6 +17,7 @@ builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
     provider.GetRequiredService<JwtAuthenticationStateProvider>());
 
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredToast();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

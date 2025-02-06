@@ -3,142 +3,90 @@
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject IToastService toastService
 
 <h3 class="header">Szczegóły zlecenia</h3>
-
-@if (IsLoading)
-{
-    <p>Ładowanie...</p>
-}
-else if (OrderDto != null)
-{
-    <div class="details-container">
-        <div class="detail-item">
-            <label>Numer faktury:</label>
-            <span>@OrderDto.InvoiceNumber</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Data wystawienia faktury:</label>
-            <span>@OrderDto.InvoiceIssueDate.ToString("dd.MM.yyyy")</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Kierowca:</label>
-            <span>@OrderDto.Driver?.FirstAndLastName</span>
-        </div>
-
-        <div class="detail-item">
-            <label>NIP firmy:</label>
-            <span>@OrderDto.CompanyNIP</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Nazwa firmy:</label>
-            <span>@OrderDto.CompanyName</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Adres firmy:</label>
-            <span>@OrderDto.CompanyAddress</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Termin płatności:</label>
-            <span>@OrderDto.PaymentDeadline dni</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Kwota:</label>
-            <span>@OrderDto.Price PLN</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Data załadunku:</label>
-            <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Data rozładunku:</label>
-            <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span>
-        </div>
-
-        <div class="detail-item">
-            <label>Uwagi:</label>
-            <span>@OrderDto.CompanyOrderNumber</span>
-        </div>
-
-        <div class="detail-item">
-            <label>PDF:</label>
-            @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
-            {
-                <a href="@OrderDto.PDFUrl" target="_blank">Pobierz PDF</a>
-            }
-        </div>
-
-        <div class="detail-item">
-            <label>CMR:</label>
-            @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
-            {
-                <ul>
-                    @foreach (var file in OrderDto.CMRFiles)
-                    {
-                        <li><a href="#">@file</a></li>
-                    }
-                </ul>
-            }
-        </div>
-
-        <div class="buttons">
-            <button class="btn-edit" @onclick="() => EditOrder(OrderDto.InvoiceNumber)">Edytuj zlecenie</button>
-            <button class="btn-delete" @onclick="() => DeleteOrder(OrderDto.InvoiceNumber)">Usuń</button>
-        </div>
+<div class="details-container">
+    <div class="detail-item">
+        <label>Numer faktury:</label>
+        <span>@OrderDto.InvoiceNumber</span>
     </div>
-}
-else
-{
-    <p>Nie znaleziono zlecenia.</p>
-}
+
+    <div class="detail-item">
+        <label>Data wystawienia faktury:</label>
+        <span>@OrderDto.InvoiceIssueDate.ToString("dd.MM.yyyy")</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Kierowca:</label>
+        <span>@OrderDto.Driver?.FirstAndLastName</span>
+    </div>
+
+    <div class="detail-item">
+        <label>NIP firmy:</label>
+        <span>@OrderDto.CompanyNIP</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Nazwa firmy:</label>
+        <span>@OrderDto.CompanyName</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Adres firmy:</label>
+        <span>@OrderDto.CompanyAddress</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Termin płatności:</label>
+        <span>@OrderDto.PaymentDeadline dni</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Kwota:</label>
+        <span>@OrderDto.Price PLN</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Data załadunku:</label>
+        <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Data rozładunku:</label>
+        <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span>
+    </div>
+
+    <div class="detail-item">
+        <label>Uwagi:</label>
+        <span>@OrderDto.CompanyOrderNumber</span>
+    </div>
+
+    <div class="detail-item">
+        <label>PDF:</label>
+        @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
+        {
+            <a href="@OrderDto.PDFUrl" target="_blank">Pobierz PDF</a>
+        }
+    </div>
+
+    <div class="detail-item">
+        <label>CMR:</label>
+        @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
+        {
+            <ul>
+                @foreach (var file in OrderDto.CMRFiles)
+                {
+                    <li><a href="#">@file</a></li>
+                }
+            </ul>
+        }
+    </div>
+</div>
 
 @code {
     [Parameter]
     public int OrderId { get; set; }
 
     private OrderDto? OrderDto { get; set; }
-    private bool IsLoading { get; set; } = true;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadOrderDetails();
-    }
-
-    private async Task LoadOrderDetails()
-    {
-        try
-        {
-            OrderDto = await OrderService.GetById(OrderId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Błąd podczas ładowania danych: {ex.Message}");
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    private void EditOrder(int invoiceNumber)
-    {
-        Navigation.NavigateTo($"/order-form/{invoiceNumber}");
-    }
-
-    private async Task DeleteOrder(int invoiceNumber)
-    {
-        if (await JS.InvokeAsync<bool>("confirm", "Czy na pewno chcesz usunąć to zlecenie?"))
-        {
-            await OrderService.Delete(invoiceNumber);
-            Navigation.NavigateTo("/orders");
-        }
-    }
 }

@@ -10,11 +10,11 @@ public interface IOrderService
     Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
     Task<OrderDto> GetById(int invoiceNumber);
     Task Delete(int invoiceNumber);
-    Task<OrderDto> Create(string filePath);
+    Task<OrderDto> Create(byte[] fileData);
     Task Update(OrderDto dto, int invoiceNumber);
-    Task<string> DownloadInvoices(DownloadDto downloadRequestDto);
-    Task<string> DownloadFile(int invoiceNumber, string fileName);
-    Task<string> DownloadInvoice(int invoiceNumber);
+    Task<byte[]> DownloadInvoices(DownloadDto downloadRequestDto);
+    Task<byte[]> DownloadFile(int invoiceNumber, string fileName);
+    Task<byte[]> DownloadInvoice(int invoiceNumber);
     Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber);
     Task RemoveCMR(int invoiceNumber, string pdfname);
 }
@@ -76,17 +76,16 @@ public class OrderService : IOrderService
 
         var response = await httpClient.DeleteAsync($"api/order/{invoiceNumber}");
     }
-    public async Task<OrderDto> Create(string filePath)
+    public async Task<OrderDto> Create(byte[] fileData)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         using (var multipartFormContent = new MultipartFormDataContent())
         {
-            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            var streamContent = new StreamContent(fileStream);
+            var streamContent = new ByteArrayContent(fileData);
             streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
 
-            multipartFormContent.Add(streamContent, "file", Path.GetFileName(filePath));
+            multipartFormContent.Add(streamContent, "file", "document.pdf");
 
             var response = await httpClient.PostAsync("api/order", multipartFormContent);
 
@@ -99,28 +98,31 @@ public class OrderService : IOrderService
                 });
                 return apiResponse.Data;
             }
-            return null;
+            else
+            {
+                throw new Exception($"Błąd API: {response.ReasonPhrase}");
+            }
         }
     }
+
     public async Task Update(OrderDto dto, int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{invoiceNumber}", dto);
     }
-    public async Task<string> DownloadInvoices(DownloadDto downloadRequestDto)
+    public async Task<byte[]> DownloadInvoices(DownloadDto downloadRequestDto)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.GetAsync($"invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
         if (response.IsSuccessStatusCode)
         {
-            var rarData = await response.Content.ReadAsByteArrayAsync();
-            string fileName = response.Content.Headers.ContentDisposition.FileName.Trim('"');
+            return await response.Content.ReadAsByteArrayAsync();
         }
 
         return null;
     }
-    public async Task<string> DownloadFile(int invoiceNumber, string fileName)
+    public async Task<byte[]> DownloadFile(int invoiceNumber, string fileName)
     {
         string archiveFileName = $"{fileName}";
 
@@ -129,12 +131,12 @@ public class OrderService : IOrderService
         var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/pdf/{fileName}");
         if (response.IsSuccessStatusCode)
         {
-            var rarData = await response.Content.ReadAsByteArrayAsync();
+            return await response.Content.ReadAsByteArrayAsync();
         }
 
         return null;
     }
-    public async Task<string> DownloadInvoice(int invoiceNumber)
+    public async Task<byte[]> DownloadInvoice(int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
@@ -142,8 +144,7 @@ public class OrderService : IOrderService
         if (response.IsSuccessStatusCode)
         {
 
-            var rarData = await response.Content.ReadAsByteArrayAsync();
-            string fileName = response.Content.Headers.ContentDisposition.FileName.Trim('"');
+            return await response.Content.ReadAsByteArrayAsync();
         }
 
         return null;

@@ -2,6 +2,7 @@
 @page "/kierowcy"
 @inject IUserService UserService
 @inject NavigationManager Navigation
+@inject IToastService toastService
 
 <h3 class="header">Kierowcy</h3>
 
@@ -53,7 +54,7 @@ else if (!IsBusy)
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas pobierania użytkowników: {ex.Message}");
+            toastService.ShowError($"Błąd podczas pobierania użytkowników: {ex.Message}");
         }
         finally
         {
@@ -70,7 +71,9 @@ else if (!IsBusy)
     {
         if (user != null)
         {
-            Navigation.NavigateTo($"/kierowca?userId={user.Email}&title=Edytuj kierowcę");
+            var userJson = Uri.EscapeDataString(JsonSerializer.Serialize(user));
+            Navigation.NavigateTo($"/kierowca?user={userJson}");
         }
     }
+
 }
