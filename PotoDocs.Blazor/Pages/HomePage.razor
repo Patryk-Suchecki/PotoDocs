@@ -10,7 +10,7 @@
 <div class="header">
     <h1>Ostatnie zlecenia</h1>
     <div class="controls">
-        <button class="refresh-button" @onclick="RefreshOrders" disabled="@IsRefreshing">
+        <button class="refresh-button" @onclick="RefreshOrders" disabled="@IsBusy">
             <img src="images/icon_refresh.png" alt="Odśwież" />
         </button>
         <button class="add-button" @onclick="AddOrder">Dodaj zlecenie</button>
@@ -18,10 +18,10 @@
 </div>
 
 <div class="orders-container">
-    @if (IsRefreshing)
+    @if (IsBusy)
     {
-        <div class="loading-spinner">
-            <img src="images/icon_refresh.png" alt="Ładowanie..." />
+        <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Ładowanie...</span>
         </div>
     }
     else if (Orders == null || !Orders.Any())
@@ -53,12 +53,12 @@
 <div class="show-more">
     <button class="show-more-button" @onclick="ShowMoreOrders">Pokaż więcej</button>
 </div>
-<a @ref="downloadLink" style="display:none"></a> <!-- Ukryty link do pobrania -->
+<a @ref="downloadLink" style="display:none"></a>
 
 @code {
     private IEnumerable<OrderDto> Orders;
     private ElementReference downloadLink;
-    private bool IsRefreshing = false;
+    private bool IsBusy = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,14 +67,18 @@
 
     private async Task RefreshOrders()
     {
-        IsRefreshing = true;
         try
         {
+            IsBusy = true;
             Orders = await OrderService.GetAll();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd: {ex.Message}");
         }
         finally
         {
-            IsRefreshing = false;
+            IsBusy = false;
         }
     }
 
@@ -98,6 +102,7 @@
 
         try
         {
+            IsBusy = true;
             var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
             var base64File = Convert.ToBase64String(fileBytes);
             var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
@@ -120,6 +125,10 @@
         {
             toastService.ShowError($"Błąd podczas pobierania faktury: {ex.Message}");
         }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task DeleteOrder(OrderDto order)
@@ -128,6 +137,7 @@
         {
             await OrderService.Delete(order.InvoiceNumber);
             await RefreshOrders();
+            toastService.ShowSuccess($"Pomyślnie usunięto zlecenie");
         }
         catch (Exception ex)
         {

@@ -5,7 +5,6 @@
     max-width: 350px;
     margin: auto;
     color: white;
-    font-family: 'Roboto', sans-serif;
 }
 
 .form-group {
@@ -40,8 +39,3 @@ label {
         background: gray;
         cursor: not-allowed;
     }
-
-.spinner-border {
-    margin: 10px auto;
-    display: block;
-}

@@ -7,14 +7,15 @@
 
 <h3 class="header">Ustawienia</h3>
 
-@if (IsLoading)
+@if (IsBusy)
 {
-    <p>Ładowanie danych...</p>
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
 }
 else
 {
     <div class="settings-container">
-        <!-- Sekcja Profil -->
         <div class="section">
             <h4>Profil</h4>
             <div class="profile-info">
@@ -25,7 +26,6 @@ else
             </div>
         </div>
 
-        <!-- Sekcja Zmiana Hasła -->
         <div class="section">
             <h4>Zmiana hasła</h4>
             <EditForm Model="@ChangePasswordDto" OnValidSubmit="ChangePasswordAsync">
@@ -48,7 +48,6 @@ else
             </EditForm>
         </div>
 
-        <!-- Sekcja Powiadomienia -->
         <div class="section">
             <h4>Powiadomienia</h4>
             <label>
@@ -62,7 +61,7 @@ else
 @code {
     private UserDto UserDto { get; set; } = new();
     private ChangePasswordDto ChangePasswordDto { get; set; } = new();
-    private bool IsLoading { get; set; } = true;
+    private bool IsBusy { get; set; } = true;
     private bool AreNotificationsEnabled { get; set; }
 
     private async Task OnAreNotificationsEnabledChanged(bool value)
@@ -74,7 +73,7 @@ else
     {
         await LoadUser();
         await LoadNotificationPreference();
-        IsLoading = false;
+        IsBusy = false;
     }
 
     private async Task LoadUser()

@@ -24,40 +24,48 @@
         <span>Data załadunku</span>
         <span>Status</span>
     </div>
-
-    <div class="orders-list">
-        @if (Orders == null || Orders.Count == 0)
-        {
-            <p>Brak dostępnych zleceń.</p>
-        }
-        else
-        {
-            @foreach (var order in Orders)
+    @if (IsBusy)
+    {
+        <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Ładowanie...</span>
+        </div>
+    }
+    else
+    {
+        <div class="orders-list">
+            @if (Orders == null || Orders.Count == 0)
             {
-                <div class="order-item">
-                    <div class="order-info">
-                        <p>@order.CompanyName</p>
-                        <p>@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</p>
-                        <p>@(order.LoadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</p>
-                    </div>
-                    <div class="order-actions">
-                        <button @onclick="() => EditOrder(order)">✏️ Edytuj</button>
-                        <button @onclick="() => DownloadInvoice(order)">⬇️ Faktura</button>
-                        <button @onclick="() => DeleteOrder(order)">🗑️ Usuń</button>
-                    </div>
-                </div>
+                <p>Brak dostępnych zleceń.</p>
             }
-        }
-    </div>
-
+            else
+            {
+                @foreach (var order in Orders)
+                {
+                    <div class="order-item">
+                        <div class="order-info">
+                            <p>@order.CompanyName</p>
+                            <p>@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</p>
+                            <p>@(order.LoadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</p>
+                        </div>
+                        <div class="order-actions">
+                            <button @onclick="() => EditOrder(order)">✏️ Edytuj</button>
+                            <button @onclick="() => DownloadInvoice(order)">⬇️ Faktura</button>
+                            <button @onclick="() => DeleteOrder(order)">🗑️ Usuń</button>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
     <button @onclick="LoadMoreOrders" class="load-more-button">Pokaż więcej</button>
 </div>
-<a @ref="downloadLink" style="display:none"></a> <!-- Ukryty link do pobrania -->
+<a @ref="downloadLink" style="display:none"></a>
+
 @code {
     private List<OrderDto> Orders { get; set; } = new List<OrderDto>();
-    private bool IsLoading = false;
     private string? searchQuery;
     private ElementReference downloadLink;
+    private bool IsBusy = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,9 +74,9 @@
 
     private async Task GetAllOrders()
     {
-        IsLoading = true;
         try
         {
+            IsBusy = true;
             Orders = (await OrderService.GetAll()).ToList();
         }
         catch (Exception ex)
@@ -77,15 +85,15 @@
         }
         finally
         {
-            IsLoading = false;
+            IsBusy = false;
         }
     }
 
     private async Task LoadMoreOrders()
     {
-        IsLoading = true;
         try
         {
+            IsBusy = true;
             var newOrders = await OrderService.GetAll(Orders.Count / 5 + 1);
             if (newOrders?.Any() ?? false)
             {
@@ -98,7 +106,7 @@
         }
         finally
         {
-            IsLoading = false;
+            IsBusy = false;
         }
     }
 
@@ -117,6 +125,7 @@
 
         try
         {
+            IsBusy = true;
             var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
             var base64File = Convert.ToBase64String(fileBytes);
             var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
@@ -138,6 +147,10 @@
         catch (Exception ex)
         {
             toastService.ShowError($"Błąd podczas pobierania faktury: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

@@ -1,5 +1,5 @@
 ﻿@attribute [Authorize]
-@page "/zlecenie/szczegoly/{OrderId:int}"
+@page "/zlecenie/szczegoly"
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -86,7 +86,15 @@
 
 @code {
     [Parameter]
-    public int OrderId { get; set; }
+    [SupplyParameterFromQuery]
+    public string Order { get; set; }
+    private OrderDto OrderDto { get; set; } = new();
 
-    private OrderDto? OrderDto { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Order))
+        {
+            OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
+        }
+    }
 }

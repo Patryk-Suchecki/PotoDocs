@@ -5,42 +5,41 @@
 @inject IToastService toastService
 
 <h3>Pobieranie</h3>
-
-<EditForm Model="@DownloadDto" OnValidSubmit="GetOrdersAsync" class="form-container">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="form-group">
-        <label>Miesiąc</label>
-        <select class="form-control" @bind="DownloadDto.Month">
-            @foreach (var month in Months)
-            {
-                <option value="@month.Key">@month.Value</option>
-            }
-        </select>
+@if (IsBusy)
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
     </div>
+}
+else
+{
+    <EditForm Model="@DownloadDto" OnValidSubmit="GetOrdersAsync" class="form-container">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="form-group">
-        <label>Rok</label>
-        <select class="form-control" @bind="DownloadDto.Year">
-            @foreach (var year in Years)
-            {
-                <option value="@year">@year</option>
-            }
-        </select>
-    </div>
-
-    <button type="submit" class="btn-submit" disabled="@IsBusy">
-        Pobierz zlecenia
-    </button>
-
-    @if (IsBusy)
-    {
-        <div class="spinner-border text-danger" role="status">
-            <span class="visually-hidden">Ładowanie...</span>
+        <div class="form-group">
+            <label>Miesiąc</label>
+            <select class="form-control" @bind="DownloadDto.Month">
+                @foreach (var month in Months)
+                {
+                    <option value="@month.Key">@month.Value</option>
+                }
+            </select>
         </div>
-    }
-</EditForm>
+
+        <div class="form-group">
+            <label>Rok</label>
+            <select class="form-control" @bind="DownloadDto.Year">
+                @foreach (var year in Years)
+                {
+                    <option value="@year">@year</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit" disabled="@IsBusy">Pobierz zlecenia</button>
+    </EditForm>
+}
 
 @code {
     private DownloadDto DownloadDto { get; set; } = new DownloadDto

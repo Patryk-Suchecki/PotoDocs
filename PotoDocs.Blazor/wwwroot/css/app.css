@@ -1,5 +1,5 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 h1:focus {
@@ -115,7 +115,6 @@ code {
 }
 
 .input-text {
-    font-family: inherit;
     width: 100%;
     border: none;
     border-bottom: 2px solid #7f7f7f;
@@ -172,3 +171,11 @@ code {
     box-shadow: none;
 }
 /*Input*/
+
+
+/*£adowanie*/
+.spinner-border {
+    margin: 10px auto;
+    display: block;
+}
+/*£adowanie*/

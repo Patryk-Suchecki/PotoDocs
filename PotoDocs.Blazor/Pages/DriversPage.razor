@@ -9,13 +9,11 @@
 <!-- Wskaźnik ładowania -->
 @if (IsBusy)
 {
-    <div class="loading">
-        <p>Ładowanie...</p>
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
     </div>
 }
-
-<!-- Lista kierowców -->
-@if (Users?.Count > 0)
+else if (Users?.Count > 0)
 {
     <div class="user-list">
         @foreach (var user in Users)
@@ -26,14 +24,13 @@
         }
     </div>
 }
-else if (!IsBusy)
+else
 {
     <div class="empty-state">
         <p>Brak kierowców do wyświetlenia.</p>
     </div>
 }
 
-<!-- Przycisk dodawania użytkownika -->
 <button class="btn-add" @onclick="GoToNewUser" disabled="@IsBusy">Dodaj nowego kierowcę</button>
 
 @code {
