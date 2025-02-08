@@ -1,0 +1,78 @@
+﻿.file-section {
+    background-color: #fff;
+    border: 1px solid #AA0101;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+}
+
+.file-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to right, #8C0000, #BC0000);
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+}
+
+.file-title {
+    font-size: 16px;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid #AA0101;
+}
+
+    .file-item a {
+        color: #0066cc;
+        text-decoration: underline;
+    }
+
+.btn-upload {
+    background-color: white;
+    color: #8C0000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+    .btn-upload:hover {
+        background-color: #F2F2F2;
+    }
+
+.btn-danger {
+    background-color: #FF0000;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .btn-danger:hover {
+        background-color: #CC0000;
+    }
+
+.btn-submit {
+    background: linear-gradient(to right, #8C0000, #BC0000);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 15px;
+    width: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+    .btn-submit:hover {
+        background: linear-gradient(to right, #BC0000, #8C0000);
+    }

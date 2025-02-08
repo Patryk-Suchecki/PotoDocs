@@ -1,0 +1,85 @@
+﻿@attribute [Authorize]
+@page "/pobieranie"
+@inject IOrderService OrderService
+@inject IJSRuntime JS
+@inject IToastService toastService
+
+<h3>Pobieranie</h3>
+@if (IsBusy)
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
+}
+else
+{
+    <EditForm Model="@DownloadDto" OnValidSubmit="GetOrdersAsync" class="form-container">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label>Miesiąc</label>
+            <select class="form-control" @bind="DownloadDto.Month">
+                @foreach (var month in Months)
+                {
+                    <option value="@month.Key">@month.Value</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Rok</label>
+            <select class="form-control" @bind="DownloadDto.Year">
+                @foreach (var year in Years)
+                {
+                    <option value="@year">@year</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit" disabled="@IsBusy">Pobierz zlecenia</button>
+    </EditForm>
+}
+
+@code {
+    private DownloadDto DownloadDto { get; set; } = new DownloadDto
+        {
+            Month = DateTime.Now.Month,
+            Year = DateTime.Now.Year
+        };
+
+    private bool IsBusy { get; set; } = false;
+
+    private Dictionary<int, string> Months = new()
+    {
+        {1, "Styczeń"}, {2, "Luty"}, {3, "Marzec"}, {4, "Kwiecień"},
+        {5, "Maj"}, {6, "Czerwiec"}, {7, "Lipiec"}, {8, "Sierpień"},
+        {9, "Wrzesień"}, {10, "Październik"}, {11, "Listopad"}, {12, "Grudzień"}
+    };
+
+    private List<int> Years = new() { 2023, 2024 };
+
+    private async Task GetOrdersAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            var outputPath = await OrderService.DownloadInvoices(DownloadDto);
+
+            using var fileStream = new MemoryStream(outputPath);
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", "faktury.zip", streamRef);
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}

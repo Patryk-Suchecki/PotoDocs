@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@using Blazored.Toast.Configuration
 
 <div class="page">
     @if (!IsLoginPage)
@@ -10,13 +11,7 @@
     }
 
     <main>
-        <div class="top-row px-4">
-            @if (!IsLoginPage)
-            {
-                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-            }
-        </div>
-
+        <BlazoredToasts Position="ToastPosition.TopRight" Timeout="5" />
         <article class="content px-4">
             @Body
         </article>
@@ -24,5 +19,5 @@
 </div>
 
 @code {
-    private bool IsLoginPage => Navigation.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase) || Navigation.Uri.Contains("/authentication/login", StringComparison.OrdinalIgnoreCase);
+    private bool IsLoginPage => Navigation.Uri.Contains("/logowanie", StringComparison.OrdinalIgnoreCase);
 }

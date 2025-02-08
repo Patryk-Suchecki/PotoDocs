@@ -1,0 +1,118 @@
+﻿@attribute [Authorize]
+@page "/ustawienia"
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IToastService toastService
+
+<h3 class="header">Ustawienia</h3>
+
+@if (IsBusy)
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
+}
+else
+{
+    <div class="settings-container">
+        <div class="section">
+            <h4>Profil</h4>
+            <div class="profile-info">
+                <p><strong>Imię:</strong> @UserDto.FirstName</p>
+                <p><strong>Nazwisko:</strong> @UserDto.LastName</p>
+                <p><strong>Email:</strong> @UserDto.Email</p>
+                <p><strong>Rola:</strong> @UserDto.Role</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h4>Zmiana hasła</h4>
+            <EditForm Model="@ChangePasswordDto" OnValidSubmit="ChangePasswordAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label>Stare hasło:</label>
+                    <InputText @bind-Value="ChangePasswordDto.OldPassword" type="password" class="form-control" />
+                    <ValidationMessage For="@(() => ChangePasswordDto.OldPassword)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Nowe hasło:</label>
+                    <InputText @bind-Value="ChangePasswordDto.NewPassword" type="password" class="form-control" />
+                    <ValidationMessage For="@(() => ChangePasswordDto.NewPassword)" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Zmień hasło</button>
+            </EditForm>
+        </div>
+
+        <div class="section">
+            <h4>Powiadomienia</h4>
+            <label>
+                <input type="checkbox" @bind="AreNotificationsEnabled" />
+                Włącz powiadomienia aplikacji
+            </label>
+        </div>
+    </div>
+}
+
+@code {
+    private UserDto UserDto { get; set; } = new();
+    private ChangePasswordDto ChangePasswordDto { get; set; } = new();
+    private bool IsBusy { get; set; } = true;
+    private bool AreNotificationsEnabled { get; set; }
+
+    private async Task OnAreNotificationsEnabledChanged(bool value)
+    {
+        await LocalStorage.SetItemAsync("AreNotificationsEnabled", value);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUser();
+        await LoadNotificationPreference();
+        IsBusy = false;
+    }
+
+    private async Task LoadUser()
+    {
+        try
+        {
+            UserDto = await UserService.GetUser();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd: {ex.Message}");
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        try
+        {
+            ChangePasswordDto.Email = UserDto.Email;
+            await UserService.ChangePassword(ChangePasswordDto);
+            toastService.ShowSuccess($"Hasło zostało zmienione, zaloguj się ponownie");
+            Navigation.NavigateTo("/logowanie");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd zmiany hasła: {ex.Message}");
+        }
+    }
+
+    private async Task LoadNotificationPreference()
+    {
+        var result = await LocalStorage.GetItemAsync<bool>("AreNotificationsEnabled");
+        AreNotificationsEnabled = result;
+    }
+
+    private async Task ToggleNotifications(ChangeEventArgs e)
+    {
+        AreNotificationsEnabled = (bool)e.Value;
+        await LocalStorage.SetItemAsync("AreNotificationsEnabled", AreNotificationsEnabled);
+        toastService.ShowSuccess($"{AreNotificationsEnabled}");
+    }
+}

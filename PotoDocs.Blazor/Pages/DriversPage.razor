@@ -1,0 +1,76 @@
+﻿@attribute [Authorize]
+@page "/kierowcy"
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IToastService toastService
+
+<h3 class="header">Kierowcy</h3>
+
+<!-- Wskaźnik ładowania -->
+@if (IsBusy)
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
+}
+else if (Users?.Count > 0)
+{
+    <div class="user-list">
+        @foreach (var user in Users)
+        {
+            <div class="user-card" @onclick="() => GoToEditUser(user)">
+                <strong>@user.FirstName @user.LastName</strong>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <p>Brak kierowców do wyświetlenia.</p>
+    </div>
+}
+
+<button class="btn-add" @onclick="GoToNewUser" disabled="@IsBusy">Dodaj nowego kierowcę</button>
+
+@code {
+    private bool IsBusy { get; set; } = false;
+    private List<UserDto> Users { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUsersAsync();
+    }
+
+    private async Task GetUsersAsync()
+    {
+        try
+        {
+            IsBusy = true;
+            Users = (await UserService.GetAll()).ToList();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd podczas pobierania użytkowników: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void GoToNewUser()
+    {
+        Navigation.NavigateTo("/kierowca?title=Dodaj kierowcę");
+    }
+
+    private void GoToEditUser(UserDto user)
+    {
+        if (user != null)
+        {
+            var userJson = Uri.EscapeDataString(JsonSerializer.Serialize(user));
+            Navigation.NavigateTo($"/kierowca?user={userJson}");
+        }
+    }
+
+}

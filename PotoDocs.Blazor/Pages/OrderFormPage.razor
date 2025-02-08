@@ -1,0 +1,182 @@
+﻿@attribute [Authorize]
+@inject IOrderService OrderService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IToastService toastService
+
+@page "/zlecenie/edycja"
+
+<h3>@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
+
+@if (IsBusy)
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
+}
+else
+{
+    <EditForm Model="@OrderDto" OnValidSubmit="HandleValidSubmit" class="form-container">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Pliki -->
+        <div class="section">
+            <label class="section-title">Pliki</label>
+            <div class="file-group">
+                <label>PDF</label>
+                <InputFile OnChange="HandlePDFUpload" accept=".pdf,application/pdf" />
+            </div>
+            <div class="file-group">
+                <label>CMR</label>
+                <InputFile OnChange="HandleCMRUpload" multiple accept=".pdf,application/pdf" />
+            </div>
+        </div>
+
+        <!-- Informacje ogólne -->
+        <div class="section">
+            <label class="section-title">Informacje ogólne</label>
+
+            <!-- Select Lista z kierowcami -->
+            <label>Kierowca</label>
+            <InputSelect @bind-Value="SelectedDriverEmail" class="form-control">
+                <option value="">Wybierz kierowcę</option>
+                @foreach (var user in Users)
+                {
+                    <option value="@user.Email">@user.FirstAndLastName</option>
+                }
+            </InputSelect>
+            <InputNumber @bind-Value="OrderDto.InvoiceNumber" placeholder="Numer faktury" />
+            <InputText @bind-Value="OrderDto.CompanyName" placeholder="Nazwa firmy" />
+            <InputText @bind-Value="OrderDto.CompanyNIP" placeholder="NIP" />
+        </div>
+
+        <!-- Informacje dodatkowe -->
+        <div class="section">
+            <label class="section-title">Informacje dodatkowe</label>
+
+            <div class="horizontal-group">
+                <InputDate @bind-Value="OrderDto.LoadingDate" />
+                <InputDate @bind-Value="OrderDto.UnloadingDate" />
+            </div>
+
+            <InputDate @bind-Value="OrderDto.InvoiceIssueDate" />
+            <InputText @bind-Value="OrderDto.UnloadingAddress" placeholder="Adres rozładunku" />
+            <InputText @bind-Value="OrderDto.CompanyCountry" placeholder="Kraj" />
+
+            <div class="horizontal-group">
+                <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" />
+                <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" />
+            </div>
+
+            <InputText @bind-Value="OrderDto.CompanyOrderNumber" placeholder="Numer zlecenia" />
+        </div>
+
+        <button type="submit" class="btn-submit">Zapisz</button>
+    </EditForm>
+}
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Order { get; set; }
+    private OrderDto OrderDto { get; set; } = new();
+    private List<UserDto> Users { get; set; } = new();
+    private string SelectedDriverEmail { get; set; }
+    private int InvoiceNumber;
+    private bool IsBusy { get; set; } = false;
+
+    private bool HasPaidValue
+    {
+        get => OrderDto.HasPaid ?? false;
+        set => OrderDto.HasPaid = value;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUsers();
+        if (!string.IsNullOrEmpty(Order))
+        {
+            OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
+        }
+        if (OrderDto.Driver != null)
+        {
+            InvoiceNumber = OrderDto.InvoiceNumber;
+            SelectedDriverEmail = OrderDto.Driver.Email;
+        }
+    }
+
+    private async Task HandlePDFUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file.ContentType != "application/pdf")
+        {
+            toastService.ShowError("Błąd: Tylko pliki PDF są dozwolone.");
+            return;
+        }
+
+        using var stream = file.OpenReadStream();
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        try
+        {
+            IsBusy = true;
+            OrderDto = await OrderService.Create(ms.ToArray());
+            toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+        
+    }
+
+    private async Task HandleCMRUpload(InputFileChangeEventArgs e)
+    {
+        OrderDto.CMRFiles ??= new List<string>();
+        foreach (var file in e.GetMultipleFiles())
+        {
+            using var stream = file.OpenReadStream();
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            OrderDto.CMRFiles.Add(Convert.ToBase64String(ms.ToArray()));
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            OrderDto.Driver = Users.FirstOrDefault(u => u.Email == SelectedDriverEmail);
+            await OrderService.Update(OrderDto, InvoiceNumber);
+            toastService.ShowSuccess($"Pomyślnie zapisano zlecenie.");
+            Navigation.NavigateTo("/zlecenia");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd przy zapisywaniu zlecenia: {ex.Message}");
+        }
+    }
+
+    private async Task GetUsers()
+    {
+        try
+        {
+            IsBusy = true;
+            var allUsers = await UserService.GetAll();
+            Users = allUsers.ToList();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd przy pobieraniu kierowców: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}

@@ -1,0 +1,152 @@
+﻿@attribute [Authorize]
+@page "/"
+@inject IOrderService OrderService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject IToastService toastService
+
+<PageTitle>Ostatnie zlecenia</PageTitle>
+
+<div class="header">
+    <h1>Ostatnie zlecenia</h1>
+    <div class="controls">
+        <button class="refresh-button" @onclick="RefreshOrders" disabled="@IsBusy">
+            <img src="images/icon_refresh.png" alt="Odśwież" />
+        </button>
+        <button class="add-button" @onclick="AddOrder">Dodaj zlecenie</button>
+    </div>
+</div>
+
+<div class="orders-container">
+    @if (IsBusy)
+    {
+        <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Ładowanie...</span>
+        </div>
+    }
+    else if (Orders == null || !Orders.Any())
+    {
+        <div class="empty-view">
+            <p>Brak zleceń do wyświetlenia</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Orders)
+        {
+            <div class="order-card">
+                <div class="order-details">
+                    <h3>@order.CompanyName</h3>
+                    <p>Załadunek: @order.LoadingDate?.ToString("dd.MM.yyyy")</p>
+                    <p>Cena: @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
+                </div>
+                <div class="order-actions">
+                    <button class="edit-button" @onclick="() => EditOrder(order)">Edytuj</button>
+                    <button class="invoice-button" @onclick="() => DownloadInvoice(order)">Faktura</button>
+                    <button class="delete-button" @onclick="() => DeleteOrder(order)">Usuń</button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<div class="show-more">
+    <button class="show-more-button" @onclick="ShowMoreOrders">Pokaż więcej</button>
+</div>
+<a @ref="downloadLink" style="display:none"></a>
+
+@code {
+    private IEnumerable<OrderDto> Orders;
+    private ElementReference downloadLink;
+    private bool IsBusy = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshOrders();
+    }
+
+    private async Task RefreshOrders()
+    {
+        try
+        {
+            IsBusy = true;
+            Orders = await OrderService.GetAll();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void AddOrder()
+    {
+        Navigation.NavigateTo("/zlecenie/edycja");
+    }
+
+    private void EditOrder(OrderDto order)
+    {
+        if (order != null)
+        {
+            var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
+            Navigation.NavigateTo($"/zlecenie/edycja?order={orderJson}");
+        }
+    }
+
+    private async Task DownloadInvoice(OrderDto order)
+    {
+        if (order == null) return;
+
+        try
+        {
+            IsBusy = true;
+            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
+            var base64File = Convert.ToBase64String(fileBytes);
+            var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
+
+            downloadLink = new ElementReference();
+            var href = $"data:application/pdf;base64,{base64File}";
+
+            await Task.Yield();
+
+            downloadLink = (ElementReference)(object)new
+            {
+                href,
+                download = fileName
+            };
+
+            await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('a[download=\"{fileName}\"]').click()");
+            toastService.ShowSuccess($"Pomyślnie pobrano plik {fileName}.");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd podczas pobierania faktury: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task DeleteOrder(OrderDto order)
+    {
+        try
+        {
+            await OrderService.Delete(order.InvoiceNumber);
+            await RefreshOrders();
+            toastService.ShowSuccess($"Pomyślnie usunięto zlecenie");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd podczas usuwania zlecenia: {ex.Message}");
+        }
+    }
+
+    private void ShowMoreOrders()
+    {
+        toastService.ShowSuccess("Załaduj więcej zleceń - funkcjonalność do zaimplementowania");
+    }
+}

@@ -1,0 +1,64 @@
+﻿.header {
+    font-size: 24px;
+    color: #8C0000;
+    margin: 20px 0;
+}
+
+.details-container {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+    .detail-item label {
+        font-weight: bold;
+        color: #640000;
+    }
+
+    .detail-item span, .detail-item a {
+        color: #444;
+        text-align: right;
+    }
+
+    .detail-item a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+        .detail-item a:hover {
+            text-decoration: underline;
+        }
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.btn-edit, .btn-delete {
+    padding: 10px 20px;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.btn-edit {
+    background: linear-gradient(to right, #8C0000, #BC0000);
+}
+
+.btn-delete {
+    background: linear-gradient(to right, #FF0000, #CC0000);
+}
