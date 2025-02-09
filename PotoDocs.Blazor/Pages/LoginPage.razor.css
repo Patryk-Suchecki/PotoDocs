@@ -1,22 +1,22 @@
-﻿
-
-html, body {
-    width: 100%;
+﻿html, body {
     height: 100%;
-    overflow: hidden; /* Usuwa przewijanie */
+    margin: 0;
+    padding: 0;
 }
+
 .login-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    height: 100vh; /* Zapewnia pełne wypełnienie okna widoku */
     position: absolute;
-    top: 100vh;
+    top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
     background: linear-gradient(135deg, #ffffff 50%, #f58a8a 50%);
     background-attachment: fixed;
+    background-size: cover; /* Zapewnia pełne pokrycie */
 }
 
 .logo {
@@ -28,9 +28,11 @@ html, body {
     display: flex;
     align-items: center;
     width: 100%;
+    margin-bottom: 1.5rem;
 }
 
 .input-text-label {
+    top: 20px;
     align-self: flex-start;
 }
 
@@ -38,14 +40,14 @@ html, body {
     width: 100%;
     max-width: 350px;
     padding: 0.75rem;
-    background-color: #a11717;
+    background: linear-gradient(90deg, #8C0000, #BC0000);
     border: none;
     color: white;
     font-size: 1.2rem;
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    margin-top: 1rem;
+    margin-top: 2rem;
 }
 
     .login-button:hover {
