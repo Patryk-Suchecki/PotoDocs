@@ -38,18 +38,24 @@
 .orders-container {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 7px;
+    max-width: 100%;
+    margin: auto;
 }
 
 /* Karta zlecenia */
 .order-card {
     display: flex;
+    flex-direction: column;
+    width: 100%;
     justify-content: space-between;
     align-items: center;
     border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 16px;
-    background-color: #f9f9f9;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-color: white;
 }
 
 .order-details h3 {
