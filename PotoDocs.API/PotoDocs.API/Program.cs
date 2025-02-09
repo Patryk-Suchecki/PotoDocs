@@ -34,6 +34,16 @@ builder.Services.AddScoped<ErrorHandlingMiddleware>();
 builder.Services.AddDbContext<PotodocsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<DBSeeder>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        policy.WithOrigins("https://localhost:7220")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<UserDto>, RegisterUserDtoValidator>();
 
@@ -61,6 +71,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+app.UseCors("AllowBlazorClient");
 app.UseAuthentication();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthorization();

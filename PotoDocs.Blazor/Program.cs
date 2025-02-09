@@ -1,3 +1,4 @@
+using BlazorDownloadFile;
 using Blazored.LocalStorage;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -18,6 +19,8 @@ builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredToast();
+builder.Services.AddBlazorDownloadFile();
+
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -26,7 +29,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://api.poto-express.com")
+    BaseAddress = new Uri("https://localhost:7157")
 });
 
 await builder.Build().RunAsync();
