@@ -34,17 +34,23 @@
     {
         @foreach (var order in Orders)
         {
-            <div class="order-card">
+            <div class="order-card" @onclick="() => ToggleOrder(order.InvoiceNumber)">
                 <div class="order-details">
                     <h3>@order.CompanyName</h3>
-                    <p>Załadunek: @order.LoadingDate?.ToString("dd.MM.yyyy")</p>
-                    <p>Cena: @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
+                    <div class="details-row">
+                        <p>@order.LoadingDate?.ToString("dd.MM.yyyy") • @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
+                        <p class="driver-info">@order.Driver</p>
+                    </div>
                 </div>
-                <div class="order-actions">
-                    <button class="edit-button" @onclick="() => EditOrder(order)">Edytuj</button>
-                    <button class="invoice-button" @onclick="() => DownloadInvoice(order)">Faktura</button>
-                    <button class="delete-button" @onclick="() => DeleteOrder(order)">Usuń</button>
-                </div>
+
+                @if (ExpandedOrderId == order.InvoiceNumber)
+                {
+                    <div class="order-actions">
+                        <button class="edit-button" @onclick="() => EditOrder(order)">Edytuj</button>
+                        <button class="invoice-button" @onclick="() => DownloadInvoice(order)">Faktura</button>
+                        <button class="delete-button" @onclick="() => DeleteOrder(order)">Usuń</button>
+                    </div>
+                }
             </div>
         }
     }
@@ -59,6 +65,12 @@
     private IEnumerable<OrderDto> Orders;
     private ElementReference downloadLink;
     private bool IsBusy = false;
+    private int? ExpandedOrderId = null;
+
+    private void ToggleOrder(int orderId)
+    {
+        ExpandedOrderId = ExpandedOrderId == orderId ? null : orderId;
+    }
 
     protected override async Task OnInitializedAsync()
     {

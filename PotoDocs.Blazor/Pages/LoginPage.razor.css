@@ -34,6 +34,8 @@
 .input-text-label {
     top: 20px;
     align-self: flex-start;
+    font-family: Roboto;
+    font-style: italic;
 }
 
 .login-button {
