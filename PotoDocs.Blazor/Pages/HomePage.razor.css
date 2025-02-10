@@ -4,12 +4,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+
 }
 
     .header h1 {
         font-size: 24px;
         color: #8C0000;
         margin: 0;
+        font-family: Roboto;
+        font-weight: 600;
     }
 
 /* Kontrolki */
@@ -23,15 +26,23 @@
     height: 30px;
     cursor: pointer;
 }
+.refresh-button {
+    border: none;
+    background-color: white;
+}
 
 .add-button {
-    background-color: #B20101;
+    background: linear-gradient(90deg, #8C0000, #BC0000);
     color: white;
-    padding: 8px 16px;
+    padding: 8px 18px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 18px;
+    font-family: Roboto;
+    font-weight: 500;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s ease-in-out;
 }
 
 /* Kontener zleceń */
@@ -49,13 +60,23 @@
     flex-direction: column;
     width: 100%;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
     border: 1px solid #ccc;
     border-radius: 12px;
     padding: 6px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     background-color: white;
     border-color: white;
+}
+.details-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.driver-info{
+    margin-left: auto;
+    white-space: nowrap;
 }
 
 .order-details h3 {
@@ -72,46 +93,62 @@
 
 /* Akcje zlecenia */
 .order-actions button {
-    margin-left: 8px;
     padding: 6px 12px;
     font-size: 14px;
     cursor: pointer;
+}
+
+.order-actions {
+    align-self: center;
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+    width: 100%;
+    gap: 10px;
 }
 
 .edit-button {
     background-color: #007BFF;
     color: white;
     border: none;
-    border-radius: 4px;
+    width: 100px;
+    border-radius: 8px;
 }
 
 .invoice-button {
     background-color: #28A745;
     color: white;
     border: none;
-    border-radius: 4px;
+    width: 100px;
+    border-radius: 8px;
 }
 
 .delete-button {
     background-color: #DC3545;
     color: white;
     border: none;
-    border-radius: 4px;
+    width: 100px;
+    border-radius: 8px;
 }
 
 /* Pokaż więcej */
 .show-more {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .show-more-button {
-    background-color: #8C0000;
+    background: linear-gradient(90deg, #8C0000, #BC0000);
     color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 16px;
+    padding: 12px 40px;
+    border: none;
+    border-radius: 14px;
     cursor: pointer;
+    font-size: 20px;
+    font-family: Roboto;
+    font-weight: 500;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s ease-in-out;
 }
 
 /* Spinner */
