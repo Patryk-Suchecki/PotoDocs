@@ -54,6 +54,13 @@
     margin: auto;
 }
 
+.button-image {
+    width:16px;
+    height:16px;
+    margin-right: 6px;
+    margin-bottom: 2px;
+}
+
 /* Karta zlecenia */
 .order-card {
     display: flex;
@@ -63,20 +70,29 @@
     align-items: start;
     border: 1px solid #ccc;
     border-radius: 12px;
-    padding: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
     background-color: white;
     border-color: white;
 }
+
+.order-details {
+    width: 100%;
+}
+
 .details-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
 }
 
 .driver-info{
-    margin-left: auto;
     white-space: nowrap;
+    font-weight: 600;
+    color: red;
+    justify-content: end;
+
 }
 
 .order-details h3 {

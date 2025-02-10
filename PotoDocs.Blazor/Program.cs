@@ -33,7 +33,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 // 🔹 **HttpClient z poprawnym adresem API**
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:7157")
+    BaseAddress = new Uri("https://api.poto-express.com")
 });
 
 // 🔹 **Uruchomienie aplikacji**
