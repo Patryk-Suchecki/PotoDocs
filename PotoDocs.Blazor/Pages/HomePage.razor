@@ -39,16 +39,22 @@
                     <h3>@order.CompanyName</h3>
                     <div class="details-row">
                         <p>@order.LoadingDate?.ToString("dd.MM.yyyy") • @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
-                        <p class="driver-info">@order.Driver</p>
+                        <p class="driver-info">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</p>
                     </div>
                 </div>
 
                 @if (ExpandedOrderId == order.InvoiceNumber)
                 {
                     <div class="order-actions">
-                        <button class="edit-button" @onclick="() => EditOrder(order)">Edytuj</button>
-                        <button class="invoice-button" @onclick="() => DownloadInvoice(order)">Faktura</button>
-                        <button class="delete-button" @onclick="() => DeleteOrder(order)">Usuń</button>
+                        <button class="edit-button" @onclick="() => EditOrder(order)">
+                            <img src="Images/icon_edit.png" alt="Edit" class="button-image"/>Edytuj
+                            </button>
+                        <button class="invoice-button" @onclick="() => DownloadInvoice(order)">
+                            <img src="Images/icon_download.png" alt="Edit" class="button-image" />Faktura
+                        </button>
+                        <button class="delete-button" @onclick="() => DeleteOrder(order)">
+                            <img src="Images/icon_delete.png" alt="Edit" class="button-image" />Usuń
+                        </button>
                     </div>
                 }
             </div>

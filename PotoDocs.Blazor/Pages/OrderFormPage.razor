@@ -97,10 +97,11 @@ else
         if (!string.IsNullOrEmpty(Order))
         {
             OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
+            InvoiceNumber = OrderDto.InvoiceNumber;
+
         }
         if (OrderDto.Driver != null)
         {
-            InvoiceNumber = OrderDto.InvoiceNumber;
             SelectedDriverEmail = OrderDto.Driver.Email;
         }
     }

@@ -29,7 +29,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:7157")
+    BaseAddress = new Uri("https://api.poto-express.com")
 });
 
 await builder.Build().RunAsync();
