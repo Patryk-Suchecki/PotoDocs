@@ -1,8 +1,8 @@
 ﻿@attribute [Authorize]
 @page "/pobieranie"
 @inject IOrderService OrderService
-@inject IJSRuntime JS
 @inject IToastService toastService
+@inject IBlazorDownloadFileService BlazorDownloadFileService
 
 <h3>Pobieranie</h3>
 @if (IsBusy)
@@ -66,12 +66,11 @@ else
         try
         {
             IsBusy = true;
-            var outputPath = await OrderService.DownloadInvoices(DownloadDto);
+            var fileBytes = await OrderService.DownloadInvoices(DownloadDto);
+            var fileName = $"Faktury_{DownloadDto.Month}-{DownloadDto.Year}.pdf";
 
-            using var fileStream = new MemoryStream(outputPath);
-            using var streamRef = new DotNetStreamReference(stream: fileStream);
-
-            await JS.InvokeVoidAsync("downloadFileFromStream", "faktury.zip", streamRef);
+            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
+            toastService.ShowSuccess($"Pobrano {fileName}");
         }
         catch (Exception ex)
         {

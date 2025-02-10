@@ -1,9 +1,9 @@
 ﻿@attribute [Authorize]
 @page "/"
 @inject IOrderService OrderService
-@inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 @inject IToastService toastService
+@inject IBlazorDownloadFileService BlazorDownloadFileService
 
 <PageTitle>Ostatnie zlecenia</PageTitle>
 
@@ -116,22 +116,12 @@
         {
             IsBusy = true;
             var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
-            var base64File = Convert.ToBase64String(fileBytes);
             var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
 
-            downloadLink = new ElementReference();
-            var href = $"data:application/pdf;base64,{base64File}";
+            // Pobieranie pliku za pomocą BlazorDownloadFileService
+            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
 
-            await Task.Yield();
-
-            downloadLink = (ElementReference)(object)new
-            {
-                href,
-                download = fileName
-            };
-
-            await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('a[download=\"{fileName}\"]').click()");
-            toastService.ShowSuccess($"Pomyślnie pobrano plik {fileName}.");
+            toastService.ShowSuccess($"Pobrano {fileName}");
         }
         catch (Exception ex)
         {

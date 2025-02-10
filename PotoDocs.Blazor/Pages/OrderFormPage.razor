@@ -122,6 +122,7 @@ else
         {
             IsBusy = true;
             OrderDto = await OrderService.Create(ms.ToArray());
+            InvoiceNumber = OrderDto.InvoiceNumber;
             toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
         }
         catch (Exception ex)

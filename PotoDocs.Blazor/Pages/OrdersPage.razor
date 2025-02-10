@@ -2,8 +2,8 @@
 @page "/zlecenia"
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
 @inject IToastService toastService
+@inject IBlazorDownloadFileService BlazorDownloadFileService
 
 <PageTitle>Wszystkie zlecenia</PageTitle>
 
@@ -127,22 +127,11 @@
         {
             IsBusy = true;
             var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
-            var base64File = Convert.ToBase64String(fileBytes);
             var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
 
-            downloadLink = new ElementReference();
-            var href = $"data:application/pdf;base64,{base64File}";
+            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
 
-            await Task.Yield();
-
-            downloadLink = (ElementReference)(object)new
-            {
-                href,
-                download = fileName
-            };
-
-            await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('a[download=\"{fileName}\"]').click()");
-            toastService.ShowSuccess($"Pobrano Faktura_{order.InvoiceNumber}.pdf");
+            toastService.ShowSuccess($"Pobrano {fileName}");
         }
         catch (Exception ex)
         {

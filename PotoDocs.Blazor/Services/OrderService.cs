@@ -143,7 +143,6 @@ public class OrderService : IOrderService
         var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/invoice");
         if (response.IsSuccessStatusCode)
         {
-
             return await response.Content.ReadAsByteArrayAsync();
         }
 
