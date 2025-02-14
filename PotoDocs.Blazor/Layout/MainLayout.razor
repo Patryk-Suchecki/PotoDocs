@@ -2,22 +2,25 @@
 @inject NavigationManager Navigation
 @using Blazored.Toast.Configuration
 
-<div class="page">
-    @if (!IsLoginPage)
-    {
-        <div class="sidebar">
-            <NavMenu />
-        </div>
-    }
+<CascadingBlazoredModal>
+    <div class="page">
+        @if (!IsLoginPage)
+        {
+            <div class="sidebar">
+                <NavMenu />
+            </div>
+        }
 
-    <main>
-        <BlazoredToasts Position="ToastPosition.TopRight" Timeout="5" />
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+        <main>
+            <BlazoredToasts Position="ToastPosition.TopRight" Timeout="5" />
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+</CascadingBlazoredModal>
 
 @code {
     private bool IsLoginPage => Navigation.Uri.Contains("/logowanie", StringComparison.OrdinalIgnoreCase);
 }
+

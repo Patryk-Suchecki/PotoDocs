@@ -100,8 +100,7 @@ else
         if (!string.IsNullOrEmpty(Order))
         {
             OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
-            InvoiceNumber = OrderDto.InvoiceNumber;
-
+                InvoiceNumber = OrderDto.InvoiceNumber;
         }
         if (OrderDto.Driver != null)
         {
@@ -120,20 +119,18 @@ else
         }
         // 🔥 Zwiększony limit do 5 MB (5 * 1024 * 1024)
         long maxFileSize = 5 * 1024 * 1024;
-
-        if (file.Size > maxFileSize)
-        {
-            toastService.ShowError($"Błąd: Maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
-            return;
-        }
-
-
+    if (file.Size > maxFileSize)
+{
+    toastService.ShowError($"Błąd: Maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
+    return;
+}
+        
         try
         {
             IsBusy = true;
-            using var stream = file.OpenReadStream();
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
+    using var stream = file.OpenReadStream(maxFileSize);
+using var ms = new MemoryStream();
+await stream.CopyToAsync(ms);
             OrderDto = await OrderService.Create(ms.ToArray());
             InvoiceNumber = OrderDto.InvoiceNumber;
             toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
@@ -146,8 +143,8 @@ else
         {
             IsBusy = false;
         }
-        
     }
+
 
     private async Task HandleCMRUpload(InputFileChangeEventArgs e)
     {

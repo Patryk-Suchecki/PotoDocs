@@ -22,6 +22,8 @@ public class OrderDto
 
     [StringLength(200, ErrorMessage = "Adres firmy nie może mieć więcej niż 200 znaków.")]
     public string? CompanyAddress { get; set; }
+    [StringLength(200, ErrorMessage = "Adres firmy nie może mieć więcej niż 200 znaków.")]
+    public string? CorrespondenceAddress { get; set; }
 
     [StringLength(50, ErrorMessage = "Kraj firmy nie może mieć więcej niż 50 znaków.")]
     public string? CompanyCountry { get; set; }

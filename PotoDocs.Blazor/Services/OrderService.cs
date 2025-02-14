@@ -14,7 +14,7 @@ public interface IOrderService
     Task Update(OrderDto dto, int invoiceNumber);
     Task<byte[]> DownloadInvoices(DownloadDto downloadRequestDto);
     Task<byte[]> DownloadFile(int invoiceNumber, string fileName);
-    Task<byte[]> DownloadInvoice(int invoiceNumber);
+    Task<(byte[] FileData, string FileName)> DownloadInvoice(int invoiceNumber);
     Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber);
     Task RemoveCMR(int invoiceNumber, string pdfname);
 }
@@ -136,18 +136,25 @@ public class OrderService : IOrderService
 
         return null;
     }
-    public async Task<byte[]> DownloadInvoice(int invoiceNumber)
+    public async Task<(byte[] FileData, string FileName)> DownloadInvoice(int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/invoice");
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadAsByteArrayAsync();
+            var fileBytes = await response.Content.ReadAsByteArrayAsync();
+
+            // Pobieranie nazwy pliku z nagłówka Content-Disposition
+            var contentDisposition = response.Content.Headers.ContentDisposition;
+            string fileName = contentDisposition?.FileNameStar ?? contentDisposition?.FileName ?? $"Faktura_{invoiceNumber}.pdf";
+
+            return (fileBytes, fileName);
         }
 
-        return null;
+        return (null, null);
     }
+
     public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
