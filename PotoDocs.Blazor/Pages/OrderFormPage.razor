@@ -49,6 +49,7 @@ else
             <InputNumber @bind-Value="OrderDto.InvoiceNumber" placeholder="Numer faktury" />
             <InputText @bind-Value="OrderDto.CompanyName" placeholder="Nazwa firmy" />
             <InputText @bind-Value="OrderDto.CompanyNIP" placeholder="NIP" />
+            <InputText @bind-Value="OrderDto.CompanyAddress" placeholder="Adres firmy" />
         </div>
 
         <!-- Informacje dodatkowe -->
@@ -97,10 +98,10 @@ else
         if (!string.IsNullOrEmpty(Order))
         {
             OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
+            InvoiceNumber = OrderDto.InvoiceNumber;
         }
         if (OrderDto.Driver != null)
         {
-            InvoiceNumber = OrderDto.InvoiceNumber;
             SelectedDriverEmail = OrderDto.Driver.Email;
         }
     }
@@ -115,12 +116,21 @@ else
             return;
         }
 
-        using var stream = file.OpenReadStream();
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
+        // 🔥 Zwiększony limit do 5 MB (5 * 1024 * 1024)
+        long maxFileSize = 5 * 1024 * 1024;
+
+        if (file.Size > maxFileSize)
+        {
+            toastService.ShowError($"Błąd: Maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
+            return;
+        }
+
         try
         {
             IsBusy = true;
+            using var stream = file.OpenReadStream(maxFileSize); // ⬅️ Ustawienie większego limitu
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
             OrderDto = await OrderService.Create(ms.ToArray());
             InvoiceNumber = OrderDto.InvoiceNumber;
             toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
@@ -133,8 +143,8 @@ else
         {
             IsBusy = false;
         }
-        
     }
+
 
     private async Task HandleCMRUpload(InputFileChangeEventArgs e)
     {

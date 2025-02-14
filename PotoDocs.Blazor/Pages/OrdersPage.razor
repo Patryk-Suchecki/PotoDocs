@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject IToastService toastService
 @inject IBlazorDownloadFileService BlazorDownloadFileService
+@inject IModalService Modal
 
 <PageTitle>Wszystkie zlecenia</PageTitle>
 
@@ -57,14 +58,12 @@
             }
         </div>
     }
-    <button @onclick="LoadMoreOrders" class="load-more-button">Pokaż więcej</button>
+    <button @onclick="ShowMoreOrders" class="load-more-button">Pokaż więcej</button>
 </div>
-<a @ref="downloadLink" style="display:none"></a>
 
 @code {
     private List<OrderDto> Orders { get; set; } = new List<OrderDto>();
     private string? searchQuery;
-    private ElementReference downloadLink;
     private bool IsBusy = false;
 
     protected override async Task OnInitializedAsync()
@@ -89,15 +88,24 @@
         }
     }
 
-    private async Task LoadMoreOrders()
+    private async Task ShowMoreOrders()
     {
         try
         {
             IsBusy = true;
-            var newOrders = await OrderService.GetAll(Orders.Count / 5 + 1);
-            if (newOrders?.Any() ?? false)
+
+            var ordersList = Orders.ToList();
+
+            if (ordersList.Count % 5 == 0)
             {
-                Orders.AddRange(newOrders);
+                int currentPage = ordersList.Count / 5 + 1;
+                var newOrders = await OrderService.GetAll(currentPage, 5);
+
+                if (newOrders?.Any() == true)
+                {
+                    ordersList.AddRange(newOrders);
+                    Orders = ordersList;
+                }
             }
         }
         catch (Exception ex)
@@ -126,8 +134,13 @@
         try
         {
             IsBusy = true;
-            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
-            var fileName = $"Faktura_{order.InvoiceNumber}.pdf";
+
+            var (fileBytes, fileName) = await OrderService.DownloadInvoice(order.InvoiceNumber);
+            if (fileBytes == null || string.IsNullOrEmpty(fileName))
+            {
+                toastService.ShowError("Błąd: Nie udało się pobrać faktury.");
+                return;
+            }
 
             await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
 
@@ -145,15 +158,31 @@
 
     private async Task DeleteOrder(OrderDto order)
     {
-        try
+        if (order == null) return;
+
+        var parameters = new ModalParameters();
+        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {order.InvoiceNumber}?");
+
+        var modalRef = Modal.Show<ConfirmDialog>("Potwierdzenie", parameters);
+        var result = await modalRef.Result;
+
+        if (!result.Cancelled)
         {
-            await OrderService.Delete(order.InvoiceNumber);
-            toastService.ShowSuccess($"Pomyślnie usunięto zlecenie");
-            await GetAllOrders();
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd podczas usuwania zlecenia: {ex.Message}");
+            try
+            {
+                IsBusy = true;
+                await OrderService.Delete(order.InvoiceNumber);
+                await GetAllOrders();
+                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {order.InvoiceNumber}");
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowError($"Błąd podczas usuwania zlecenia: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }
