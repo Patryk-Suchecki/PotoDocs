@@ -1,4 +1,30 @@
-﻿.file-section {
+﻿.background { /* Umożliwia pozycjonowanie względem okna przeglądarki */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Szerokość równa szerokości viewportu */
+    height: 100vh; /* Wysokość równa wysokości viewportu */
+    background: linear-gradient(180deg, #CA0000, #640000); /* Zmień kolor tła według potrzeb */
+    z-index: -1; /* Upewnij się, że tło jest za innymi elementami */
+    margin-left: -2rem; 
+    margin-top: -4rem;
+}
+
+.form-card {
+    background: white;
+    padding: 15px;
+    margin: 22px;
+}
+
+.title-text {
+    margin-top: 3rem;
+    padding: 26px;
+    padding-bottom: 0px;
+    font-weight: 500;
+    font-size: 28px;
+    color: white;
+}
+
+.file-section {
     background-color: #fff;
     border: 1px solid #AA0101;
     padding: 10px;
@@ -62,15 +88,18 @@
     }
 
 .btn-submit {
-    background: linear-gradient(to right, #8C0000, #BC0000);
+    background: linear-gradient(90deg, #8C0000, #BC0000);
     color: white;
-    padding: 15px;
+    padding: 12px 40px;
     border: none;
-    border-radius: 15px;
-    width: 100%;
-    font-size: 18px;
-    font-weight: bold;
+    border-radius: 14px;
     cursor: pointer;
+    font-size: 20px;
+    font-family: Roboto;
+    font-weight: 500;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s ease-in-out;
+    width: 180px;
 }
 
     .btn-submit:hover {

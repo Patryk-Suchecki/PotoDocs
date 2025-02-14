@@ -1,13 +1,14 @@
 .navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
+   border: none;
 }
 
 .top-row {
     height: 3.5rem;
 }
 
-.navbar-brand {
+.navbar-brand img{
     font-size: 1.1rem;
+    width: 100px;
 }
 
 .bi {

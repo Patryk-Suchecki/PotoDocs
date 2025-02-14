@@ -5,9 +5,9 @@
 @inject IToastService toastService
 
 @page "/zlecenie/edycja"
-
-<h3>@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
-
+<div class="background">
+<h3 class="title-text">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
+<div class="form-card">
 @if (IsBusy)
 {
     <div class="spinner-border text-danger" role="status">
@@ -49,6 +49,7 @@ else
             <InputNumber @bind-Value="OrderDto.InvoiceNumber" placeholder="Numer faktury" />
             <InputText @bind-Value="OrderDto.CompanyName" placeholder="Nazwa firmy" />
             <InputText @bind-Value="OrderDto.CompanyNIP" placeholder="NIP" />
+            <InputText @bind-Value="OrderDto.CompanyAddress" placeholder="Adres firmy" />
         </div>
 
         <!-- Informacje dodatkowe -->
@@ -75,6 +76,8 @@ else
         <button type="submit" class="btn-submit">Zapisz</button>
     </EditForm>
 }
+    </div>
+</div>
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
@@ -115,13 +118,22 @@ else
             toastService.ShowError("Błąd: Tylko pliki PDF są dozwolone.");
             return;
         }
+        // 🔥 Zwiększony limit do 5 MB (5 * 1024 * 1024)
+        long maxFileSize = 5 * 1024 * 1024;
 
-        using var stream = file.OpenReadStream();
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
+        if (file.Size > maxFileSize)
+        {
+            toastService.ShowError($"Błąd: Maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
+            return;
+        }
+
+
         try
         {
             IsBusy = true;
+            using var stream = file.OpenReadStream();
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
             OrderDto = await OrderService.Create(ms.ToArray());
             InvoiceNumber = OrderDto.InvoiceNumber;
             toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
