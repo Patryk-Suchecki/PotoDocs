@@ -1,5 +1,7 @@
 ﻿using System.Text;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
 using PdfPigPage = UglyToad.PdfPig.Content.Page;
 
@@ -8,50 +10,38 @@ public interface IOpenAIService
 {
     Task<OrderDto> GetInfoFromText(IFormFile file);
 }
+
 public class OpenAIService : IOpenAIService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _openAIKey;
-    public OpenAIService(HttpClient httpClient, IConfiguration configuration)
+    private readonly OpenAIOptions _options;
+
+    public OpenAIService(HttpClient httpClient, IConfiguration configuration, IOptions<OpenAIOptions> options)
     {
         _httpClient = httpClient;
-        _openAIKey = configuration["OpenAIKey"];
+        _options = options.Value;
     }
+
     public async Task<OrderDto> GetInfoFromText(IFormFile file)
     {
         string text;
-
-        // Użycie pliku bez zapisywania go na serwerze - wczytanie do strumienia
         using (var stream = file.OpenReadStream())
         {
-            // Wywołanie metody do ekstrakcji tekstu z pliku PDF
             text = ExtractTextFromPdf(stream);
         }
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_openAIKey}");
+
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.APIKey}");
 
         var systemMessage = new
         {
             role = "system",
-            content = "You are a helpful assistant who extracts structured information from text."
+            content = _options.SystemMessage
         };
 
         var userMessage = new
         {
             role = "user",
-            content = $"Proszę wyodrębnij z poniższego tekstu następujące informacje i zwróć je w formacie JSON:\n\n" +
-                      "{\n" +
-                      "    \"CompanyNIP\": \"nip zleceniodawcy (long to musi być numeryczne nie wysyłaj mi tego jako string)\",\n" +
-                      "    \"CompanyName\": \"nazwa firmy zleceniodawcy (string)\",\n" +
-                      "    \"CompanyAddress\": \"adres firmy zleceniodawcy (string)\",\n" +
-                      "    \"CompanyCountry\": \"kraj z jakiego jest firma zleceniodawcy\",\n" +
-                      "    \"LoadingDate\": \"data załadunku (date w formacie yyyy-MM-dd)\",\n" +
-                      "    \"UnloadingDate\": \"ostatnia data rozładunku (date w formacie yyyy-MM-dd)\",\n" +
-                      "    \"PaymentDeadline\": \"termin płatności w dniach (int)\",\n" +
-                      "    \"Price\": \"kwota netto (decimal)\",\n" +
-                      "    \"Currency\": \"waluta (np PLN, EUR)\",\n" +
-                      "    \"CompanyOrderNumber\": \"numer zlecenia (np ZLECENIE PRZEWOZU NR T08747/2024, zlecenie transportowe nr 123/435/sdf3, transport order number 123-1231, ORDER FOR THE CARRIER) (string)\"\n" +
-                      "}\n\n" +
-                      $"Tekst do analizy: {text}"
+            content = _options.PromptTemplate.Replace("{TEXT}", text)
         };
 
         var body = new
@@ -68,11 +58,9 @@ public class OpenAIService : IOpenAIService
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var parsedResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
 
-            // Wydobywanie zawartości odpowiedzi asystenta
             string extractedContent = parsedResponse.choices[0].message.content;
             extractedContent = extractedContent.Replace("```json", "").Replace("```", "").Trim();
 
-            // Deserializacja odpowiedzi na obiekt OpenAIResponseDto
             try
             {
                 var openAIResponse = JsonConvert.DeserializeObject<OrderDto>(extractedContent);
@@ -82,13 +70,13 @@ public class OpenAIService : IOpenAIService
             {
                 return new OrderDto();
             }
-            
         }
         else
         {
             throw new Exception($"Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
         }
     }
+
     private string ExtractTextFromPdf(Stream pdfStream)
     {
         StringBuilder textBuilder = new StringBuilder();

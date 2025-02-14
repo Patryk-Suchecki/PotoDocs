@@ -1,24 +1,30 @@
 ﻿@page "/logowanie"
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
+@inject IToastService toastService
 
 <div class="login-container">
     <img src="images/logo.png" alt="Logo" class="logo" />
 
-    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
 
         <div class="input-group">
             <input @bind-value="loginModel.Email" class="input-text" placeholder="E-mail" />
             <label class="input-text-label">E-mail</label>
+            <ValidationMessage For="@(() => loginModel.Email)" class="validation-error" />
         </div>
 
         <div class="input-group">
             <input @bind-value="loginModel.Password" class="input-text" type="password" placeholder="Hasło" />
             <label class="input-text-label">Hasło</label>
+            <ValidationMessage For="@(() => loginModel.Password)" class="validation-error" />
         </div>
 
-        <DataAnnotationsValidator />
-        <ValidationSummary class="validation-summary" />
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p class="error-message">@errorMessage</p>
+        }
 
         <button type="submit" class="login-button">Logowanie</button>
     </EditForm>
@@ -27,20 +33,30 @@
 </div>
 
 @code {
-    private LoginDto loginModel = new LoginDto();
+    private LoginDto loginModel = new();
     private string? errorMessage;
 
     private async Task HandleLogin()
     {
         errorMessage = null;
-        var result = await AuthService.LoginAsync(loginModel);
-        if (string.IsNullOrEmpty(result))
+        try
         {
-            Navigation.NavigateTo("/", true);
+            var result = await AuthService.LoginAsync(loginModel);
+            if (string.IsNullOrEmpty(result))
+            {
+                toastService.ShowSuccess("Zalogowano pomyślnie!");
+                Navigation.NavigateTo("/", true);
+            }
+            else
+            {
+                toastService.ShowError(result);
+                errorMessage = result;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = result;
+            toastService.ShowError($"Błąd logowania: {ex.Message}");
+            errorMessage = "Wystąpił błąd. Spróbuj ponownie.";
         }
     }
 }
