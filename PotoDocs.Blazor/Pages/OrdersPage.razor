@@ -134,13 +134,8 @@
         try
         {
             IsBusy = true;
-
-            var (fileBytes, fileName) = await OrderService.DownloadInvoice(order.InvoiceNumber);
-            if (fileBytes == null || string.IsNullOrEmpty(fileName))
-            {
-                toastService.ShowError("Błąd: Nie udało się pobrać faktury.");
-                return;
-            }
+            string fileName = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
 
             await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
 

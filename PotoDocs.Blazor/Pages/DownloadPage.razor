@@ -67,7 +67,7 @@ else
         {
             IsBusy = true;
             var fileBytes = await OrderService.DownloadInvoices(DownloadDto);
-            var fileName = $"Faktury_{DownloadDto.Month}-{DownloadDto.Year}.pdf";
+            var fileName = $"FAKTURY {DownloadDto.Month}-{DownloadDto.Year}.pdf";
 
             await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
             toastService.ShowSuccess($"Pobrano {fileName}");
