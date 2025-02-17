@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
 @using Blazored.Toast.Configuration
 
 <CascadingBlazoredModal>
@@ -22,5 +23,20 @@
 
 @code {
     private bool IsLoginPage => Navigation.Uri.Contains("/logowanie", StringComparison.OrdinalIgnoreCase);
+    protected override async Task OnInitializedAsync()
+    {
+        await StorePreviousUrl();
+    }
+
+    private async Task StorePreviousUrl()
+    {
+        await LocalStorage.SetItemAsync("previousPage", Navigation.Uri);
+    }
+
+    public async Task NavigateBack()
+    {
+        var previousUrl = await LocalStorage.GetItemAsync<string>("previousPage");
+        Navigation.NavigateTo(previousUrl ?? "/");
+    }
 }
 

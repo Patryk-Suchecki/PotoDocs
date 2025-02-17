@@ -140,12 +140,12 @@
         try
         {
             IsBusy = true;
-            string fileName = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+            string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
             var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
 
-            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
+            await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
 
-            toastService.ShowSuccess($"Pobrano {fileName}");
+            toastService.ShowSuccess($"Pobrano {name}");
         }
         catch (Exception ex)
         {
@@ -163,7 +163,10 @@
         if (order == null) return;
 
         var parameters = new ModalParameters();
-        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {order.InvoiceNumber}?");
+        string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+
+        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {name}?");
+        
 
         var modalRef = Modal.Show<ConfirmDialog>("Potwierdzenie", parameters);
         var result = await modalRef.Result;
@@ -175,7 +178,7 @@
                 IsBusy = true;
                 await OrderService.Delete(order.InvoiceNumber);
                 await RefreshOrders();
-                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {order.InvoiceNumber}");
+                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");
             }
             catch (Exception ex)
             {
@@ -205,6 +208,10 @@
                     ordersList.AddRange(newOrders);
                     Orders = ordersList;
                 }
+            }
+            else
+            {
+                toastService.ShowInfo($"Brak zleceń do pobrania.");
             }
         }
         catch (Exception ex)

@@ -2,6 +2,7 @@
 @inject IOrderService OrderService
 @inject IUserService UserService
 @inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
 @inject IToastService toastService
 
 @page "/zlecenie/edycja"
@@ -93,7 +94,6 @@ else
         get => OrderDto.HasPaid ?? false;
         set => OrderDto.HasPaid = value;
     }
-
     protected override async Task OnInitializedAsync()
     {
         await GetUsers();
@@ -117,20 +117,20 @@ else
             toastService.ShowError("Błąd: Tylko pliki PDF są dozwolone.");
             return;
         }
-        // 🔥 Zwiększony limit do 5 MB (5 * 1024 * 1024)
+
         long maxFileSize = 5 * 1024 * 1024;
-    if (file.Size > maxFileSize)
-{
-    toastService.ShowError($"Błąd: Maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
-    return;
-}
+        if (file.Size > maxFileSize)
+        {
+            toastService.ShowError($"Błąd: Maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
+            return;
+        }
         
         try
         {
             IsBusy = true;
-    using var stream = file.OpenReadStream(maxFileSize);
-using var ms = new MemoryStream();
-await stream.CopyToAsync(ms);
+            using var stream = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
             OrderDto = await OrderService.Create(ms.ToArray());
             InvoiceNumber = OrderDto.InvoiceNumber;
             toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
@@ -165,7 +165,9 @@ await stream.CopyToAsync(ms);
             OrderDto.Driver = Users.FirstOrDefault(u => u.Email == SelectedDriverEmail);
             await OrderService.Update(OrderDto, InvoiceNumber);
             toastService.ShowSuccess($"Pomyślnie zapisano zlecenie.");
-            Navigation.NavigateTo("/zlecenia");
+
+            var previousUrl = await LocalStorage.GetItemAsync<string>("previousPage");
+            Navigation.NavigateTo(previousUrl ?? "/");
         }
         catch (Exception ex)
         {

@@ -190,9 +190,9 @@ public class OrderService : IOrderService
     {
         string invoiceNumberStr = invoiceNumber.ToString("D7");
 
-        string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
-        string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
-        string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
+        int numberPart = int.Parse(invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6));
+        int monthPart = int.Parse(invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2));
+        int yearPart = int.Parse(invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4));
 
         return $"FAKTURA {numberPart:D2}-{monthPart}-{yearPart}";
     }

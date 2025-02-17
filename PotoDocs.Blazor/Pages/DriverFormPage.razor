@@ -4,6 +4,7 @@
 @inject IUserService UserService
 @inject IToastService toastService
 @inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
 
 <h3>@(PageTitle ?? "Nowy użytkownik")</h3>
 
@@ -106,9 +107,12 @@ else
         try
         {
             IsBusy = true;
+
             await UserService.RegisterAsync(UserDto);
-            Navigation.NavigateTo("/kierowcy");
             toastService.ShowSuccess($"Użytkownik zapisany");
+
+            var previousUrl = await LocalStorage.GetItemAsync<string>("previousPage");
+            Navigation.NavigateTo(previousUrl ?? "/");
         }
         catch (Exception ex)
         {
