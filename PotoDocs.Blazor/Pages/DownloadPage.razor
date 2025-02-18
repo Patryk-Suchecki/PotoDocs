@@ -5,6 +5,7 @@
 @inject IBlazorDownloadFileService BlazorDownloadFileService
 
 <h3>Pobieranie</h3>
+
 @if (IsBusy)
 {
     <div class="spinner-border text-danger" role="status">
@@ -13,42 +14,62 @@
 }
 else
 {
-    <EditForm Model="@DownloadDto" OnValidSubmit="GetOrdersAsync" class="form-container">
+    <EditForm EditContext="@editContext" OnValidSubmit="GetOrdersAsync" class="form-container">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="form-group">
-            <label>Miesiąc</label>
-            <select class="form-control" @bind="DownloadDto.Month">
-                @foreach (var month in Months)
-                {
-                    <option value="@month.Key">@month.Value</option>
-                }
-            </select>
-        </div>
-
-        <div class="form-group">
             <label>Rok</label>
-            <select class="form-control" @bind="DownloadDto.Year">
-                @foreach (var year in Years)
+            <select class="form-control" @bind="SelectedYear">
+                @foreach (var year in AvailableYears.Keys)
                 {
                     <option value="@year">@year</option>
                 }
             </select>
         </div>
 
-        <button type="submit" class="btn-submit" disabled="@IsBusy">Pobierz zlecenia</button>
+        <div class="form-group">
+            <label>Miesiąc</label>
+            <select class="form-control" @bind="SelectedMonth" disabled="@(AvailableMonths.Count == 0)">
+                @foreach (var month in AvailableMonths)
+                {
+                    <option value="@month">@Months[month]</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit" disabled="@IsButtonDisabled">
+            Pobierz zlecenia
+        </button>
+
+
     </EditForm>
 }
 
 @code {
-    private DownloadDto DownloadDto { get; set; } = new DownloadDto
-        {
-            Month = DateTime.Now.Month,
-            Year = DateTime.Now.Year
-        };
+    private bool IsButtonDisabled => IsBusy || AvailableMonths == null || AvailableMonths.Count == 0;
 
     private bool IsBusy { get; set; } = false;
+
+    private int _selectedYear;
+    private int SelectedYear
+    {
+        get => _selectedYear;
+        set
+        {
+            if (_selectedYear != value)
+            {
+                _selectedYear = value;
+                OnYearChanged();
+            }
+        }
+    }
+
+    private int SelectedMonth { get; set; }
+    private EditContext editContext;
+
+    private Dictionary<int, List<int>> AvailableYears = new();
+    private List<int> AvailableMonths = new();
 
     private Dictionary<int, string> Months = new()
     {
@@ -57,7 +78,34 @@ else
         {9, "Wrzesień"}, {10, "Październik"}, {11, "Listopad"}, {12, "Grudzień"}
     };
 
-    private List<int> Years = new() { 2023, 2024 };
+    protected override async Task OnInitializedAsync()
+    {
+        IsBusy = true;
+        try
+        {
+            AvailableYears = await OrderService.GetAvailableYearsAndMonthsAsync();
+
+            if (AvailableYears.Any())
+            {
+                SelectedYear = AvailableYears.Keys.First();
+            }
+
+            editContext = new EditContext(this);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void OnYearChanged()
+    {
+        if (AvailableYears.ContainsKey(SelectedYear))
+        {
+            AvailableMonths = AvailableYears[SelectedYear];
+            SelectedMonth = AvailableMonths.FirstOrDefault();
+        }
+    }
 
     private async Task GetOrdersAsync()
     {
@@ -66,15 +114,21 @@ else
         try
         {
             IsBusy = true;
-            var fileBytes = await OrderService.DownloadInvoices(DownloadDto);
-            var fileName = $"FAKTURY {DownloadDto.Month}-{DownloadDto.Year}.pdf";
+            var fileBytes = await OrderService.DownloadInvoices(SelectedYear, SelectedMonth);
 
-            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
+            if (fileBytes == null || fileBytes.Length == 0)
+            {
+                toastService.ShowError("Nie znaleziono faktur dla wybranego miesiąca.");
+                return;
+            }
+
+            var fileName = $"FAKTURY_{SelectedMonth:D2}-{SelectedYear}.zip";
+            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/zip");
             toastService.ShowSuccess($"Pobrano {fileName}");
         }
         catch (Exception ex)
         {
-            toastService.ShowError($"Błąd: {ex.Message}");
+            toastService.ShowError($"Błąd pobierania pliku: {ex.Message}");
         }
         finally
         {

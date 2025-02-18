@@ -12,12 +12,13 @@ public interface IOrderService
     Task Delete(int invoiceNumber);
     Task<OrderDto> Create(byte[] fileData);
     Task Update(OrderDto dto, int invoiceNumber);
-    Task<byte[]> DownloadInvoices(DownloadDto downloadRequestDto);
+    Task<byte[]> DownloadInvoices(int year, int month);
     Task<byte[]> DownloadFile(int invoiceNumber, string fileName);
     Task<byte[]> DownloadInvoice(int invoiceNumber);
     Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber);
     Task RemoveCMR(int invoiceNumber, string pdfname);
     string FormatInvoiceNumber(int invoiceNumber);
+    Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
 }
 public class OrderService : IOrderService
 {
@@ -111,18 +112,23 @@ public class OrderService : IOrderService
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{invoiceNumber}", dto);
     }
-    public async Task<byte[]> DownloadInvoices(DownloadDto dto)
+    public async Task<byte[]> DownloadInvoices(int year, int month)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync($"invoices/{dto.Year}/{dto.Month}");
+        var response = await httpClient.GetAsync($"api/orders/invoices/{year}/{month}");
+
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadAsByteArrayAsync();
         }
-
-        return null;
+        else
+        {
+            string errorMessage = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Błąd pobierania faktur: {response.StatusCode} - {errorMessage}");
+        }
     }
+
     public async Task<byte[]> DownloadFile(int invoiceNumber, string fileName)
     {
         string archiveFileName = $"{fileName}";
@@ -185,6 +191,12 @@ public class OrderService : IOrderService
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.DeleteAsync($"api/orders/{invoiceNumber}/cmr/{pdfname}");
+    }
+    public async Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync()
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+        var response = await httpClient.GetFromJsonAsync<Dictionary<int, List<int>>>($"api/orders/invoices");
+        return response ?? new Dictionary<int, List<int>>();
     }
     public string FormatInvoiceNumber(int invoiceNumber)
     {

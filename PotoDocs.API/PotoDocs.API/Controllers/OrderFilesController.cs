@@ -62,16 +62,23 @@ public class OrderFilesController : ControllerBase
         return File(pdfData, "application/pdf");
     }
 
-    [HttpGet("invoices")]
-    public async Task<IActionResult> GetInvoices([FromBody] DownloadDto dto)
+    [HttpGet("invoices/{year}/{month}")]
+    public async Task<IActionResult> GetInvoices(int year, int month)
     {
-        var pdfData = await _orderService.CreateInvoices(dto);
+        var pdfData = await _orderService.CreateInvoices(year, month);
 
         if (pdfData == null || pdfData.Length == 0)
         {
             return BadRequest("Nie udało się wygenerować faktury.");
         }
 
-        return File(pdfData, "application/pdf");
+        return File(pdfData, "application/zip");
     }
+    [HttpGet("invoices")]
+    public async Task<IActionResult> GetAvailableYearsAndMonths()
+    {
+        var data = await _orderService.GetAvailableYearsAndMonthsAsync();
+        return Ok(data);
+    }
+
 }

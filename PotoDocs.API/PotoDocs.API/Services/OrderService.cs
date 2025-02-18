@@ -7,249 +7,257 @@ using PotoDocs.Shared.Models;
 using System.IO.Compression;
 using System.Net;
 
-namespace PotoDocs.API.Services
+namespace PotoDocs.API.Services;
+
+public interface IOrderService
 {
-    public interface IOrderService
+    ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
+    ApiResponse<OrderDto> GetById(int id);
+    void Delete(int invoiceNumber);
+    void Update(int invoiceNumber, OrderDto dto);
+    Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file);
+    Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber);
+    void DeleteCMR(string fileName);
+    Task<byte[]> CreateInvoicePDF(int invoiceNumber);
+    Task<byte[]> CreateInvoices(int year, int month);
+    Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
+}
+
+public class OrderService : IOrderService
+{
+    private readonly PotodocsDbContext _dbContext;
+    private readonly IMapper _mapper;
+    private readonly IOpenAIService _openAIService;
+    private readonly IInvoiceService _invoiceService;
+
+    public OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService, IInvoiceService invoiceService)
     {
-        ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
-        ApiResponse<OrderDto> GetById(int id);
-        void Delete(int invoiceNumber);
-        void Update(int invoiceNumber, OrderDto dto);
-        Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file);
-        Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber);
-        void DeleteCMR(string fileName);
-        Task<byte[]> CreateInvoicePDF(int invoiceNumber);
-        Task<byte[]> CreateInvoices(DownloadDto dto);
+        _dbContext = dbContext;
+        _mapper = mapper;
+        _openAIService = openAIService;
+        _invoiceService = invoiceService;
     }
 
-    public class OrderService : IOrderService
+    public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
     {
-        private readonly PotodocsDbContext _dbContext;
-        private readonly IMapper _mapper;
-        private readonly IOpenAIService _openAIService;
-        private readonly IInvoiceService _invoiceService;
+        var query = _dbContext.Orders.Include(o => o.Driver)
+                                     .Include(o => o.CMRFiles)
+                                     .AsQueryable();
 
-        public OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAIService openAIService, IInvoiceService invoiceService)
+        if (!string.IsNullOrEmpty(driverEmail))
         {
-            _dbContext = dbContext;
-            _mapper = mapper;
-            _openAIService = openAIService;
-            _invoiceService = invoiceService;
+            query = query.Where(o => o.Driver != null && o.Driver.Email == driverEmail);
         }
 
-        public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
+        var totalItems = query.Count();
+
+        var orders = query.Skip((page - 1) * pageSize)
+                          .Take(pageSize)
+                          .ToList();
+
+        var ordersDto = _mapper.Map<List<OrderDto>>(orders);
+
+        return ApiResponse<IEnumerable<OrderDto>>.Success(ordersDto);
+    }
+
+
+    public ApiResponse<OrderDto> GetById(int id)
+    {
+        var order = _dbContext.Orders.Include(o => o.Driver)
+                                     .Include(c => c.CMRFiles)
+                                     .FirstOrDefault(o => o.InvoiceNumber == id);
+        if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
+
+        return ApiResponse<OrderDto>.Success(_mapper.Map<OrderDto>(order));
+    }
+
+    public void Delete(int invoiceNumber)
+    {
+        var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
+        if (order == null) return;
+
+        _dbContext.Orders.Remove(order);
+        _dbContext.SaveChanges();
+    }
+
+    public void Update(int invoiceNumber, OrderDto dto)
+    {
+        var order = _dbContext.Orders
+            .Include(o => o.Driver)
+            .Include(o => o.CMRFiles)
+            .FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
+
+        if (order == null) return;
+
+        _mapper.Map(dto, order);
+
+        if (dto.Driver != null)
         {
-            var query = _dbContext.Orders.Include(o => o.Driver)
-                                         .Include(o => o.CMRFiles)
-                                         .AsQueryable();
-
-            if (!string.IsNullOrEmpty(driverEmail))
-            {
-                query = query.Where(o => o.Driver != null && o.Driver.Email == driverEmail);
-            }
-
-            var totalItems = query.Count();
-
-            var orders = query.Skip((page - 1) * pageSize)
-                              .Take(pageSize)
-                              .ToList();
-
-            var ordersDto = _mapper.Map<List<OrderDto>>(orders);
-
-            return ApiResponse<IEnumerable<OrderDto>>.Success(ordersDto);
+            order.Driver = _dbContext.Users.FirstOrDefault(u => u.Email == dto.Driver.Email);
         }
 
+        _dbContext.SaveChanges();
+    }
 
-        public ApiResponse<OrderDto> GetById(int id)
+    public async Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file)
+    {
+        if (file == null || file.Length == 0 || file.ContentType != "application/pdf")
         {
-            var order = _dbContext.Orders.Include(o => o.Driver)
-                                         .Include(c => c.CMRFiles)
-                                         .FirstOrDefault(o => o.InvoiceNumber == id);
-            if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
-
-            return ApiResponse<OrderDto>.Success(_mapper.Map<OrderDto>(order));
+            return ApiResponse<OrderDto>.Failure("Plik jest nieprawidłowy lub ma niepoprawny format", HttpStatusCode.BadRequest);
         }
 
-        public void Delete(int invoiceNumber)
+        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+        if (!Directory.Exists(uploadsFolderPath))
         {
-            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
-            if (order == null) return;
-
-            _dbContext.Orders.Remove(order);
-            _dbContext.SaveChanges();
+            Directory.CreateDirectory(uploadsFolderPath);
         }
 
-        public void Update(int invoiceNumber, OrderDto dto)
+        var fileName = $"{Guid.NewGuid()}.pdf";
+        var filePath = Path.Combine(uploadsFolderPath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            var order = _dbContext.Orders
-                .Include(o => o.Driver)
-                .Include(o => o.CMRFiles)
-                .FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
-
-            if (order == null) return;
-
-            _mapper.Map(dto, order);
-
-            if (dto.Driver != null)
-            {
-                order.Driver = _dbContext.Users.FirstOrDefault(u => u.Email == dto.Driver.Email);
-            }
-
-            _dbContext.SaveChanges();
+            await file.CopyToAsync(stream);
         }
 
-        public async Task<ApiResponse<OrderDto>> ProcessAndCreateOrderFromPdf(IFormFile file)
+        var extractedData = await _openAIService.GetInfoFromText(file);
+        extractedData.InvoiceIssueDate = DateTime.Now;
+        extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate ?? DateTime.Now);
+        extractedData.PDFUrl = fileName;
+
+        var order = _mapper.Map<Order>(extractedData);
+        _dbContext.Orders.Add(order);
+        _dbContext.SaveChanges();
+
+        return ApiResponse<OrderDto>.Success(extractedData);
+    }
+
+    private int GetInvoiceNumber(DateTime date)
+    {
+        int invoiceNumber = _dbContext.Orders.Where(o => o.InvoiceIssueDate.Value.Month == date.Month
+                                                      && o.InvoiceIssueDate.Value.Year == date.Year).Count() + 1;
+        return int.Parse($"{invoiceNumber:D2}{date.Month:D2}{date.Year}");
+    }
+
+    public async Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber)
+    {
+        if (files == null || files.Count == 0) return ApiResponse<OrderDto>.Failure("Nie przesłano pliku", HttpStatusCode.BadRequest);
+        var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
+        if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
+
+        var cmrFileUrls = new List<string>();
+        foreach (var file in files)
         {
-            if (file == null || file.Length == 0 || file.ContentType != "application/pdf")
-            {
-                return ApiResponse<OrderDto>.Failure("Plik jest nieprawidłowy lub ma niepoprawny format", HttpStatusCode.BadRequest);
-            }
-
-            var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
-            if (!Directory.Exists(uploadsFolderPath))
-            {
-                Directory.CreateDirectory(uploadsFolderPath);
-            }
-
-            var fileName = $"{Guid.NewGuid()}.pdf";
-            var filePath = Path.Combine(uploadsFolderPath, fileName);
-
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/pdfs", fileName);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            var extractedData = await _openAIService.GetInfoFromText(file);
-            extractedData.InvoiceIssueDate = DateTime.Now;
-            extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate ?? DateTime.Now);
-            extractedData.PDFUrl = fileName;
+            var relativePath = Path.Combine("/pdfs", fileName);
+            cmrFileUrls.Add(relativePath);
 
-            var order = _mapper.Map<Order>(extractedData);
-            _dbContext.Orders.Add(order);
+            var cmrFile = new CMRFile
+            {
+                Url = fileName,
+                OrderId = order.Id,
+                Order = order
+            };
+            _dbContext.CMRFiles.Add(cmrFile);
             _dbContext.SaveChanges();
-            
-            return ApiResponse<OrderDto>.Success(extractedData);
         }
+        return GetById(invoiceNumber);
 
-        private int GetInvoiceNumber(DateTime date)
+    }
+
+    public void DeleteCMR(string fileName)
+    {
+        var cmrFile = _dbContext.CMRFiles.FirstOrDefault(c => c.Url == fileName);
+        if (cmrFile == null) return;
+
+        _dbContext.CMRFiles.Remove(cmrFile);
+        _dbContext.SaveChanges();
+
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", cmrFile.Url.TrimStart('/'));
+
+        if (File.Exists(filePath))
         {
-            int invoiceNumber = _dbContext.Orders.Where(o => o.InvoiceIssueDate.Value.Month == date.Month
-                                                          && o.InvoiceIssueDate.Value.Year == date.Year).Count() + 1;
-            return int.Parse($"{invoiceNumber:D2}{date.Month:D2}{date.Year}");
+            File.Delete(filePath);
         }
+    }
+    public async Task<byte[]> CreateInvoicePDF(int invoiceNumber)
+    {
+        var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.InvoiceNumber == invoiceNumber);
+        if (order == null) return null;
 
-        public async Task<ApiResponse<OrderDto>> AddCMRFileAsync(List<IFormFile> files, int invoiceNumber)
+        return await _invoiceService.GenerateInvoicePdf(order);
+    }
+    public async Task<byte[]> CreateInvoices(int year, int month)
+    {
+        var orders = await _dbContext.Orders
+            .Where(o => o.InvoiceIssueDate.Value.Month == month && o.InvoiceIssueDate.Value.Year == year)
+            .ToListAsync();
+
+        if (orders == null || orders.Count == 0) return null;
+
+        string tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDirectory);
+
+        try
         {
-            if (files == null || files.Count == 0) return ApiResponse<OrderDto>.Failure("Nie przesłano pliku", HttpStatusCode.BadRequest);
-            var order = _dbContext.Orders.FirstOrDefault(o => o.InvoiceNumber == invoiceNumber);
-            if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
-
-            var cmrFileUrls = new List<string>();
-            foreach (var file in files)
+            foreach (var order in orders)
             {
-                var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/pdfs", fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
+                var pdfData = await _invoiceService.GenerateInvoicePdf(order);
 
-                var relativePath = Path.Combine("/pdfs", fileName);
-                cmrFileUrls.Add(relativePath);
+                string fileName = $"FAKTURA_{FormatInvoiceNumber((int)order.InvoiceNumber)}.pdf";
+                string filePath = Path.Combine(tempDirectory, fileName);
 
-                var cmrFile = new CMRFile
-                {
-                    Url = fileName,
-                    OrderId = order.Id,
-                    Order = order
-                };
-                _dbContext.CMRFiles.Add(cmrFile);
-                _dbContext.SaveChanges();
-            }
-            return GetById(invoiceNumber);
-
-        }
-
-        public void DeleteCMR(string fileName)
-        {
-            var cmrFile = _dbContext.CMRFiles.FirstOrDefault(c => c.Url == fileName);
-            if (cmrFile == null) return;
-
-            _dbContext.CMRFiles.Remove(cmrFile);
-            _dbContext.SaveChanges();
-
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", cmrFile.Url.TrimStart('/'));
-
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-        }
-        public async Task<byte[]> CreateInvoicePDF(int invoiceNumber)
-        {
-            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.InvoiceNumber == invoiceNumber);
-            if (order == null)
-            {
-                throw new Exception("Zamówienie o podanym numerze faktury nie zostało znalezione.");
+                await File.WriteAllBytesAsync(filePath, pdfData);
             }
 
-            return await _invoiceService.GenerateInvoicePdf(order);
+            string zipFilePath = Path.Combine(Path.GetTempPath(), $"Faktury_{month:D2}-{year}.zip");
+
+            if (File.Exists(zipFilePath))
+            {
+                File.Delete(zipFilePath);
+            }
+
+            ZipFile.CreateFromDirectory(tempDirectory, zipFilePath);
+
+            return await File.ReadAllBytesAsync(zipFilePath);
         }
-        public async Task<byte[]> CreateInvoices(DownloadDto dto)
+        finally
         {
-            var orders = await _dbContext.Orders
-                .Where(o => o.InvoiceIssueDate.Value.Month == dto.Month && o.InvoiceIssueDate.Value.Year == dto.Year)
-                .ToListAsync();
-
-            if (orders == null || orders.Count == 0)
+            if (Directory.Exists(tempDirectory))
             {
-                throw new Exception("Nie znaleziono żadnych zamówień dla podanego miesiąca i roku.");
-            }
-
-            string tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDirectory);
-
-            try
-            {
-                foreach (var order in orders)
-                {
-                    var pdfData = await _invoiceService.GenerateInvoicePdf(order);
-
-                    string fileName = $"FAKTURA_{FormatInvoiceNumber((int)order.InvoiceNumber)}.pdf";
-                    string filePath = Path.Combine(tempDirectory, fileName);
-
-                    await File.WriteAllBytesAsync(filePath, pdfData);
-                }
-
-                string zipFilePath = Path.Combine(Path.GetTempPath(), $"Faktury_{dto.Month:D2}-{dto.Year}.zip");
-
-                if (File.Exists(zipFilePath))
-                {
-                    File.Delete(zipFilePath);
-                }
-
-                ZipFile.CreateFromDirectory(tempDirectory, zipFilePath);
-
-                return await File.ReadAllBytesAsync(zipFilePath);
-            }
-            finally
-            {
-                if (Directory.Exists(tempDirectory))
-                {
-                    Directory.Delete(tempDirectory, true);
-                }
+                Directory.Delete(tempDirectory, true);
             }
         }
-        private string FormatInvoiceNumber(int invoiceNumber)
-        {
-            string invoiceNumberStr = invoiceNumber.ToString("D7");
+    }
+    private string FormatInvoiceNumber(int invoiceNumber)
+    {
+        string invoiceNumberStr = invoiceNumber.ToString("D7");
 
-            string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
-            string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
-            string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
+        string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
+        string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
+        string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
 
-            return $"FAKTURA {numberPart}-{monthPart}-{yearPart}";
-        }
+        return $"FAKTURA {numberPart}-{monthPart}-{yearPart}";
+    }
+    public async Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync()
+    {
+        var data = await _dbContext.Orders
+            .Where(o => o.InvoiceIssueDate.HasValue)
+            .Select(o => new { o.InvoiceIssueDate!.Value.Year, o.InvoiceIssueDate!.Value.Month })
+            .ToListAsync();
 
+        return data
+            .GroupBy(o => o.Year)
+            .OrderByDescending(g => g.Key)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(o => o.Month).Distinct().OrderBy(m => m).ToList()
+            );
     }
 }
