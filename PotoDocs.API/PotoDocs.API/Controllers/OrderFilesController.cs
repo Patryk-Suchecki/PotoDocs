@@ -59,10 +59,9 @@ public class OrderFilesController : ControllerBase
             return BadRequest("Nie udało się wygenerować faktury.");
         }
 
-        string invoiceFileName = $"{FormatInvoiceNumber(invoiceNumber)}.pdf";
-
-        return File(pdfData, "application/pdf", invoiceFileName);
+        return File(pdfData, "application/pdf");
     }
+
     [HttpGet("invoices")]
     public async Task<IActionResult> GetInvoices([FromBody] DownloadDto dto)
     {
@@ -73,18 +72,6 @@ public class OrderFilesController : ControllerBase
             return BadRequest("Nie udało się wygenerować faktury.");
         }
 
-        string invoiceFileName = $"FAKTURY_{dto.Month:D2}-{dto.Year}.pdf";
-
-        return File(pdfData, "application/pdf", invoiceFileName);
-    }
-    private string FormatInvoiceNumber(int invoiceNumber)
-    {
-        string invoiceNumberStr = invoiceNumber.ToString("D7");
-
-        string numberPart = invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6);
-        string monthPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2);
-        string yearPart = invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4);
-
-        return $"FAKTURA {numberPart:D2}-{monthPart}-{yearPart}";
+        return File(pdfData, "application/pdf");
     }
 }

@@ -14,11 +14,6 @@
         <button class="refresh-button" @onclick="GetAllOrders">Odśwież</button>
     </div>
 
-    <div class="search-filter">
-        <input @bind-value="searchQuery" placeholder="Wyszukaj..." class="search-input" />
-        <button class="filter-button">Filtry</button>
-    </div>
-
     <div class="orders-header">
         <span>Nazwa firmy</span>
         <span>Kierowca</span>
@@ -63,7 +58,6 @@
 
 @code {
     private List<OrderDto> Orders { get; set; } = new List<OrderDto>();
-    private string? searchQuery;
     private bool IsBusy = false;
 
     protected override async Task OnInitializedAsync()
@@ -107,6 +101,10 @@
                     Orders = ordersList;
                 }
             }
+            else
+            {
+                toastService.ShowInfo($"Brak zleceń do pobrania.");
+            }
         }
         catch (Exception ex)
         {
@@ -134,17 +132,12 @@
         try
         {
             IsBusy = true;
+            string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
 
-            var (fileBytes, fileName) = await OrderService.DownloadInvoice(order.InvoiceNumber);
-            if (fileBytes == null || string.IsNullOrEmpty(fileName))
-            {
-                toastService.ShowError("Błąd: Nie udało się pobrać faktury.");
-                return;
-            }
+            await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
 
-            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
-
-            toastService.ShowSuccess($"Pobrano {fileName}");
+            toastService.ShowSuccess($"Pobrano {name}");
         }
         catch (Exception ex)
         {
@@ -161,7 +154,8 @@
         if (order == null) return;
 
         var parameters = new ModalParameters();
-        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {order.InvoiceNumber}?");
+        string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {name}?");
 
         var modalRef = Modal.Show<ConfirmDialog>("Potwierdzenie", parameters);
         var result = await modalRef.Result;
@@ -173,7 +167,8 @@
                 IsBusy = true;
                 await OrderService.Delete(order.InvoiceNumber);
                 await GetAllOrders();
-                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {order.InvoiceNumber}");
+                
+                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");
             }
             catch (Exception ex)
             {

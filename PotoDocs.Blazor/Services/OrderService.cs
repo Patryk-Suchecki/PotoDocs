@@ -14,9 +14,10 @@ public interface IOrderService
     Task Update(OrderDto dto, int invoiceNumber);
     Task<byte[]> DownloadInvoices(DownloadDto downloadRequestDto);
     Task<byte[]> DownloadFile(int invoiceNumber, string fileName);
-    Task<(byte[] FileData, string FileName)> DownloadInvoice(int invoiceNumber);
+    Task<byte[]> DownloadInvoice(int invoiceNumber);
     Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber);
     Task RemoveCMR(int invoiceNumber, string pdfname);
+    string FormatInvoiceNumber(int invoiceNumber);
 }
 public class OrderService : IOrderService
 {
@@ -110,11 +111,11 @@ public class OrderService : IOrderService
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{invoiceNumber}", dto);
     }
-    public async Task<byte[]> DownloadInvoices(DownloadDto downloadRequestDto)
+    public async Task<byte[]> DownloadInvoices(DownloadDto dto)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync($"invoices/{downloadRequestDto.Year}/{downloadRequestDto.Month}");
+        var response = await httpClient.GetAsync($"invoices/{dto.Year}/{dto.Month}");
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadAsByteArrayAsync();
@@ -136,23 +137,18 @@ public class OrderService : IOrderService
 
         return null;
     }
-    public async Task<(byte[] FileData, string FileName)> DownloadInvoice(int invoiceNumber)
+    public async Task<byte[]> DownloadInvoice(int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         var response = await httpClient.GetAsync($"api/orders/{invoiceNumber}/invoice");
         if (response.IsSuccessStatusCode)
         {
             var fileBytes = await response.Content.ReadAsByteArrayAsync();
 
-            // Pobieranie nazwy pliku z nagłówka Content-Disposition
-            var contentDisposition = response.Content.Headers.ContentDisposition;
-            string fileName = contentDisposition?.FileNameStar ?? contentDisposition?.FileName ?? $"Faktura_{invoiceNumber}.pdf";
-
-            return (fileBytes, fileName);
+            return fileBytes;
         }
 
-        return (null, null);
+        return null;
     }
 
     public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
@@ -189,5 +185,15 @@ public class OrderService : IOrderService
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var response = await httpClient.DeleteAsync($"api/orders/{invoiceNumber}/cmr/{pdfname}");
+    }
+    public string FormatInvoiceNumber(int invoiceNumber)
+    {
+        string invoiceNumberStr = invoiceNumber.ToString("D7");
+
+        int numberPart = int.Parse(invoiceNumberStr.Substring(0, invoiceNumberStr.Length - 6));
+        int monthPart = int.Parse(invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2));
+        int yearPart = int.Parse(invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4));
+
+        return $"FAKTURA {numberPart:D2}-{monthPart}-{yearPart}";
     }
 }
