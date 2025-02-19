@@ -22,7 +22,7 @@ public class OrderDto
 
     [StringLength(200, ErrorMessage = "Adres firmy nie może mieć więcej niż 200 znaków.")]
     public string? CompanyAddress { get; set; }
-    [StringLength(200, ErrorMessage = "Adres firmy nie może mieć więcej niż 200 znaków.")]
+    [StringLength(200, ErrorMessage = "Adres korespondencyjny firmy nie może mieć więcej niż 200 znaków.")]
     public string? CorrespondenceAddress { get; set; }
 
     [StringLength(50, ErrorMessage = "Kraj firmy nie może mieć więcej niż 50 znaków.")]
@@ -64,7 +64,6 @@ public class OrderDto
     /*
         Pliki
     */
-    [StringLength(300, ErrorMessage = "Adres URL pliku PDF nie może mieć więcej niż 300 znaków.")]
     public string PDFUrl { get; set; }
 
     public List<string>? CMRFiles { get; set; }

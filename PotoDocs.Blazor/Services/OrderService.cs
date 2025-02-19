@@ -15,7 +15,7 @@ public interface IOrderService
     Task<byte[]> DownloadInvoices(int year, int month);
     Task<byte[]> DownloadFile(int invoiceNumber, string fileName);
     Task<byte[]> DownloadInvoice(int invoiceNumber);
-    Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber);
+    Task UploadCMR(List<byte[]> filesData, int invoiceNumber);
     Task RemoveCMR(int invoiceNumber, string pdfname);
     string FormatInvoiceNumber(int invoiceNumber);
     Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
@@ -157,35 +157,22 @@ public class OrderService : IOrderService
         return null;
     }
 
-    public async Task<OrderDto> UploadCMR(List<string> filePaths, int invoiceNumber)
+    public async Task UploadCMR(List<byte[]> filesData, int invoiceNumber)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        using (var multipartFormContent = new MultipartFormDataContent())
+        using var multipartContent = new MultipartFormDataContent();
+
+        for (int i = 0; i < filesData.Count; i++)
         {
-            foreach (var filePath in filePaths)
-            {
-                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                var streamContent = new StreamContent(fileStream);
-                streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
-
-                multipartFormContent.Add(streamContent, "files", Path.GetFileName(filePath));
-            }
-
-            var response = await httpClient.PostAsync($"api/orders/{invoiceNumber}/cmr", multipartFormContent);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-                return apiResponse.Data;
-            }
-            return null;
+            var fileContent = new ByteArrayContent(filesData[i]);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+            multipartContent.Add(fileContent, "files", $"file{i}.pdf");
         }
+
+        var response = await httpClient.PostAsync($"api/orders/{invoiceNumber}/cmr", multipartContent);
     }
+
     public async Task RemoveCMR(int invoiceNumber, string pdfname)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();

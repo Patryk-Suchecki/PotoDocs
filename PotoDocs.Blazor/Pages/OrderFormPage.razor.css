@@ -105,3 +105,94 @@
     .btn-submit:hover {
         background: linear-gradient(to right, #BC0000, #8C0000);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+.file-upload-container {
+    display: flex;
+    align-items: center;
+    background-color: red;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.file-label {
+    color: white;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+.file-upload-btn {
+    padding: 5px 10px;
+    background-color: white;
+    color: black;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+.file-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+    padding: 5px;
+    border: 2px solid red;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    font-size: 14px;
+}
+
+    .file-item a {
+        color: blue;
+        text-decoration: underline;
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.download-btn {
+    background: none;
+    border: none;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+}
+
+    .download-btn:hover {
+        color: darkblue;
+    }
+
+
