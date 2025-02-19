@@ -37,6 +37,12 @@ a, .btn-link {
 
 .validation-message {
     color: red;
+    position: absolute;
+    margin-top: 65px;
+    white-space: nowrap;
+    font-size: 12px;
+    font-family: Roboto;
+    font-weight: 600;
 }
 
 #blazor-error-ui {
@@ -105,7 +111,6 @@ code {
     color: #c02d76;
 }
 
-
 /*Input*/
 .input-group {
     display: flex;
@@ -132,11 +137,13 @@ code {
 
     .input-text::placeholder {
         color: transparent;
+        
     }
 
     .input-text:placeholder-shown ~ .input-text-label {
         font-size: 17px;
         cursor: text;
+
     }
 
 .input-text-label {

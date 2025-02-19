@@ -12,13 +12,13 @@
         <div class="input-group">
             <input @bind-value="loginModel.Email" class="input-text" placeholder="E-mail" />
             <label class="input-text-label">E-mail</label>
-            <ValidationMessage For="@(() => loginModel.Email)" class="validation-error" />
+            <ValidationMessage For="@(() => loginModel.Email)"/>
         </div>
 
         <div class="input-group">
             <input @bind-value="loginModel.Password" class="input-text" type="password" placeholder="Hasło" />
             <label class="input-text-label">Hasło</label>
-            <ValidationMessage For="@(() => loginModel.Password)" class="validation-error" />
+            <ValidationMessage For="@(() => loginModel.Password)"/>
         </div>
 
         @if (!string.IsNullOrEmpty(errorMessage))
@@ -39,6 +39,7 @@
     private async Task HandleLogin()
     {
         errorMessage = null;
+        StateHasChanged();
         try
         {
             var result = await AuthService.LoginAsync(loginModel);
