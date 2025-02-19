@@ -5,7 +5,7 @@ namespace PotoDocs.Shared.Models;
 public class LoginDto
 {
     [Required(ErrorMessage = "Email jest wymagany.")]
-    [EmailAddress(ErrorMessage = "Podano nieprawidłowy adres email.")]
+    [EmailAddress(ErrorMessage = "Nieprawidłowy adres email.")]
     public string Email { get; set; }
 
 
