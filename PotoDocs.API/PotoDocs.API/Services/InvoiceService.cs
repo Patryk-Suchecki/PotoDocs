@@ -26,6 +26,7 @@ public class InvoiceService : IInvoiceService
         decimal vatRate = acceptedPolandNames.Contains(order.CompanyCountry.ToLowerInvariant()) ? 0.23m : 0m;
 
         string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/templates", templateFileName);
+        string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/fonts", "tahomabd.ttf");
 
         using (var pdfReader = new PdfReader(templatePath))
         using (var memoryStream = new MemoryStream())
@@ -34,7 +35,7 @@ public class InvoiceService : IInvoiceService
             var pdf = pdfStamper.AcroFields;
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            BaseFont bfArialBold = BaseFont.CreateFont("c:/windows/fonts/tahomabd.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            BaseFont bfArialBold = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
             decimal netAmount = (decimal)order.Price;
             decimal grossAmount = netAmount * (vatRate + 1);
@@ -76,6 +77,7 @@ public class InvoiceService : IInvoiceService
             return memoryStream.ToArray();
         }
     }
+
 
     private string FormatCurrency(decimal amount, string currencySymbol = "")
     {

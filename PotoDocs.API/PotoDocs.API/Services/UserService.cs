@@ -88,7 +88,11 @@ public class UserService : IUserService
         {
             return ApiResponse<string>.Failure($"Nie znaleziono użytkownika", HttpStatusCode.BadRequest);
         }
-
+        var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.OldPassword);
+        if (result == PasswordVerificationResult.Failed)
+        {
+            return ApiResponse<string>.Failure("Nieprawidłowe hasło", HttpStatusCode.Unauthorized);
+        }
         var newPasswordHash = _hasher.HashPassword(user, dto.NewPassword);
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();

@@ -30,13 +30,13 @@ public class AccountService : IAccountService
 
         if (user is null)
         {
-            return ApiResponse<LoginResponseDto>.Failure("Użytkownik lub hasło są niepoprawne", HttpStatusCode.Unauthorized);
+            return ApiResponse<LoginResponseDto>.Failure("Nieprawidłowe hasło lub adres E-mail", HttpStatusCode.Unauthorized);
         }
 
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (result == PasswordVerificationResult.Failed)
         {
-            return ApiResponse<LoginResponseDto>.Failure("Użytkownik lub hasło są niepoprawne", HttpStatusCode.Unauthorized);
+            return ApiResponse<LoginResponseDto>.Failure("Nieprawidłowe hasło lub adres E-mail", HttpStatusCode.Unauthorized);
         }
 
         var jwt = _tokenService.GenerateJWT(user);

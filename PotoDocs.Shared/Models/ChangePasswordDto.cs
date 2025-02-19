@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
-namespace PotoDocs.Shared.Models;
-
-public class ChangePasswordDto
+public class ChangePasswordDto : IValidatableObject
 {
     public string Email { get; set; }
 
@@ -13,4 +12,12 @@ public class ChangePasswordDto
     [Required(ErrorMessage = "Nowe hasło jest wymagane.")]
     [StringLength(50, MinimumLength = 1, ErrorMessage = "Nowe hasło musi mieć od 8 do 50 znaków.")]
     public string NewPassword { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (OldPassword == NewPassword)
+        {
+            yield return new ValidationResult("Nowe hasło nie może być takie samo jak stare hasło.", new[] { nameof(NewPassword) });
+        }
+    }
 }

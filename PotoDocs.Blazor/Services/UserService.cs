@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using PotoDocs.Shared.Models;
 
@@ -10,7 +12,7 @@ public interface IUserService
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(string email);
     Task<UserDto> GetUser();
-    Task ChangePassword(ChangePasswordDto dto);
+    Task<string?> ChangePassword(ChangePasswordDto dto);
 }
 
 public class UserService : IUserService
@@ -82,20 +84,23 @@ public class UserService : IUserService
 
         return null;
     }
-    public async Task ChangePassword(ChangePasswordDto dto)
+    public async Task<string?> ChangePassword(ChangePasswordDto dto)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var jsonContent = new StringContent(
-            JsonSerializer.Serialize(dto),
-            Encoding.UTF8,
-            "application/json"
-        );
-        var response = await httpClient.PostAsync("api/user/change-password", jsonContent);
+        var response = await httpClient.PostAsJsonAsync("api/user/change-password", dto);
 
 
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return apiResponse?.Errors?.FirstOrDefault() ?? "Wystąpił nieznany błąd.";
         }
+        return null;
     }
 }

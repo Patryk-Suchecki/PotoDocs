@@ -30,7 +30,6 @@ else
             <h4>Zmiana hasła</h4>
             <EditForm Model="@ChangePasswordDto" OnValidSubmit="ChangePasswordAsync">
                 <DataAnnotationsValidator />
-                <ValidationSummary />
 
                 <div class="form-group">
                     <label>Stare hasło:</label>
@@ -43,17 +42,13 @@ else
                     <InputText @bind-Value="ChangePasswordDto.NewPassword" type="password" class="form-control" />
                     <ValidationMessage For="@(() => ChangePasswordDto.NewPassword)" />
                 </div>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <p class="error-message">@errorMessage</p>
+                }
 
                 <button type="submit" class="btn btn-primary">Zmień hasło</button>
             </EditForm>
-        </div>
-
-        <div class="section">
-            <h4>Powiadomienia</h4>
-            <label>
-                <input type="checkbox" @bind="AreNotificationsEnabled" />
-                Włącz powiadomienia aplikacji
-            </label>
         </div>
     </div>
 }
@@ -62,7 +57,7 @@ else
     private UserDto UserDto { get; set; } = new();
     private ChangePasswordDto ChangePasswordDto { get; set; } = new();
     private bool IsBusy { get; set; } = true;
-    private bool AreNotificationsEnabled { get; set; }
+    private string? errorMessage;
 
     private async Task OnAreNotificationsEnabledChanged(bool value)
     {
@@ -72,7 +67,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadUser();
-        await LoadNotificationPreference();
         IsBusy = false;
     }
 
@@ -93,26 +87,22 @@ else
         try
         {
             ChangePasswordDto.Email = UserDto.Email;
-            await UserService.ChangePassword(ChangePasswordDto);
-            toastService.ShowSuccess($"Hasło zostało zmienione, zaloguj się ponownie");
-            Navigation.NavigateTo("/logowanie");
+            var result = await UserService.ChangePassword(ChangePasswordDto);
+
+            if (string.IsNullOrEmpty(result))
+            {
+                toastService.ShowSuccess($"Hasło zostało zmienione, zaloguj się ponownie");
+                Navigation.NavigateTo("/logowanie");
+            }
+            else
+            {
+                toastService.ShowError(result);
+                errorMessage = result;
+            }
         }
         catch (Exception ex)
         {
             toastService.ShowError($"Błąd zmiany hasła: {ex.Message}");
         }
-    }
-
-    private async Task LoadNotificationPreference()
-    {
-        var result = await LocalStorage.GetItemAsync<bool>("AreNotificationsEnabled");
-        AreNotificationsEnabled = result;
-    }
-
-    private async Task ToggleNotifications(ChangeEventArgs e)
-    {
-        AreNotificationsEnabled = (bool)e.Value;
-        await LocalStorage.SetItemAsync("AreNotificationsEnabled", AreNotificationsEnabled);
-        toastService.ShowSuccess($"{AreNotificationsEnabled}");
     }
 }
