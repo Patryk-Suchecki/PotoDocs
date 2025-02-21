@@ -19,6 +19,7 @@ else if (Users?.Count > 0)
         {
             <div class="user-card" @onclick="() => GoToEditUser(user)">
                 <strong>@user.FirstName @user.LastName</strong>
+                <button @onclick="() => DeleteUser(user)">Usuń</button>
             </div>
         }
     </div>
@@ -71,5 +72,23 @@ else
             Navigation.NavigateTo($"/kierowca?user={userJson}");
         }
     }
+    private async Task DeleteUser(UserDto user)
+    {
+        try
+        {
+            IsBusy = true;
+            await UserService.Delete(user.Email);
+            toastService.ShowSuccess("Pomyślnie usunięto użytkownika");
+            await GetUsersAsync();
 
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd przy usuwaniu użytkownika: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }

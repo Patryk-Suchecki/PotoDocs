@@ -18,7 +18,6 @@ else
 {
     <EditForm Model="@UserDto" OnValidSubmit="Save" class="form-container">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
         <!-- Imię -->
         <div class="form-group">
@@ -136,7 +135,7 @@ else
         {
             IsBusy = true;
             await UserService.GeneratePassword(UserDto.Email);
-            toastService.ShowError("Wygenerowano nowe hasło.");
+            toastService.ShowSuccess("Wygenerowano nowe hasło.");
         }
         catch (Exception ex)
         {

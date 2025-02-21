@@ -121,7 +121,7 @@ public class OrderService : IOrderService
         }
 
         var extractedData = await _openAIService.GetInfoFromText(file);
-        extractedData.InvoiceIssueDate = DateTime.Now;
+        extractedData.InvoiceIssueDate = extractedData.UnloadingDate ?? DateTime.Now;
         extractedData.InvoiceNumber = GetInvoiceNumber(extractedData.UnloadingDate ?? DateTime.Now);
         extractedData.PDFUrl = fileName;
 

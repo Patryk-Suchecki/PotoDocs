@@ -1,7 +1,4 @@
-﻿using PotoDocs.API.Entities;
-using PotoDocs.Shared.Models;
-
-namespace PotoDocs.API.Entities;
+﻿namespace PotoDocs.API.Entities;
 public class User
 {
     public int Id { get; set; }
