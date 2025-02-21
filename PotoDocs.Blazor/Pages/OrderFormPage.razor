@@ -65,31 +65,37 @@
                 <div class="section">
                     <label class="section-title">Informacje ogólne</label>
 
-                    <label>Kierowca</label>
-                    <InputSelect @bind-Value="SelectedDriverEmail" class="form-control">
-                        <option value="">Wybierz kierowcę</option>
-                        @foreach (var user in Users)
-                        {
-                            <option value="@user.Email">@user.FirstAndLastName</option>
-                        }
-                    </InputSelect>
+                    <div class="form-group">
+                        <label class="input-label">Kierowca</label>
+                        <InputSelect @bind-Value="SelectedDriverEmail" class="form-control">
+                            <option value="">Wybierz kierowcę</option>
+                            @foreach (var user in Users)
+                            {
+                                <option value="@user.Email">@user.FirstAndLastName</option>
+                            }
+                        </InputSelect>
+                    </div>
 
                     <div class="form-group">
+                        <label class="input-label">Numer faktury</label>
                         <InputNumber @bind-Value="OrderDto.InvoiceNumber" placeholder="Numer faktury" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.InvoiceNumber)" />
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">Nazwa firmy</label>
                         <InputText @bind-Value="OrderDto.CompanyName" placeholder="Nazwa firmy" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.CompanyName)" />
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">NIP</label>
                         <InputText @bind-Value="OrderDto.CompanyNIP" placeholder="NIP" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.CompanyNIP)" />
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">Adres firmy</label>
                         <InputText @bind-Value="OrderDto.CompanyAddress" placeholder="Adres firmy" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.CompanyAddress)" />
                     </div>
@@ -100,43 +106,59 @@
                     <label class="section-title">Informacje dodatkowe</label>
 
                     <div class="horizontal-group">
+                        <div class="horizontal-group-element">
+                            <label class="horizontal-input-label">Data załadunku</label>
                         <InputDate @bind-Value="OrderDto.LoadingDate" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.LoadingDate)" />
-
+                        </div>
+                        <div class="horizontal-group-element">
+                            <label class="horizontal-input-label">Data rozładunku</label>
                         <InputDate @bind-Value="OrderDto.UnloadingDate" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.UnloadingDate)" />
+                        </div>
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">Data faktury</label>
                         <InputDate @bind-Value="OrderDto.InvoiceIssueDate" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.InvoiceIssueDate)" />
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">Adres rozładunku</label>
                         <InputText @bind-Value="OrderDto.UnloadingAddress" placeholder="Adres rozładunku" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.UnloadingAddress)" />
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">Kraj</label>
                         <InputText @bind-Value="OrderDto.CompanyCountry" placeholder="Kraj" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.CompanyCountry)" />
                     </div>
 
                     <div class="horizontal-group">
+                        <div class="horizontal-group-element">
+                            <label class="horizontal-input-label">Kwota</label>
                         <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.Price)" />
-
+                        </div>
+                        <div class="horizontal-group-element">
+                            <label class="horizontal-input-label">Dni do płatności</label>
                         <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.PaymentDeadline)" />
+                        </div>
                     </div>
 
                     <div class="form-group">
+                        <label class="input-label">Numer zlecenia</label>
                         <InputText @bind-Value="OrderDto.CompanyOrderNumber" placeholder="Numer zlecenia" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.CompanyOrderNumber)" />
                     </div>
                 </div>
 
+                <div class="button-container">
                 <button type="submit" class="btn-submit">Zapisz</button>
+                </div>
             </EditForm>
         }
     </div>
