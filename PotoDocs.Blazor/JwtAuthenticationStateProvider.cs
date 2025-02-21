@@ -65,7 +65,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         await _localStorage.RemoveItemAsync(AuthTokenKey);
         _httpClient.DefaultRequestHeaders.Authorization = null;
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        _navigation.NavigateTo("/login", true); // Tu jest lepsze miejsce na przekierowanie
+        _navigation.NavigateTo("/logowanie", true);
     }
 
     public async Task<string?> GetToken()

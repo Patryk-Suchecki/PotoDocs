@@ -11,8 +11,9 @@ public interface IUserService
     Task RegisterAsync(UserDto dto);
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(string email);
-    Task<UserDto> GetUser();
+    Task<UserDto> GetCurrentUser();
     Task<string?> ChangePassword(ChangePasswordDto dto);
+    Task Delete(string email);
 }
 
 public class UserService : IUserService
@@ -42,7 +43,7 @@ public class UserService : IUserService
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        var response = await httpClient.GetAsync($"api/user/generate-password/{email}");
+        var response = await httpClient.PostAsJsonAsync($"api/user/generate-password", email);
 
 
         if (!response.IsSuccessStatusCode)
@@ -67,7 +68,7 @@ public class UserService : IUserService
 
         return null;
     }
-    public async Task<UserDto> GetUser()
+    public async Task<UserDto> GetCurrentUser()
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
@@ -103,4 +104,21 @@ public class UserService : IUserService
         }
         return null;
     }
+    public async Task Delete(string email)
+    {
+        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"api/user")
+        {
+            Content = JsonContent.Create(email)
+        };
+
+        var response = await httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Błąd: {errorContent}");
+        }
+    }
+
 }

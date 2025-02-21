@@ -74,7 +74,7 @@ else
     {
         try
         {
-            UserDto = await UserService.GetUser();
+            UserDto = await UserService.GetCurrentUser();
         }
         catch (Exception ex)
         {

@@ -26,7 +26,7 @@ public class UserController : ControllerBase
         {
             BadRequest(ModelState);
         }
-        var response = _userService.RegisterUser(dto);
+        var response = _userService.Register(dto);
         return StatusCode(response.StatusCode, response);
     }
 
@@ -59,7 +59,13 @@ public class UserController : ControllerBase
     public ActionResult<IEnumerable<string>> GetUser()
     {
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-        var response = _userService.GetUser(userId);
+        var response = _userService.GetById(userId);
         return StatusCode(response.StatusCode, response);
+    }
+    [HttpDelete()]
+    public ActionResult Delete([FromBody] string email)
+    {
+        _userService.Delete(email);
+        return NoContent();
     }
 }

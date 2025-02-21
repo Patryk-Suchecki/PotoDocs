@@ -46,7 +46,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<UserDto>, RegisterUserDtoValidator>();
 
-//nie wiem czy tak jest git
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

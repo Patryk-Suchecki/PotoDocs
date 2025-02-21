@@ -10,11 +10,12 @@ namespace PotoDocs.API.Services;
 
 public interface IUserService
 {
-    ApiResponse<string> RegisterUser(UserDto dto);
+    ApiResponse<string> Register(UserDto dto);
     ApiResponse<string> ChangePassword(ChangePasswordDto dto);
     ApiResponse<string> GeneratePassword(string email);
     ApiResponse<List<UserDto>> GetAll();
-    ApiResponse<UserDto> GetUser(int id);
+    ApiResponse<UserDto> GetById(int id);
+    void Delete(string email);
 }
 
 public class UserService : IUserService
@@ -31,7 +32,7 @@ public class UserService : IUserService
         _mapper = mapper;
         _emailService = emailService;
     }
-    public ApiResponse<string> RegisterUser(UserDto dto)
+    public ApiResponse<string> Register(UserDto dto)
     {
         var role = _context.Roles.FirstOrDefault(r => r.Name == dto.Role);
 
@@ -129,7 +130,7 @@ public class UserService : IUserService
         return ApiResponse<List<UserDto>>.Success(usersDto);
     }
 
-    public ApiResponse<UserDto> GetUser(int id)
+    public ApiResponse<UserDto> GetById(int id)
     {
         var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Id == id);
         if (user == null) return ApiResponse<UserDto>.Failure("Nie znaleziono użytkownika", HttpStatusCode.Unauthorized);
@@ -137,6 +138,14 @@ public class UserService : IUserService
         var dto = _mapper.Map<UserDto>(user);
 
         return ApiResponse<UserDto>.Success(dto);
+    }
+    public void Delete(string email)
+    {
+        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        if (user == null) return;
+
+        _context.Users.Remove(user);
+        _context.SaveChanges();
     }
 }
 
