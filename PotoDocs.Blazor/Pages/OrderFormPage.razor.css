@@ -1,27 +1,63 @@
 ﻿.background { /* Umożliwia pozycjonowanie względem okna przeglądarki */
+    height: 100%; /* Wysokość równa wysokości viewportu */
+    background: linear-gradient(90deg, #CA0000, #640000); /* Zmień kolor tła według potrzeb */
+    position: fixed;
     top: 0;
-    left: 0;
-    width: 100vw; /* Szerokość równa szerokości viewportu */
-    height: 100vh; /* Wysokość równa wysokości viewportu */
-    background: linear-gradient(180deg, #CA0000, #640000); /* Zmień kolor tła według potrzeb */
-    z-index: -1; /* Upewnij się, że tło jest za innymi elementami */
-    margin-left: -2rem; 
-    margin-top: -4rem;
+    bottom: 0;
+    left: 250px;
+    right: 0;
+    overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+    .background { /* Umożliwia pozycjonowanie względem okna przeglądarki */
+        height: 100%; /* Wysokość równa wysokości viewportu */
+        background: linear-gradient(180deg, #CA0000, #640000); /* Zmień kolor tła według potrzeb */
+        position: fixed;
+        top: 40px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow-y: auto;
+        z-index: -1;
+    }
 }
 
 .form-card {
     background: white;
     padding: 15px;
     margin: 22px;
+    border-radius: 20px;
+    margin-bottom: 50px;
+}
+
+.button-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }
 
 .title-text {
-    margin-top: 3rem;
     padding: 26px;
     padding-bottom: 0px;
     font-weight: 500;
     font-size: 28px;
     color: white;
+}
+
+.section-title {
+    color: #8C0000;
+    font-family: Roboto;
+    font-weight: 500;
+    margin-top: 0.8rem;
+    margin-bottom: 0.6rem;
+    font-size: 20px;
+}
+
+.section {
+    margin-left: 0.8rem;
+    margin-right: 0.8rem;
 }
 
 .file-section {
@@ -45,6 +81,38 @@
 
 .file-title {
     font-size: 16px;
+}
+
+.input-label {
+    position: absolute;
+    margin-left: 10px;
+    margin-top: -13px;
+    font-size: 14px;
+    color: #8C0000;
+    background-color: white;
+    padding: 2px;
+}
+
+.horizontal-input-label {
+    position: absolute;
+    margin-left: 10px;
+    margin-top: -13px;
+    font-size: 14px;
+    color: #8C0000;
+    background-color: white;
+    padding: 2px;
+}
+
+.form-control {
+    background-color: red; 
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.horizontal-group-element {
+    width: 100%;
 }
 
 .file-item {
@@ -100,6 +168,7 @@
     box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
     transition: box-shadow 0.2s ease-in-out;
     width: 180px;
+    
 }
 
     .btn-submit:hover {
@@ -107,8 +176,11 @@
     }
 
 
-
-
+.horizontal-group {
+    display: flex;
+    justify-content: space-between; /* Rozdziela elementy równomiernie z zachowaniem odstępu na końcach */
+    margin-bottom: 16px; /* Odstęp poniżej grupy */
+}
 
 
 
@@ -120,9 +192,9 @@
 .file-upload-container {
     display: flex;
     align-items: center;
-    background-color: red;
+    background: linear-gradient(0deg, #8C0000, #BC0000);
     padding: 5px 10px;
-    border-radius: 5px;
+    border-radius: 7px;
 }
 
 .file-label {
@@ -132,11 +204,11 @@
 }
 
 .file-upload-btn {
-    padding: 5px 10px;
+    padding: 3px 14px;
     background-color: white;
     color: black;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 500;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -147,9 +219,10 @@
 .file-list {
     display: flex;
     flex-direction: column;
-    margin-top: 5px;
+    margin-bottom: 10px;
+    margin-top: -2px;
     padding: 5px;
-    border: 2px solid red;
+    border: 2px solid #AA0101;
     border-radius: 5px;
     background-color: white;
 }
@@ -166,18 +239,20 @@
         color: blue;
         text-decoration: underline;
         flex-grow: 1;
-        margin-right: 10px;
+        margin-right: 20px;
+        align-items: start;
+        text-align: left;
     }
 
 .delete-btn {
     background-color: red;
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 3px 12px;
+    border-radius: 14px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 .download-btn {
