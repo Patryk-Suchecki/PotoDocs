@@ -55,8 +55,8 @@
 }
 
 .button-image {
-    width:16px;
-    height:16px;
+    width:14px;
+    height:14px;
     margin-right: 6px;
     margin-bottom: 2px;
 }
@@ -110,8 +110,10 @@
 /* Akcje zlecenia */
 .order-actions button {
     padding: 6px 12px;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
+    font-weight: 400;
+    background: #BC0000;
 }
 
 .order-actions {
@@ -121,6 +123,14 @@
     padding: 4px;
     width: 100%;
     gap: 10px;
+}
+
+.details-button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    width: 100px;
+    border-radius: 8px;
 }
 
 .edit-button {
@@ -140,7 +150,7 @@
 }
 
 .delete-button {
-    background-color: #DC3545;
+    background: red !important;
     color: white;
     border: none;
     width: 100px;

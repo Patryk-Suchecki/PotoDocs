@@ -64,6 +64,9 @@
                             <tr>
                                 <td colspan="4">
                                     <div class="order-actions">
+                                        <button class="details-button" @onclick="() => ViewOrderDetails(order)">
+                                            <img src="Images/icon_neworder.png" alt="Details" class="button-image" />Szczegóły
+                                        </button>
                                         <button class="edit-button" @onclick="() => EditOrder(order)">
                                             <img src="Images/icon_edit.png" alt="Edit" class="button-image" />Edytuj
                                         </button>
@@ -153,6 +156,15 @@
         {
             var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
             Navigation.NavigateTo($"/zlecenie/edycja?order={orderJson}");
+        }
+    }
+
+    private void ViewOrderDetails(OrderDto order)
+    {
+        if (order != null)
+        {
+            var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
+            Navigation.NavigateTo($"/zlecenie/szczegoly?order={orderJson}");
         }
     }
 

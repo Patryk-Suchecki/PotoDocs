@@ -65,6 +65,7 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;
+    justify-self: center;
 }
     .orders-table th, .orders-table td {
         padding: 12px;
@@ -84,39 +85,53 @@
         background-color: #f9f9f9;
     }
 
-.order-actions {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 0px;
+.order-actions button {
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 400;
+    background: #BC0000;
 }
 
+.order-actions {
+    align-self: center;
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+    width: 100%;
+    gap: 10px;
+}
+
+.details-button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    width: 100px;
+    border-radius: 8px;
+}
 
 .edit-button {
     background-color: #007BFF;
     color: white;
     border: none;
-    width: 90px;
+    width: 100px;
     border-radius: 8px;
-    margin-bottom: 6px;
 }
 
 .invoice-button {
     background-color: #28A745;
     color: white;
     border: none;
-    width: 90px;
+    width: 100px;
     border-radius: 8px;
-    margin-bottom: 6px;
 }
 
 .delete-button {
-    background-color: #DC3545;
+    background: red !important;
     color: white;
     border: none;
-    width: 90px;
+    width: 100px;
     border-radius: 8px;
-    margin-bottom: 6px;
 }
 
 .button-image {
