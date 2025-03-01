@@ -154,6 +154,12 @@
                         <InputText @bind-Value="OrderDto.CompanyOrderNumber" placeholder="Numer zlecenia" class="form-control" />
                         <ValidationMessage For="@(() => OrderDto.CompanyOrderNumber)" />
                     </div>
+
+                    <div class="form-group">
+                        <InputCheckbox @bind-Value="HasPaid" class="checkbox" />
+                        <label class="checkbox-label">Płatność dokonana</label>
+                        
+                    </div>
                 </div>
 
                 <div class="button-container">
@@ -361,5 +367,11 @@
         {
             IsBusy = false;
         }
+    }
+
+    private bool HasPaid
+    {
+        get => OrderDto.HasPaid ?? false;
+        set => OrderDto.HasPaid = value;
     }
 }
