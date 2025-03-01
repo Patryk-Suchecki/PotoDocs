@@ -57,7 +57,7 @@
 
                             @* TUTAJ STATUS *@
 
-                            <td class="status-text">brak</td>
+                            <td class="status-text">@(order.HasPaid == true ? "Zapłacono" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
                         </tr>
                         @if (isExpanded)
                         {

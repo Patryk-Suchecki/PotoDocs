@@ -40,13 +40,17 @@
 }
 
 .btn-primary {
-    background-color: #8C0000;
+    background: linear-gradient(90deg, #8C0000, #BC0000);
     color: white;
     padding: 10px 20px;
     border: none;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 12px;
     transition: background-color 0.3s;
+    font-size: 16px;
+    font-family: Roboto;
+    font-weight: 500;
+    width: 200px;
 }
 
     .btn-primary:hover {
@@ -55,4 +59,10 @@
 
 input[type="checkbox"] {
     margin-right: 10px;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
 }

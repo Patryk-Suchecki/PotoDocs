@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage
 
-<h3>@(PageTitle ?? "Nowy użytkownik")</h3>
+<h3 class="title-text">@(PageTitle ?? "Nowy użytkownik")</h3>
 
 @if (IsBusy)
 {
@@ -54,8 +54,11 @@ else
         </div>
 
         <!-- Przyciski -->
+        <div class="btn-container">
         <button type="button" class="btn btn-secondary" @onclick="GeneratePassword">Generuj hasło</button>
         <button type="submit" class="btn btn-primary">Zapisz</button>
+        </div>
+
     </EditForm>
 }
 @code {

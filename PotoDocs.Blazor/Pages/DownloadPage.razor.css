@@ -7,6 +7,15 @@
     color: white;
 }
 
+.title-text {
+    font-size: 24px;
+    color: #8C0000;
+    margin: 0;
+    font-family: Roboto;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -29,13 +38,19 @@ label {
     border: none;
     padding: 15px;
     border-radius: 15px;
-    width: 100%;
+    width: 200px;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
+    margin-top: 20px;
 }
 
     .btn-submit:disabled {
         background: gray;
         cursor: not-allowed;
+    }
+
+    .btn-container {
+        display: flex;
+        justify-content: center;
     }

@@ -4,7 +4,7 @@
 @inject NavigationManager Navigation
 @inject IToastService toastService
 
-<h3 class="header">Kierowcy</h3>
+<h3 class="title-text">Kierowcy</h3>
 
 @if (IsBusy)
 {
@@ -18,8 +18,8 @@ else if (Users?.Count > 0)
         @foreach (var user in Users)
         {
             <div class="user-card" @onclick="() => GoToEditUser(user)">
-                <strong>@user.FirstName @user.LastName</strong>
-                <button @onclick="() => DeleteUser(user)">Usuń</button>
+                <strong class="user-text">@user.FirstName @user.LastName</strong>
+                <button @onclick="() => DeleteUser(user)" class="btn-delete">Usuń</button>
             </div>
         }
     </div>
