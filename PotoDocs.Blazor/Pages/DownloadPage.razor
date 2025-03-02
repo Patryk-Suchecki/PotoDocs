@@ -4,7 +4,7 @@
 @inject IToastService toastService
 @inject IBlazorDownloadFileService BlazorDownloadFileService
 
-<h3>Pobieranie</h3>
+<h3 class="title-text">Pobieranie</h3>
 
 @if (IsBusy)
 {
@@ -38,9 +38,11 @@ else
             </select>
         </div>
 
+        <div class="btn-container">
         <button type="submit" class="btn-submit" disabled="@IsButtonDisabled">
             Pobierz zlecenia
         </button>
+        </div>
 
 
     </EditForm>

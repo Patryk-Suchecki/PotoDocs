@@ -7,6 +7,26 @@
 <h3 class="header">Szczegóły zlecenia</h3>
 <div class="details-container">
     <div class="detail-item">
+        <label>PDF:</label>
+        @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
+        {
+            <a href="@OrderDto.PDFUrl" target="_blank">Pobierz PDF</a>
+        }
+    </div>
+
+    <div class="detail-item">
+        <label>CMR:</label>
+        @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
+        {
+            <ul>
+                @foreach (var file in OrderDto.CMRFiles)
+                {
+                    <li><a href="#">@file</a></li>
+                }
+            </ul>
+        }
+    </div>
+    <div class="detail-item">
         <label>Numer faktury:</label>
         <span>@OrderDto.InvoiceNumber</span>
     </div>
@@ -47,6 +67,10 @@
     </div>
 
     <div class="detail-item">
+        <label>Płatność:</label>
+        <span>@(OrderDto.HasPaid == true ? "Dokonano" : "Nie dokonano") </span>
+    </div>
+    <div class="detail-item">
         <label>Data załadunku:</label>
         <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span>
     </div>
@@ -60,27 +84,23 @@
         <label>Uwagi:</label>
         <span>@OrderDto.CompanyOrderNumber</span>
     </div>
-
     <div class="detail-item">
-        <label>PDF:</label>
-        @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
-        {
-            <a href="@OrderDto.PDFUrl" target="_blank">Pobierz PDF</a>
-        }
+        <label>Status:</label>
+        <td class="status-text @(OrderDto.HasPaid == true ? "status-paid" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(OrderDto.HasPaid == true ? "Zapłacono" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
     </div>
+    
 
-    <div class="detail-item">
-        <label>CMR:</label>
-        @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
-        {
-            <ul>
-                @foreach (var file in OrderDto.CMRFiles)
-                {
-                    <li><a href="#">@file</a></li>
-                }
-            </ul>
-        }
-    </div>
+
+</div>
+<div class="cmr-upload-section">
+    <label class="file-upload-btn">
+        <InputFile hidden OnChange="HandleCMRUpload" multiple accept=".pdf,application/pdf" />
+        Dodaj CMR
+    </label>
+    @if (IsUploading)
+    {
+        <div class="loading-spinner">Ładowanie...</div>
+    }
 </div>
 
 @code {
@@ -88,12 +108,74 @@
     [SupplyParameterFromQuery]
     public string Order { get; set; }
     private OrderDto OrderDto { get; set; } = new();
+    private bool IsUploading { get; set; } = false;
+    private long maxFileSize = 5 * 1024 * 1024;
+    private bool IsBusy { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
         if (!string.IsNullOrEmpty(Order))
         {
             OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
+        }
+    }
+
+    private async Task HandleCMRUpload(InputFileChangeEventArgs e)
+    {
+        List<byte[]> filesData = new List<byte[]>();
+        List<string> errorMessages = new List<string>();
+
+        foreach (var file in e.GetMultipleFiles())
+        {
+            if (file.ContentType != "application/pdf")
+            {
+                errorMessages.Add($"Błąd: {file.Name} - tylko pliki PDF są dozwolone.");
+                continue;
+            }
+
+            if (file.Size > maxFileSize)
+            {
+                errorMessages.Add($"Błąd: {file.Name} - maksymalny rozmiar pliku to {maxFileSize / 1024} KB.");
+                continue;
+            }
+
+            try
+            {
+                using var stream = file.OpenReadStream(maxFileSize);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                filesData.Add(ms.ToArray());
+            }
+            catch (Exception ex)
+            {
+                errorMessages.Add($"Błąd podczas przetwarzania pliku {file.Name}: {ex.Message}");
+            }
+        }
+
+        if (!filesData.Any())
+        {
+            foreach (var error in errorMessages)
+            {
+                toastService.ShowError(error);
+            }
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await OrderService.UploadCMR(filesData, OrderDto.InvoiceNumber);
+
+
+            toastService.ShowSuccess("Wysłano pliki CMR.");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 }

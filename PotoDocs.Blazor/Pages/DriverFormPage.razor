@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage
 
-<h3>@(PageTitle ?? "Nowy użytkownik")</h3>
+<h3 class="title-text">@(PageTitle ?? "Nowy użytkownik")</h3>
 
 @if (IsBusy)
 {
@@ -23,21 +23,21 @@ else
         <div class="form-group">
             <label>Imię</label>
             <InputText @bind-Value="UserDto.FirstName" class="form-control" placeholder="Wprowadź imię" />
-            <ValidationMessage For="@(() => UserDto.FirstName)" />
+            <ValidationMessage For="@(() => UserDto.FirstName)" class="custom-error" />
         </div>
 
         <!-- Nazwisko -->
         <div class="form-group">
             <label>Nazwisko</label>
             <InputText @bind-Value="UserDto.LastName" class="form-control" placeholder="Wprowadź nazwisko" />
-            <ValidationMessage For="@(() => UserDto.LastName)" />
+            <ValidationMessage For="@(() => UserDto.LastName)" class="custom-error" />
         </div>
 
         <!-- E-mail -->
         <div class="form-group">
             <label>E-mail</label>
             <InputText @bind-Value="UserDto.Email" class="form-control" placeholder="Wprowadź E-mail" />
-            <ValidationMessage For="@(() => UserDto.Email)" />
+            <ValidationMessage For="@(() => UserDto.Email)" class="custom-error" />
         </div>
 
         <!-- Rola -->
@@ -50,12 +50,15 @@ else
                     <option value="@role">@role</option>
                 }
             </select>
-            <ValidationMessage For="@(() => UserDto.Role)" />
+            <ValidationMessage For="@(() => UserDto.Role)" class="custom-error" />
         </div>
 
         <!-- Przyciski -->
+        <div class="btn-container">
         <button type="button" class="btn btn-secondary" @onclick="GeneratePassword">Generuj hasło</button>
         <button type="submit" class="btn btn-primary">Zapisz</button>
+        </div>
+
     </EditForm>
 }
 @code {

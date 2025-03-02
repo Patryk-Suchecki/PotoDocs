@@ -11,15 +11,13 @@
 <div class="orders-container">
     <div class="header">
         <h2>Wszystkie zlecenia</h2>
-        <button class="refresh-button" @onclick="GetAllOrders">Odśwież</button>
+        <div class="controls">
+            <button class="refresh-button" @onclick="GetAllOrders" disabled="@IsBusy">
+                <img src="images/icon_refresh.png" alt="Odśwież" />
+            </button>
+        </div>
     </div>
 
-    <div class="orders-header">
-        <span>Nazwa firmy</span>
-        <span>Kierowca</span>
-        <span>Data załadunku</span>
-        <span>Status</span>
-    </div>
     @if (IsBusy)
     {
         <div class="spinner-border text-danger" role="status">
@@ -28,32 +26,68 @@
     }
     else
     {
-        <div class="orders-list">
-            @if (Orders == null || Orders.Count == 0)
-            {
-                <p>Brak dostępnych zleceń.</p>
-            }
-            else
-            {
-                @foreach (var order in Orders)
+
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Nazwa firmy</th>
+                    <th>Kierowca</th>
+                    <th>Załadunek</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Orders == null || Orders.Count == 0)
                 {
-                    <div class="order-item">
-                        <div class="order-info">
-                            <p>@order.CompanyName</p>
-                            <p>@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</p>
-                            <p>@(order.LoadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</p>
-                        </div>
-                        <div class="order-actions">
-                            <button @onclick="() => EditOrder(order)">✏️ Edytuj</button>
-                            <button @onclick="() => DownloadInvoice(order)">⬇️ Faktura</button>
-                            <button @onclick="() => DeleteOrder(order)">🗑️ Usuń</button>
-                        </div>
-                    </div>
+                    <tr>
+                        <td colspan="4">Brak dostępnych zleceń.</td>
+                    </tr>
                 }
+                else
+                {
+                    @foreach (var order in Orders)
+                    {
+                        bool isExpanded = ExpandedOrderId == order.InvoiceNumber;
+                        string rowClass = isExpanded ? "order-item selected-row" : "order-item";
+
+                        <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.InvoiceNumber)">
+                            <td class="company-name-text">@order.CompanyName</td>
+                            <td class="driver-text">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</td>
+                            <td class="date-text">@(order.LoadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</td>
+
+                            @* TUTAJ STATUS *@
+
+                            <td class="status-text @(order.HasPaid == true ? "status-paid" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(order.HasPaid == true ? "Zapłacono" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
+                        </tr>
+                        @if (isExpanded)
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <div class="order-actions">
+                                        <button class="details-button" @onclick="() => ViewOrderDetails(order)">
+                                            <img src="Images/icon_neworder.png" alt="Details" class="button-image" />Szczegóły
+                                        </button>
+                                        <button class="edit-button" @onclick="() => EditOrder(order)">
+                                            <img src="Images/icon_edit.png" alt="Edit" class="button-image" />Edytuj
+                                        </button>
+                                        <button class="invoice-button" @onclick="() => DownloadInvoice(order)">
+                                            <img src="Images/icon_download.png" alt="Download" class="button-image" />Faktura
+                                        </button>
+                                        <button class="delete-button" @onclick="() => DeleteOrder(order)">
+                                            <img src="Images/icon_delete.png" alt="Delete" class="button-image" />Usuń
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
             }
-        </div>
+            </tbody>
+        </table>
     }
-    <button @onclick="ShowMoreOrders" class="load-more-button">Pokaż więcej</button>
+    <div class="load-more-container">
+        <button @onclick="ShowMoreOrders" class="load-more-button">Pokaż więcej</button>
+    </div>
 </div>
 
 @code {
@@ -125,6 +159,15 @@
         }
     }
 
+    private void ViewOrderDetails(OrderDto order)
+    {
+        if (order != null)
+        {
+            var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
+            Navigation.NavigateTo($"/zlecenie/szczegoly?order={orderJson}");
+        }
+    }
+
     private async Task DownloadInvoice(OrderDto order)
     {
         if (order == null) return;
@@ -178,6 +221,20 @@
             {
                 IsBusy = false;
             }
+        }
+    }
+
+    private int? ExpandedOrderId { get; set; }
+
+    private void ToggleOrderActions(int orderId)
+    {
+        if (ExpandedOrderId == orderId)
+        {
+            ExpandedOrderId = null; // Zamknij, jeśli już jest otwarte
+        }
+        else
+        {
+            ExpandedOrderId = orderId; // Otwórz nowe
         }
     }
 }

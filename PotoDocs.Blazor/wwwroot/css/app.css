@@ -189,3 +189,10 @@ code {
     display: block;
 }
 /*£adowanie*/
+
+.custom-error {
+    color: red;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 10px;
+}
