@@ -17,7 +17,7 @@ public interface IOrderService
     Task<byte[]> DownloadInvoice(int invoiceNumber);
     Task UploadCMR(List<byte[]> filesData, int invoiceNumber);
     Task RemoveCMR(int invoiceNumber, string pdfname);
-    string FormatInvoiceNumber(int invoiceNumber);
+    string FormatInvoiceNumber(int invoiceNumber, string fileType = "INVOICE");
     Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
 }
 public class OrderService : IOrderService
@@ -185,7 +185,7 @@ public class OrderService : IOrderService
         var response = await httpClient.GetFromJsonAsync<Dictionary<int, List<int>>>($"api/orders/invoices");
         return response ?? new Dictionary<int, List<int>>();
     }
-    public string FormatInvoiceNumber(int invoiceNumber)
+    public string FormatInvoiceNumber(int invoiceNumber, string fileType = "INVOICE")
     {
         string invoiceNumberStr = invoiceNumber.ToString("D7");
 
@@ -193,6 +193,12 @@ public class OrderService : IOrderService
         int monthPart = int.Parse(invoiceNumberStr.Substring(invoiceNumberStr.Length - 6, 2));
         int yearPart = int.Parse(invoiceNumberStr.Substring(invoiceNumberStr.Length - 4, 4));
 
-        return $"FAKTURA {numberPart:D2}-{monthPart}-{yearPart}";
+        return fileType.ToUpper() switch
+        {
+            "ORDER" => $"ZLECENIE {numberPart:D2}-{monthPart}-{yearPart}",
+            "CMR"   => $"CMR {numberPart:D2}-{monthPart}-{yearPart}",
+            _       => $"FAKTURA {numberPart:D2}-{monthPart}-{yearPart}",
+        };
     }
+
 }

@@ -101,3 +101,17 @@
     color: blue;
     font-weight: bold;
 }
+
+.download-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+}
+
+    .download-btn:hover {
+        text-decoration: underline;
+    }

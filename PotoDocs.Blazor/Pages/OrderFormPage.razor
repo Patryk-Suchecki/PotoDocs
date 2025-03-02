@@ -8,9 +8,9 @@
 
 @page "/zlecenie/edycja"
 <div class="background">
-<h3 class="title-text">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
-<div class="form-card">
-@if (IsBusy)
+    <h3 class="title-text">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
+    <div class="form-card">
+        @if (IsBusy)
         {
             <div class="spinner-border text-danger" role="status">
                 <span class="visually-hidden">Ładowanie...</span>
@@ -108,12 +108,12 @@
                     <div class="horizontal-group">
                         <div class="horizontal-group-element">
                             <label class="horizontal-input-label">Data załadunku</label>
-                        <InputDate @bind-Value="OrderDto.LoadingDate" class="form-control" />
+                            <InputDate @bind-Value="OrderDto.LoadingDate" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.LoadingDate)" class="custom-error" />
                         </div>
                         <div class="horizontal-group-element">
                             <label class="horizontal-input-label">Data rozładunku</label>
-                        <InputDate @bind-Value="OrderDto.UnloadingDate" class="form-control" />
+                            <InputDate @bind-Value="OrderDto.UnloadingDate" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.UnloadingDate)" class="custom-error" />
                         </div>
                     </div>
@@ -139,12 +139,12 @@
                     <div class="horizontal-group">
                         <div class="horizontal-group-element">
                             <label class="horizontal-input-label">Kwota</label>
-                        <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" class="form-control" />
+                            <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.Price)" class="custom-error" />
                         </div>
                         <div class="horizontal-group-element">
                             <label class="horizontal-input-label">Dni do płatności</label>
-                        <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" class="form-control" />
+                            <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.PaymentDeadline)" class="custom-error" />
                         </div>
                     </div>
@@ -158,12 +158,12 @@
                     <div class="form-group">
                         <InputCheckbox @bind-Value="HasPaid" class="checkbox" />
                         <label class="checkbox-label">Płatność dokonana</label>
-                        
+
                     </div>
                 </div>
 
                 <div class="button-container">
-                <button type="submit" class="btn-submit">Zapisz</button>
+                    <button type="submit" class="btn-submit">Zapisz</button>
                 </div>
             </EditForm>
         }
@@ -281,7 +281,7 @@
         {
             IsBusy = true;
             await OrderService.UploadCMR(filesData, InvoiceNumber);
-
+            OrderDto = await OrderService.GetById(InvoiceNumber);
 
             toastService.ShowSuccess("Wysłano pliki CMR.");
         }
