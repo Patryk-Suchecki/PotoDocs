@@ -160,3 +160,22 @@
         width: 160px;
         height: 160px;
     }
+
+.status-text {
+    font-weight: 500;
+}
+
+.status-paid {
+    color: green;
+    font-weight: bold;
+}
+
+.status-unpaid {
+    color: red;
+    font-weight: bold;
+}
+
+.status-nocmr {
+    color: blue;
+    font-weight: bold;
+}
