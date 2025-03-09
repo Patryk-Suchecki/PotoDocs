@@ -1,8 +1,39 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
+:root {
+    --primary-color: #8C0000;
+    --danger-color: red;
+    --gradient-color: linear-gradient(90deg, #8C0000, #BC0000);
+}
+
 html, body {
     font-family: 'Roboto', sans-serif;
+}
+
+.header {
+    font-size: 24px;
+    color: var(--primary-color);
+    margin: 0;
+    font-weight: 600;
+}
+
+.text-large {
+    font-size: 18px;
+    color: #333;
+}
+
+.text-small {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 h1:focus {
@@ -14,10 +45,156 @@ a, .btn-link {
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background: var(--gradient-color);
+    color: white;
+    padding: 12px 40px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: Roboto;
+    font-weight: 500;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s ease-in-out;
 }
+
+.btn-small {
+    padding: 8px 6px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.btn-secondary {
+    color: white;
+    border: none;
+    width: 100px;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 400;
+    background: #BC0000;
+}
+
+.btn-img {
+    width: 14px;
+    height: 14px;
+    margin-left: 3px;
+    margin-right: 3px;
+    margin-bottom: 2px;
+}
+
+.icon-img {
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+    margin-bottom: 2px;
+}
+
+.btn-delete {
+    background: var(--danger-color) !important;
+}
+
+.btn-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn-container-flex {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.card-container {
+    background: white;
+    padding: 15px;
+    margin: 22px;
+    border-radius: 20px;
+    margin-bottom: 50px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.container-flex {
+    display: flex;
+    flex-direction: column;
+    margin: 6px;
+}
+
+.refresh-button img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.refresh-button {
+    border: none;
+    background-color: white;
+}
+
+.status-text {
+    font-weight: 500;
+}
+
+.status-paid {
+    color: green;
+    font-weight: bold;
+}
+
+.status-unpaid {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+.status-nocmr {
+    color: blue;
+    font-weight: bold;
+}
+
+.order-actions {
+    align-self: center;
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+    width: 100%;
+    gap: 10px;
+}
+
+/* Input field */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.input-label {
+    position: absolute;
+    margin-left: 10px;
+    margin-top: -13px;
+    font-size: 14px;
+    color: #8C0000;
+    background-color: white;
+    padding: 2px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #8C0000;
+    border-radius: 5px;
+}
+
+.container-flex-column {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: auto;
+}
+
+.container-flex-no-gap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
@@ -32,11 +209,11 @@ a, .btn-link {
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 1px solid var(--danger-color);
 }
 
 .validation-message {
-    color: red;
+    color: var(--danger-color);
     position: absolute;
     margin-top: 65px;
     white-space: nowrap;
@@ -106,6 +283,13 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+.loading-spinner img {
+    width: 50px;
+    height: 50px;
+    display: block;
+    margin: 0 auto;
+}
 
 code {
     color: #c02d76;
@@ -190,9 +374,34 @@ code {
 }
 /*£adowanie*/
 
+
+.loading,
+.empty-state {
+    text-align: center;
+    color: #666;
+    margin: 20px 0;
+}
+
+
 .custom-error {
-    color: red;
+    color: var(--danger-color);
     font-size: 14px;
     font-weight: 500;
     margin-left: 10px;
+}
+
+.margin-top-15 {
+    margin-top: 15px;
+}
+
+.flex {
+    display: flex;
+}
+
+.width-100 {
+    width: 100%;
+}
+
+.gap-20 {
+    gap: 20px;
 }

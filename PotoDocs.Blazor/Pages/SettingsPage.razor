@@ -15,13 +15,12 @@
 }
 else
 {
-    <div class="settings-container">
+    <div class="card-container">
         <div class="section">
             <h4>Profil</h4>
             <div class="profile-info">
-                <p><strong>Imię:</strong> @UserDto.FirstName</p>
-                <p><strong>Nazwisko:</strong> @UserDto.LastName</p>
-                <p><strong>Email:</strong> @UserDto.Email</p>
+                <p><strong>Użytkownik:</strong> @UserDto.FirstName @UserDto.LastName</p>
+                <p><strong>E-mail:</strong> @UserDto.Email</p>
                 <p><strong>Rola:</strong> @UserDto.Role</p>
             </div>
         </div>
@@ -31,14 +30,14 @@ else
             <EditForm Model="@ChangePasswordDto" OnValidSubmit="ChangePasswordAsync">
                 <DataAnnotationsValidator />
 
-                <div class="form-group">
-                    <label>Stare hasło:</label>
+                <div class="form-group margin-top-15">
+                    <label class="input-label">Stare hasło:</label>
                     <InputText @bind-Value="ChangePasswordDto.OldPassword" type="password" class="form-control" />
                     <ValidationMessage For="@(() => ChangePasswordDto.OldPassword)" />
                 </div>
 
                 <div class="form-group">
-                    <label>Nowe hasło:</label>
+                    <label class="input-label">Nowe hasło:</label>
                     <InputText @bind-Value="ChangePasswordDto.NewPassword" type="password" class="form-control" />
                     <ValidationMessage For="@(() => ChangePasswordDto.NewPassword)" />
                 </div>
@@ -47,8 +46,8 @@ else
                     <p class="error-message">@errorMessage</p>
                 }
 
-                <div class="btn-container">
-                <button type="submit" class="btn btn-primary">Zmień hasło</button>
+                <div class="btn-section">
+                <button type="submit" class="btn-primary">Zmień hasło</button>
                 </div>
             </EditForm>
         </div>

@@ -8,8 +8,8 @@
 
 @page "/zlecenie/edycja"
 <div class="background">
-<h3 class="title-text">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
-<div class="form-card">
+<h3 class="header">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
+<div class="card-container">
 @if (IsBusy)
         {
             <div class="spinner-border text-danger" role="status">
@@ -31,15 +31,17 @@
                             <InputFile hidden OnChange="HandlePDFUpload" accept=".pdf,application/pdf" />
                         </label>
                     </div>
-
+                    @if (OrderDto.PDFUrl != null)
+                    {
                     <div class="file-list">
                         <div class="file-item">
                             <button class="download-btn" @onclick="() => DownloadFile(OrderDto.PDFUrl)">@OrderDto.PDFUrl</button>
                         </div>
                     </div>
+                    }
 
 
-                    <div class="file-upload-container">
+                    <div class="file-upload-container margin-top-15">
                         <span class="file-label">CMR</span>
                         <label class="file-upload-btn">
                             Dodaj plik
@@ -107,12 +109,12 @@
 
                     <div class="horizontal-group">
                         <div class="horizontal-group-element">
-                            <label class="horizontal-input-label">Data załadunku</label>
+                            <label class="input-label">Data załadunku</label>
                         <InputDate @bind-Value="OrderDto.LoadingDate" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.LoadingDate)" class="custom-error" />
                         </div>
                         <div class="horizontal-group-element">
-                            <label class="horizontal-input-label">Data rozładunku</label>
+                            <label class="input-label">Data rozładunku</label>
                         <InputDate @bind-Value="OrderDto.UnloadingDate" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.UnloadingDate)" class="custom-error" />
                         </div>
@@ -138,12 +140,12 @@
 
                     <div class="horizontal-group">
                         <div class="horizontal-group-element">
-                            <label class="horizontal-input-label">Kwota</label>
+                            <label class="input-label">Kwota</label>
                         <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.Price)" class="custom-error" />
                         </div>
                         <div class="horizontal-group-element">
-                            <label class="horizontal-input-label">Dni do płatności</label>
+                            <label class="input-label">Dni do płatności</label>
                         <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.PaymentDeadline)" class="custom-error" />
                         </div>
@@ -163,7 +165,7 @@
                 </div>
 
                 <div class="button-container">
-                <button type="submit" class="btn-submit">Zapisz</button>
+                <button type="submit" class="btn-primary">Zapisz</button>
                 </div>
             </EditForm>
         }

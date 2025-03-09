@@ -9,17 +9,17 @@
 
 <PageTitle>Ostatnie zlecenia</PageTitle>
 
-<div class="header">
-    <h1>Ostatnie zlecenia</h1>
-    <div class="controls">
+<div class="header-section">
+    <h1 class="header">Ostatnie zlecenia</h1>
+    <div class="flex">
         <button class="refresh-button" @onclick="RefreshOrders" disabled="@IsBusy">
             <img src="images/icon_refresh.png" alt="Odśwież" />
         </button>
-        <button class="add-button" @onclick="AddOrder">Dodaj zlecenie</button>
+        <button class="btn-primary btn-small" @onclick="AddOrder">Dodaj zlecenie</button>
     </div>
 </div>
 
-<div class="orders-container">
+<div class="container-flex-column">
     @if (IsBusy)
     {
         <div class="spinner-border text-danger" role="status">
@@ -36,29 +36,29 @@
     {
         @foreach (var order in Orders)
         {
-            <div class="order-card" @onclick="() => ToggleOrder(order.InvoiceNumber)">
+            <div class="card-container container-flex" @onclick="() => ToggleOrder(order.InvoiceNumber)">
                 <div class="order-details">
-                    <h3>@order.CompanyName</h3>
-                    <div class="details-row">
-                        <p>@order.LoadingDate?.ToString("dd.MM.yyyy") • @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
-                        <p class="driver-info">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</p>
+                    <h3 class="text-large">@order.CompanyName</h3>
+                    <div class="container-flex-no-gap">
+                        <p class="text-small">@order.LoadingDate?.ToString("dd.MM.yyyy") • @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
+                        <p class="text-small"><strong>@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</strong></p>
                     </div>
                 </div>
 
                 @if (ExpandedOrderId == order.InvoiceNumber)
                 {
                     <div class="order-actions">
-                        <button class="details-button" @onclick="() => ViewOrderDetails(order)">
-                            <img src="Images/icon_neworder.png" alt="Details" class="button-image" />Szczegóły
+                        <button class="btn-secondary" @onclick="() => ViewOrderDetails(order)">
+                            <img src="Images/icon_neworder.png" alt="Details" class="btn-img" />Szczegóły
                         </button>
-                        <button class="edit-button" @onclick="() => EditOrder(order)">
-                            <img src="Images/icon_edit.png" alt="Edit" class="button-image"/>Edytuj
+                        <button class="btn-secondary" @onclick="() => EditOrder(order)">
+                            <img src="Images/icon_edit.png" alt="Edit" class="btn-img" />Edytuj
                             </button>
-                        <button class="invoice-button" @onclick="() => DownloadInvoice(order)">
-                            <img src="Images/icon_download.png" alt="Edit" class="button-image" />Faktura
+                        <button class="btn-secondary" @onclick="() => DownloadInvoice(order)">
+                            <img src="Images/icon_download.png" alt="Edit" class="btn-img" />Faktura
                         </button>
-                        <button class="delete-button" @onclick="() => DeleteOrder(order)">
-                            <img src="Images/icon_delete.png" alt="Edit" class="button-image" />Usuń
+                        <button class="btn-secondary btn-delete" @onclick="() => DeleteOrder(order)">
+                            <img src="Images/icon_delete.png" alt="Edit" class="btn-img" />Usuń
                         </button>
                     </div>
                 }
@@ -67,8 +67,8 @@
     }
 </div>
 
-<div class="show-more">
-    <button class="show-more-button" @onclick="ShowMoreOrders">Pokaż więcej</button>
+<div class="btn-section">
+    <button class="btn-primary" @onclick="ShowMoreOrders">Pokaż więcej</button>
 </div>
 
 @code {

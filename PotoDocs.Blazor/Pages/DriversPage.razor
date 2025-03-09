@@ -4,7 +4,7 @@
 @inject NavigationManager Navigation
 @inject IToastService toastService
 
-<h3 class="title-text">Kierowcy</h3>
+<h3 class="header">Kierowcy</h3>
 
 @if (IsBusy)
 {
@@ -14,15 +14,16 @@
 }
 else if (Users?.Count > 0)
 {
-    <div class="user-list">
+    <div class="container-flex-column margin-top-15">
         @foreach (var user in Users)
         {
-            <div class="user-card" @onclick="() => GoToEditUser(user)">
-                <img src="/Images//icon_user.png" class="user-icon"/>
-                <strong class="user-text">@user.FirstName @user.LastName</strong>
-                <button @onclick="() => DeleteUser(user)" class="btn-delete">
-                    <img src="/Images//icon_delete.png" class="delete-icon" />Usuń
+            <div class="card-container" @onclick="() => GoToEditUser(user)">
+                <div class="container-flex-no-gap">
+                <label class="text-small"><img src="/Images//icon_user.png" class="icon-img" />@user.FirstName @user.LastName</label>
+                <button @onclick="() => DeleteUser(user)" class="btn-primary btn-small btn-delete">
+                    <img src="/Images//icon_delete.png" class="btn-img" />Usuń
                 </button>
+                </div>
             </div>
         }
     </div>
@@ -33,8 +34,9 @@ else
         <p>Brak kierowców do wyświetlenia.</p>
     </div>
 }
-
-<button class="btn-add" @onclick="GoToNewUser" disabled="@IsBusy">Dodaj nowego kierowcę</button>
+<div class="btn-section">
+    <button class="btn-primary" @onclick="GoToNewUser" disabled="@IsBusy">Dodaj kierowcę</button>
+</div>
 
 @code {
     private bool IsBusy { get; set; } = false;
