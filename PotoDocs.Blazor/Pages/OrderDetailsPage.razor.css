@@ -17,29 +17,6 @@
         text-align: right;
     }
 
-    .detail-item a {
-        color: #007bff;
-        text-decoration: none;
-        display: inline-block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: middle;
-    }
-
-@media (max-width: 940px) {
-    .detail-item a {
-        max-width: 200px;
-    }
-}
-
-    @media (max-width: 380px) {
-        .detail-item a {
-            max-width: 130px;
-        }
-    }
-
-
 .detail-item a:hover {
     text-decoration: underline;
 }
@@ -47,17 +24,5 @@
 .cmr-upload-section {
     display: flex;
     justify-content: center;
+    margin-bottom: 20px;
 }
-.download-btn {
-    background: none;
-    border: none;
-    color: #007bff;
-    cursor: pointer;
-    font-size: inherit;
-    font-family: inherit;
-    padding: 0;
-}
-
-    .download-btn:hover {
-        text-decoration: underline;
-    }

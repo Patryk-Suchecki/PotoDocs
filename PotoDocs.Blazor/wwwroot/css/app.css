@@ -160,6 +160,32 @@ a, .btn-link {
     gap: 10px;
 }
 
+.download-btn {
+    color: #007bff;
+    text-decoration: none;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    background: none;
+    border: none;
+}
+
+@media (max-width: 940px) {
+    .download-btn {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 380px) {
+    .download-btn {
+        max-width: 130px;
+    }
+}
+
+
+
 /* Input field */
 .form-group {
     margin-bottom: 16px;
