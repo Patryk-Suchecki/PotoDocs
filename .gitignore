@@ -366,3 +366,5 @@ FodyWeavers.xsd
 /PotoDocs.API/PotoDocs.API/appsettings.Development.json
 /PotoDocs/PotoDocs/AppConstants.cs
 /PotoDocs.API/PotoDocs.API/wwwroot/pdfs
+/PotoDocs.Blazor/wwwroot/appsettings.Production.json
+/PotoDocs.API/PotoDocs.API/appsettings.Production.json
