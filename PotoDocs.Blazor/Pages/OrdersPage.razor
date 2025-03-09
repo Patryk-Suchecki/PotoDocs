@@ -46,10 +46,21 @@
                 }
                 else
                 {
-                    @foreach (var order in Orders)
+                    string lastMonthYear = null;
+
+                    @foreach (var order in Orders.OrderByDescending(o => o.LoadingDate))
                     {
+                        string currentMonthYear = order.LoadingDate?.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
                         bool isExpanded = ExpandedOrderId == order.InvoiceNumber;
                         string rowClass = isExpanded ? "order-item selected-row" : "order-item";
+
+                        if (currentMonthYear != lastMonthYear)
+                        {
+                            lastMonthYear = currentMonthYear;
+                            <tr class="month-header">
+                                <td colspan="4">@currentMonthYear</td>
+                            </tr>
+                        }
 
                         <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.InvoiceNumber)">
                             <td class="company-name-text">@order.CompanyName</td>

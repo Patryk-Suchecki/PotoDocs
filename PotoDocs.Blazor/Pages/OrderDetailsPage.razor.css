@@ -17,12 +17,3 @@
         text-align: right;
     }
 
-.detail-item a:hover {
-    text-decoration: underline;
-}
-
-.cmr-upload-section {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
