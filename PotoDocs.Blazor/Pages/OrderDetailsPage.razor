@@ -3,104 +3,107 @@
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
 @inject IToastService toastService
+@inject IBlazorDownloadFileService BlazorDownloadFileService
 
 <h3 class="header">Szczegóły zlecenia</h3>
 <div class="card-container">
+    @if (IsBusy)
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
+}
+else
+{
     <div class="detail-item">
         <label>PDF:</label>
         @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
         {
-            <a href="@OrderDto.PDFUrl" target="_blank">Pobierz PDF</a>
+            <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl, "ORDER"))">Pobierz PDF</button>
         }
     </div>
 
-    <div class="detail-item">
-        <label>CMR:</label>
-        @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
-        {
-            <ul>
-                @foreach (var file in OrderDto.CMRFiles)
-                {
-                    <li><a href="#">@file</a></li>
-                }
-            </ul>
-        }
-    </div>
-    <div class="detail-item">
-        <label>Numer faktury:</label>
-        <span>@OrderDto.InvoiceNumber</span>
-    </div>
+        <div class="detail-item">
+            <label>CMR:</label>
+            @if (OrderDto.CMRFiles != null && OrderDto.CMRFiles.Any())
+            {
+                <ul>
+                    @foreach (var file in OrderDto.CMRFiles)
+                    {
+                        <li><button class="download-btn" @onclick="@(() => DownloadFile(file, "CMR"))">@file</button></li>
+                    }
+                </ul>
+            }
+        </div>
+        <div class="detail-item">
+            <label>Numer faktury:</label>
+            <span>@OrderDto.InvoiceNumber</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Data wystawienia faktury:</label>
-        <span>@OrderDto.InvoiceIssueDate.ToString("dd.MM.yyyy")</span>
-    </div>
+        <div class="detail-item">
+            <label>Data wystawienia faktury:</label>
+            <span>@OrderDto.InvoiceIssueDate.ToString("dd.MM.yyyy")</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Kierowca:</label>
-        <span>@OrderDto.Driver?.FirstAndLastName</span>
-    </div>
+        <div class="detail-item">
+            <label>Kierowca:</label>
+            <span>@OrderDto.Driver?.FirstAndLastName</span>
+        </div>
 
-    <div class="detail-item">
-        <label>NIP firmy:</label>
-        <span>@OrderDto.CompanyNIP</span>
-    </div>
+        <div class="detail-item">
+            <label>NIP firmy:</label>
+            <span>@OrderDto.CompanyNIP</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Nazwa firmy:</label>
-        <span>@OrderDto.CompanyName</span>
-    </div>
+        <div class="detail-item">
+            <label>Nazwa firmy:</label>
+            <span>@OrderDto.CompanyName</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Adres firmy:</label>
-        <span>@OrderDto.CompanyAddress</span>
-    </div>
+        <div class="detail-item">
+            <label>Adres firmy:</label>
+            <span>@OrderDto.CompanyAddress</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Termin płatności:</label>
-        <span>@OrderDto.PaymentDeadline dni</span>
-    </div>
+        <div class="detail-item">
+            <label>Termin płatności:</label>
+            <span>@OrderDto.PaymentDeadline dni</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Kwota:</label>
-        <span>@OrderDto.Price PLN</span>
-    </div>
+        <div class="detail-item">
+            <label>Kwota:</label>
+            <span>@OrderDto.Price PLN</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Płatność:</label>
-        <span>@(OrderDto.HasPaid == true ? "Dokonano" : "Nie dokonano") </span>
-    </div>
-    <div class="detail-item">
-        <label>Data załadunku:</label>
-        <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span>
-    </div>
+        <div class="detail-item">
+            <label>Płatność:</label>
+            <span>@(OrderDto.HasPaid == true ? "Dokonano" : "Nie dokonano") </span>
+        </div>
+        <div class="detail-item">
+            <label>Data załadunku:</label>
+            <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Data rozładunku:</label>
-        <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span>
-    </div>
+        <div class="detail-item">
+            <label>Data rozładunku:</label>
+            <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span>
+        </div>
 
-    <div class="detail-item">
-        <label>Uwagi:</label>
-        <span>@OrderDto.CompanyOrderNumber</span>
-    </div>
-    <div class="detail-item">
-        <label>Status:</label>
-        <td class="status-text @(OrderDto.HasPaid == true ? "status-paid" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(OrderDto.HasPaid == true ? "Zapłacono" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
-    </div>
-    
-
-
+        <div class="detail-item">
+            <label>Uwagi:</label>
+            <span>@OrderDto.CompanyOrderNumber</span>
+        </div>
+        <div class="detail-item">
+            <label>Status:</label>
+            <td class="status-text @(OrderDto.HasPaid == true ? "status-paid" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(OrderDto.HasPaid == true ? "Zapłacono" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
+        </div>
+    }
 </div>
 <div class="cmr-upload-section">
     <label class="btn-primary">
         <InputFile hidden OnChange="HandleCMRUpload" multiple accept=".pdf,application/pdf" />
         Dodaj CMR
     </label>
-    @if (IsUploading)
-    {
-        <div class="loading-spinner">Ładowanie...</div>
-    }
 </div>
 
 @code {
@@ -108,7 +111,6 @@
     [SupplyParameterFromQuery]
     public string Order { get; set; }
     private OrderDto OrderDto { get; set; } = new();
-    private bool IsUploading { get; set; } = false;
     private long maxFileSize = 5 * 1024 * 1024;
     private bool IsBusy { get; set; } = false;
 
@@ -165,13 +167,34 @@
         {
             IsBusy = true;
             await OrderService.UploadCMR(filesData, OrderDto.InvoiceNumber);
-
+            OrderDto = await OrderService.GetById(OrderDto.InvoiceNumber);
 
             toastService.ShowSuccess("Wysłano pliki CMR.");
         }
         catch (Exception ex)
         {
             toastService.ShowError($"Błąd: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+    private async Task DownloadFile(string fileName, string fileType)
+    {
+        try
+        {
+            IsBusy = true;
+            string name = OrderService.FormatInvoiceNumber(OrderDto.InvoiceNumber, fileType);
+            var fileBytes = await OrderService.DownloadFile(OrderDto.InvoiceNumber, fileName);
+
+            await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
+
+            toastService.ShowSuccess($"Pobrano {name}");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Błąd podczas pobierania faktury: {ex.Message}");
         }
         finally
         {

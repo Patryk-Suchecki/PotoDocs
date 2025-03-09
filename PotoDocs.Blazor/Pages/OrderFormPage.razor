@@ -283,7 +283,7 @@
         {
             IsBusy = true;
             await OrderService.UploadCMR(filesData, InvoiceNumber);
-
+            OrderDto = await OrderService.GetById(InvoiceNumber);
 
             toastService.ShowSuccess("Wysłano pliki CMR.");
         }

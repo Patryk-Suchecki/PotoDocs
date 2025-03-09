@@ -47,6 +47,17 @@
 .cmr-upload-section {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
 }
+.download-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+}
+
+    .download-btn:hover {
+        text-decoration: underline;
+    }
