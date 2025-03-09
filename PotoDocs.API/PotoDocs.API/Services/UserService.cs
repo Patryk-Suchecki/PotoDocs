@@ -40,21 +40,23 @@ public class UserService : IUserService
         {
             return ApiResponse<string>.Failure($"Rola '{dto.Role}' nie istnieje.", HttpStatusCode.BadRequest);
         }
+
         var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
         if (user == null)
         {
             user = _mapper.Map<User>(dto);
             string randomPassword = GenerateRandomPassword(12);
-            _emailService.SendEmail(dto.Email, "Rejestracja PotoDocs", $"Witaj, Twoje dane do logowania to:\nEmail: {dto.Email}\nHasło: {randomPassword}", $@"
-            <html>
-                <body>
-                    <h1>Witaj!</h1>
-                    <p>Twoje dane do logowania:</p>
-                    <p><b>Email:</b> {dto.Email}</p>
-                    <p><b>Hasło:</b> {randomPassword}</p>
-                    <p>Prosimy o zachowanie tych informacji w bezpiecznym miejscu.</p>
-                </body>
-            </html>");
+
+            var placeholders = new Dictionary<string, string>
+        {
+            { "email", dto.Email },
+            { "password", randomPassword }
+        };
+
+            string emailBody = LoadEmailTemplate("welcome.html", placeholders);
+
+            _emailService.SendEmail(dto.Email, "Rejestracja PotoDocs", "Twoje dane do logowania", emailBody);
+
             var hashedPassword = _hasher.HashPassword(user, randomPassword);
             user.PasswordHash = hashedPassword;
             _context.Users.Add(user);
@@ -63,10 +65,13 @@ public class UserService : IUserService
         {
             _mapper.Map(dto, user);
         }
+
         user.Role = role;
         _context.SaveChanges();
+
         return ApiResponse<string>.Success(HttpStatusCode.Created);
     }
+
 
     public string GenerateRandomPassword(int length)
     {
@@ -106,22 +111,26 @@ public class UserService : IUserService
         {
             return ApiResponse<string>.Failure($"Nie znaleziono użytkownika", HttpStatusCode.BadRequest);
         }
+
         string randomPassword = GenerateRandomPassword(12);
-        _emailService.SendEmail(email, "Rejestracja PotoDocs", $"Witaj, Twoje dane do logowania to:\nEmail: {email}\nHasło: {randomPassword}", $@"
-        <html>
-            <body>
-                <h1>Witaj!</h1>
-                <p>Twoje dane do logowania:</p>
-                <p><b>Email:</b> {email}</p>
-                <p><b>Hasło:</b> {randomPassword}</p>
-                <p>Prosimy o zachowanie tych informacji w bezpiecznym miejscu.</p>
-            </body>
-        </html>");
+
+        var placeholders = new Dictionary<string, string>
+    {
+        { "email", email },
+        { "password", randomPassword }
+    };
+
+        string emailBody = LoadEmailTemplate("reset-password.html", placeholders);
+
+        _emailService.SendEmail(email, "Resetowanie hasła", "Twoje nowe hasło", emailBody);
+
         var newPasswordHash = _hasher.HashPassword(user, randomPassword);
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();
+
         return ApiResponse<string>.Success(HttpStatusCode.OK);
     }
+
     public ApiResponse<List<UserDto>> GetAll()
     {
         var users = _context.Users.Include(u => u.Role).ToList();
@@ -147,5 +156,24 @@ public class UserService : IUserService
         _context.Users.Remove(user);
         _context.SaveChanges();
     }
+    private string LoadEmailTemplate(string templateName, Dictionary<string, string> placeholders)
+    {
+        string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "emails", templateName);
+
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"Nie znaleziono szablonu e-maila: {filePath}");
+        }
+
+        string templateContent = File.ReadAllText(filePath);
+
+        foreach (var placeholder in placeholders)
+        {
+            templateContent = templateContent.Replace($"{{{placeholder.Key}}}", placeholder.Value);
+        }
+
+        return templateContent;
+    }
+
 }
 

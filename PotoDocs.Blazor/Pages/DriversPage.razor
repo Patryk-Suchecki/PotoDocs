@@ -18,10 +18,10 @@ else if (Users?.Count > 0)
         @foreach (var user in Users)
         {
             <div class="user-card" @onclick="() => GoToEditUser(user)">
-                <img src="/Images//icon_user.png" class="user-icon"/>
+                <img src="images/icon_user.png" class="user-icon" />
                 <strong class="user-text">@user.FirstName @user.LastName</strong>
                 <button @onclick="() => DeleteUser(user)" class="btn-delete">
-                    <img src="/Images//icon_delete.png" class="delete-icon" />Usuń
+                    <img src="images/icon_delete.png" class="delete-icon" />Usuń
                 </button>
             </div>
         }

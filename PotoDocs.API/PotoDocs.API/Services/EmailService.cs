@@ -40,11 +40,9 @@ public class EmailService : IEmailService
         try
         {
             EmailSendOperation emailSendOperation = _emailClient.Send(WaitUntil.Completed, emailMessage);
-            Console.WriteLine($"Email sent successfully to {toEmail}. MessageId: {emailSendOperation.Id}");
         }
         catch (RequestFailedException ex)
         {
-            Console.WriteLine($"Failed to send email: {ex.Message}");
             throw;
         }
     }

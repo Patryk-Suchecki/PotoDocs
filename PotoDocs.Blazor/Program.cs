@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using BlazorDownloadFile;
 using Blazored.LocalStorage;
@@ -32,7 +31,7 @@ using var httpClient = new HttpClient { BaseAddress = new Uri(builder.HostEnviro
 
 // 1️⃣ Pobranie ustawień konfiguracyjnych
 var env = builder.HostEnvironment.Environment;
-var configFile = env == "Production" ? "appsettings.Production.json" : "appsettings.json";
+var configFile = env == "Development" ? "appsettings.Development.json" : "appsettings.json";
 
 // Pobranie konfiguracji z odpowiedniego pliku
 var configResponse = await httpClient.GetFromJsonAsync<Dictionary<string, object>>(configFile);

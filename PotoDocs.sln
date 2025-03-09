@@ -5,11 +5,11 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs.Shared", "PotoDocs.Shared\PotoDocs.Shared.csproj", "{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs.API", "PotoDocs.API\PotoDocs.API\PotoDocs.API.csproj", "{D2638BE3-22E3-481A-80FB-C9DD3BB60037}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotoDocs", "PotoDocs\PotoDocs\PotoDocs.csproj", "{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PotoDocs.Blazor", "PotoDocs.Blazor\PotoDocs.Blazor.csproj", "{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PotoDocs.API", "PotoDocs.API\PotoDocs.API\PotoDocs.API.csproj", "{7AEC85F8-40E3-4A6B-B854-7D6B2CD283DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,6 @@ Global
 		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79CC3753-4FE2-49A6-B8C0-516CE3A0AEEA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2638BE3-22E3-481A-80FB-C9DD3BB60037}.Release|Any CPU.Build.0 = Release|Any CPU
 		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39B1A0EC-8517-47C3-9CBF-166F4AE73EBC}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94485A68-9864-47E6-B65C-0CAFAFCAFBB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AEC85F8-40E3-4A6B-B854-7D6B2CD283DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AEC85F8-40E3-4A6B-B854-7D6B2CD283DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AEC85F8-40E3-4A6B-B854-7D6B2CD283DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AEC85F8-40E3-4A6B-B854-7D6B2CD283DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
