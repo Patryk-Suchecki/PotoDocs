@@ -6,22 +6,22 @@
 @inject IBlazorDownloadFileService BlazorDownloadFileService
 
 <h3 class="header">Szczegóły zlecenia</h3>
-<div class="details-container">
+<div class="card-container">
     @if (IsBusy)
-    {
-        <div class="spinner-border text-danger" role="status">
-            <span class="visually-hidden">Ładowanie...</span>
-        </div>
-    }
-    else
-    {
-        <div class="detail-item">
-            <label>PDF:</label>
-            @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
-            {
-                <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl, "ORDER"))">Pobierz PDF</button>
-            }
-        </div>
+{
+    <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
+    </div>
+}
+else
+{
+    <div class="detail-item">
+        <label>PDF:</label>
+        @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
+        {
+            <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl, "ORDER"))">Pobierz PDF</button>
+        }
+    </div>
 
         <div class="detail-item">
             <label>CMR:</label>
@@ -99,8 +99,8 @@
         </div>
     }
 </div>
-<div class="cmr-upload-section">
-    <label class="file-upload-btn">
+<div class="btn-container-flex margin-bottom-15">
+    <label class="btn-primary">
         <InputFile hidden OnChange="HandleCMRUpload" multiple accept=".pdf,application/pdf" />
         Dodaj CMR
     </label>

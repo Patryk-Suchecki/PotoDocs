@@ -9,8 +9,8 @@
 <PageTitle>Wszystkie zlecenia</PageTitle>
 
 <div class="orders-container">
-    <div class="header">
-        <h2>Wszystkie zlecenia</h2>
+    <div class="header-section">
+        <h2 class="header">Wszystkie zlecenia</h2>
         <div class="controls">
             <button class="refresh-button" @onclick="GetAllOrders" disabled="@IsBusy">
                 <img src="images/icon_refresh.png" alt="Odśwież" />
@@ -46,18 +46,26 @@
                 }
                 else
                 {
-                    @foreach (var order in Orders)
+                    string lastMonthYear = null;
+
+                    @foreach (var order in Orders.OrderByDescending(o => o.LoadingDate))
                     {
+                        string currentMonthYear = order.LoadingDate?.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
                         bool isExpanded = ExpandedOrderId == order.InvoiceNumber;
                         string rowClass = isExpanded ? "order-item selected-row" : "order-item";
+
+                        if (currentMonthYear != lastMonthYear)
+                        {
+                            lastMonthYear = currentMonthYear;
+                            <tr class="month-header">
+                                <td colspan="4">@currentMonthYear</td>
+                            </tr>
+                        }
 
                         <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.InvoiceNumber)">
                             <td class="company-name-text">@order.CompanyName</td>
                             <td class="driver-text">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</td>
                             <td class="date-text">@(order.LoadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</td>
-
-                            @* TUTAJ STATUS *@
-
                             <td class="status-text @(order.HasPaid == true ? "status-paid" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(order.HasPaid == true ? "Zapłacono" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
                         </tr>
                         @if (isExpanded)
@@ -65,17 +73,17 @@
                             <tr>
                                 <td colspan="4">
                                     <div class="order-actions">
-                                        <button class="details-button" @onclick="() => ViewOrderDetails(order)">
-                                            <img src="images/icon_neworder.png" alt="Details" class="button-image" />Szczegóły
+                                        <button class="btn-secondary" @onclick="() => ViewOrderDetails(order)">
+                                            <img src="images/icon_neworder.png" alt="Details" class="btn-img" />Szczegóły
                                         </button>
-                                        <button class="edit-button" @onclick="() => EditOrder(order)">
-                                            <img src="images/icon_edit.png" alt="Edit" class="button-image" />Edytuj
+                                        <button class="btn-secondary" @onclick="() => EditOrder(order)">
+                                            <img src="images/icon_edit.png" alt="Edit" class="btn-img" />Edytuj
                                         </button>
-                                        <button class="invoice-button" @onclick="() => DownloadInvoice(order)">
-                                            <img src="images/icon_download.png" alt="Download" class="button-image" />Faktura
+                                        <button class="btn-secondary" @onclick="() => DownloadInvoice(order)">
+                                            <img src="images/icon_download.png" alt="Download" class="btn-img" />Faktura
                                         </button>
-                                        <button class="delete-button" @onclick="() => DeleteOrder(order)">
-                                            <img src="images/icon_delete.png" alt="Delete" class="button-image" />Usuń
+                                        <button class="btn-secondary btn-delete" @onclick="() => DeleteOrder(order)">
+                                            <img src="images/icon_delete.png" alt="Delete" class="btn-img" />Usuń
                                         </button>
                                     </div>
                                 </td>
@@ -87,7 +95,7 @@
         </table>
     }
     <div class="load-more-container">
-        <button @onclick="ShowMoreOrders" class="load-more-button">Pokaż więcej</button>
+        <button @onclick="ShowMoreOrders" class="btn-primary">Pokaż więcej</button>
     </div>
 </div>
 

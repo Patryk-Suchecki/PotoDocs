@@ -4,7 +4,7 @@
 @inject IToastService toastService
 @inject IBlazorDownloadFileService BlazorDownloadFileService
 
-<h3 class="title-text">Pobieranie</h3>
+<h3 class="header">Pobieranie</h3>
 
 @if (IsBusy)
 {
@@ -14,12 +14,12 @@
 }
 else
 {
-    <EditForm EditContext="@editContext" OnValidSubmit="GetOrdersAsync" class="form-container">
+    <EditForm EditContext="@editContext" OnValidSubmit="GetOrdersAsync" class="card-container">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="form-group">
-            <label>Rok</label>
+            <label class="input-label">Rok</label>
             <select class="form-control" @bind="SelectedYear">
                 @foreach (var year in AvailableYears.Keys)
                 {
@@ -29,7 +29,7 @@ else
         </div>
 
         <div class="form-group">
-            <label>Miesiąc</label>
+            <label class="input-label">Miesiąc</label>
             <select class="form-control" @bind="SelectedMonth" disabled="@(AvailableMonths.Count == 0)">
                 @foreach (var month in AvailableMonths)
                 {
@@ -38,8 +38,8 @@ else
             </select>
         </div>
 
-        <div class="btn-container">
-        <button type="submit" class="btn-submit" disabled="@IsButtonDisabled">
+        <div class="btn-section">
+        <button type="submit" class="btn-primary" disabled="@IsButtonDisabled">
             Pobierz zlecenia
         </button>
         </div>

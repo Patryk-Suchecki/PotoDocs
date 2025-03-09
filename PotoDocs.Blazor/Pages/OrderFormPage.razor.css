@@ -1,6 +1,6 @@
-﻿.background { /* Umożliwia pozycjonowanie względem okna przeglądarki */
-    height: 100%; /* Wysokość równa wysokości viewportu */
-    background: linear-gradient(90deg, #CA0000, #640000); /* Zmień kolor tła według potrzeb */
+﻿.background {
+    height: 100%;
+    background: linear-gradient(90deg, #CA0000, #640000);
     position: fixed;
     top: 0;
     bottom: 0;
@@ -10,9 +10,9 @@
 }
 
 @media (max-width: 640px) {
-    .background { /* Umożliwia pozycjonowanie względem okna przeglądarki */
-        height: 100%; /* Wysokość równa wysokości viewportu */
-        background: linear-gradient(180deg, #CA0000, #640000); /* Zmień kolor tła według potrzeb */
+    .background {
+        height: 100%;
+        background: linear-gradient(180deg, #CA0000, #640000);
         position: fixed;
         top: 40px;
         bottom: 0;
@@ -23,14 +23,6 @@
     }
 }
 
-.form-card {
-    background: white;
-    padding: 15px;
-    margin: 22px;
-    border-radius: 20px;
-    margin-bottom: 50px;
-}
-
 .button-container {
     margin-top: 30px;
     display: flex;
@@ -38,11 +30,9 @@
     width: 100%;
 }
 
-.title-text {
+.header {
     padding: 26px;
     padding-bottom: 0px;
-    font-weight: 500;
-    font-size: 28px;
     color: white;
 }
 
@@ -81,34 +71,6 @@
 
 .file-title {
     font-size: 16px;
-}
-
-.input-label {
-    position: absolute;
-    margin-left: 10px;
-    margin-top: -13px;
-    font-size: 14px;
-    color: #8C0000;
-    background-color: white;
-    padding: 2px;
-}
-
-.horizontal-input-label {
-    position: absolute;
-    margin-left: 10px;
-    margin-top: -13px;
-    font-size: 14px;
-    color: #8C0000;
-    background-color: white;
-    padding: 2px;
-}
-
-.form-control {
-    background-color: red; 
-}
-
-.form-group {
-    margin-bottom: 16px;
 }
 
 .horizontal-group-element {
@@ -155,39 +117,23 @@
         background-color: #CC0000;
     }
 
-.btn-submit {
-    background: linear-gradient(90deg, #8C0000, #BC0000);
-    color: white;
-    padding: 12px 40px;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    font-size: 20px;
-    font-family: Roboto;
-    font-weight: 500;
-    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
-    transition: box-shadow 0.2s ease-in-out;
-    width: 180px;
-    
-}
-
-    .btn-submit:hover {
-        background: linear-gradient(to right, #BC0000, #8C0000);
-    }
-
-
 .horizontal-group {
     display: flex;
-    justify-content: space-between; /* Rozdziela elementy równomiernie z zachowaniem odstępu na końcach */
-    margin-bottom: 16px; /* Odstęp poniżej grupy */
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 8px;
 }
 
+@media (max-width: 680px) {
+    .horizontal-group {
+        flex-direction: column;
+        gap: 16px;
+    }
 
-
-
-
-
-
+    .horizontal-group-element {
+        width: 100%;
+    }
+}
 
 .file-upload-container {
     display: flex;
@@ -268,8 +214,4 @@
 
     .download-btn:hover {
         color: darkblue;
-    }
-
-    .custom-error {
-        color: red;
     }

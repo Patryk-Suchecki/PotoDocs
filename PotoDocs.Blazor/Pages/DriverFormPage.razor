@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage
 
-<h3 class="title-text">@(PageTitle ?? "Nowy użytkownik")</h3>
+<h3 class="header">@(PageTitle ?? "Nowy użytkownik")</h3>
 
 @if (IsBusy)
 {
@@ -16,33 +16,33 @@
 }
 else
 {
-    <EditForm Model="@UserDto" OnValidSubmit="Save" class="form-container">
+    <EditForm Model="@UserDto" OnValidSubmit="Save" class="card-container">
         <DataAnnotationsValidator />
 
         <!-- Imię -->
-        <div class="form-group">
-            <label>Imię</label>
+        <div class="form-group margin-top-15">
+            <label class="input-label">Imię</label>
             <InputText @bind-Value="UserDto.FirstName" class="form-control" placeholder="Wprowadź imię" />
             <ValidationMessage For="@(() => UserDto.FirstName)" class="custom-error" />
         </div>
 
         <!-- Nazwisko -->
         <div class="form-group">
-            <label>Nazwisko</label>
+            <label class="input-label">Nazwisko</label>
             <InputText @bind-Value="UserDto.LastName" class="form-control" placeholder="Wprowadź nazwisko" />
             <ValidationMessage For="@(() => UserDto.LastName)" class="custom-error" />
         </div>
 
         <!-- E-mail -->
         <div class="form-group">
-            <label>E-mail</label>
+            <label class="input-label">E-mail</label>
             <InputText @bind-Value="UserDto.Email" class="form-control" placeholder="Wprowadź E-mail" />
             <ValidationMessage For="@(() => UserDto.Email)" class="custom-error" />
         </div>
 
         <!-- Rola -->
         <div class="form-group">
-            <label>Rola</label>
+            <label class="input-label">Rola</label>
             <select @bind="SelectedRole" class="form-control">
                 <option value="">Wybierz rolę</option>
                 @foreach (var role in Roles)
@@ -54,9 +54,9 @@ else
         </div>
 
         <!-- Przyciski -->
-        <div class="btn-container">
-        <button type="button" class="btn btn-secondary" @onclick="GeneratePassword">Generuj hasło</button>
-        <button type="submit" class="btn btn-primary">Zapisz</button>
+        <div class="btn-container-flex">
+        <button type="button" class="btn-secondary" @onclick="GeneratePassword">Generuj hasło</button>
+        <button type="submit" class="btn-primary">Zapisz</button>
         </div>
 
     </EditForm>
