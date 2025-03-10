@@ -12,8 +12,7 @@
 <div class="header-section">
     <h1 class="header">Ostatnie zlecenia</h1>
     <div class="flex">
-        <button class="refresh-button" @onclick="RefreshOrders" disabled="@IsBusy">
-            <img src="images/icon_refresh.png" alt="Odśwież" />
+        <button class="refresh-button bi-icon-refresh" @onclick="RefreshOrders" disabled="@IsBusy">
         </button>
         <button class="btn-primary btn-small" @onclick="AddOrder">Dodaj zlecenie</button>
     </div>
@@ -49,16 +48,16 @@
                 {
                     <div class="order-actions">
                         <button class="btn-secondary" @onclick="() => ViewOrderDetails(order)">
-                            <img src="images/icon_neworder.png" alt="Details" class="btn-img" />Szczegóły
+                            <span alt="Details" class="bi-icon-add-order" />Szczegóły
                         </button>
                         <button class="btn-secondary" @onclick="() => EditOrder(order)">
-                            <img src="images/icon_edit.png" alt="Edit" class="btn-img" />Edytuj
+                            <span alt="Edit" class="bi-icon-edit" />Edytuj
                             </button>
                         <button class="btn-secondary" @onclick="() => DownloadInvoice(order)">
-                            <img src="images/icon_download.png" alt="Edit" class="btn-img" />Faktura
+                            <span alt="Download" class="bi-icon-download" />Faktura
                         </button>
                         <button class="btn-secondary btn-delete" @onclick="() => DeleteOrder(order)">
-                            <img src="images/icon_delete.png" alt="Edit" class="btn-img" />Usuń
+                            <span alt="Delete" class="bi-icon-delete" />Usuń
                         </button>
                     </div>
                 }

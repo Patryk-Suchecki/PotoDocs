@@ -19,9 +19,9 @@ else if (Users?.Count > 0)
         {
             <div class="card-container margin-bottom--15" @onclick="() => GoToEditUser(user)">
                 <div class="container-flex-no-gap">
-                <label class="text-small"><img src="images/icon_user.png" class="icon-img" />@user.FirstName @user.LastName</label>
+                <label class="text-small"><span class="bi-icon-user bi-margin"/>@user.FirstName @user.LastName</label>
                 <button @onclick="() => DeleteUser(user)" class="btn-primary btn-small btn-delete">
-                    <img src="images/icon_delete.png" class="btn-img" />Usuń
+                    <span class="bi-icon-delete" />Usuń
                 </button>
                 </div>
             </div>
