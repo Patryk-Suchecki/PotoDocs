@@ -17,7 +17,7 @@ else if (Users?.Count > 0)
     <div class="container-flex-column margin-top-15">
         @foreach (var user in Users)
         {
-            <div class="card-container" @onclick="() => GoToEditUser(user)">
+            <div class="card-container margin-bottom--15" @onclick="() => GoToEditUser(user)">
                 <div class="container-flex-no-gap">
                 <label class="text-small"><img src="images/icon_user.png" class="icon-img" />@user.FirstName @user.LastName</label>
                 <button @onclick="() => DeleteUser(user)" class="btn-primary btn-small btn-delete">

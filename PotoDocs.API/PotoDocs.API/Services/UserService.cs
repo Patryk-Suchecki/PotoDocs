@@ -50,12 +50,14 @@ public class UserService : IUserService
             var placeholders = new Dictionary<string, string>
         {
             { "email", dto.Email },
-            { "password", randomPassword }
+            { "password", randomPassword },
+            {"name", dto.FirstName },
+            { "lastname", dto.LastName }
         };
 
             string emailBody = LoadEmailTemplate("welcome.html", placeholders);
 
-            _emailService.SendEmail(dto.Email, "Rejestracja PotoDocs", "Twoje dane do logowania", emailBody);
+            _emailService.SendEmail(dto.Email, "Witaj w PotoDocs 🚚", "Twoje dane do logowania", emailBody);
 
             var hashedPassword = _hasher.HashPassword(user, randomPassword);
             user.PasswordHash = hashedPassword;
@@ -100,6 +102,19 @@ public class UserService : IUserService
             return ApiResponse<string>.Failure("Nieprawidłowe hasło", HttpStatusCode.Unauthorized);
         }
         var newPasswordHash = _hasher.HashPassword(user, dto.NewPassword);
+
+        var placeholders = new Dictionary<string, string>
+    {
+        { "email", user.Email },
+        { "password", dto.NewPassword },
+        { "name", user.FirstName },
+        { "lastname", user.LastName }
+    };
+
+        string emailBody = LoadEmailTemplate("reset-password.html", placeholders);
+
+        _emailService.SendEmail(user.Email, "Resetowanie hasła", "Twoje nowe hasło", emailBody);
+
         user.PasswordHash = newPasswordHash;
         _context.SaveChanges();
         return ApiResponse<string>.Success(HttpStatusCode.OK);
@@ -113,16 +128,6 @@ public class UserService : IUserService
         }
 
         string randomPassword = GenerateRandomPassword(12);
-
-        var placeholders = new Dictionary<string, string>
-    {
-        { "email", email },
-        { "password", randomPassword }
-    };
-
-        string emailBody = LoadEmailTemplate("reset-password.html", placeholders);
-
-        _emailService.SendEmail(email, "Resetowanie hasła", "Twoje nowe hasło", emailBody);
 
         var newPasswordHash = _hasher.HashPassword(user, randomPassword);
         user.PasswordHash = newPasswordHash;
