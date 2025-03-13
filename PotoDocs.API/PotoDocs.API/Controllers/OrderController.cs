@@ -24,7 +24,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<OrderDto> GetById([FromRoute] int id)
+    public ActionResult<OrderDto> GetById([FromRoute] Guid id)
     {
         var response = _orderService.GetById(id);
         return StatusCode(response.StatusCode, response);
@@ -33,12 +33,12 @@ public class OrderController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<OrderDto>> Create([FromForm] IFormFile file)
     {
-        var response = await _orderService.ProcessAndCreateOrderFromPdf(file);
+        var response = await _orderService.CreateFromPdf(file);
         return StatusCode(response.StatusCode, response);
     }
 
     [HttpPut("{id}")]
-    public ActionResult Update([FromBody] OrderDto dto, [FromRoute] int id)
+    public ActionResult Update([FromBody] OrderDto dto, [FromRoute] Guid id)
     {
         if (!ModelState.IsValid)
         {
@@ -49,7 +49,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete([FromRoute] int id)
+    public ActionResult Delete([FromRoute] Guid id)
     {
         _orderService.Delete(id);
         return NoContent();

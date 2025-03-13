@@ -86,56 +86,97 @@
 
                     <div class="form-group">
                         <label class="input-label">Nazwa firmy</label>
-                        <InputText @bind-Value="OrderDto.CompanyName" placeholder="Nazwa firmy" class="form-control" />
-                        <ValidationMessage For="@(() => OrderDto.CompanyName)" class="custom-error" />
+                        <InputText @bind-Value="OrderDto.Company.Name" placeholder="Nazwa firmy" class="form-control" />
+                        <ValidationMessage For="@(() => OrderDto.Company.Name)" class="custom-error" />
                     </div>
 
                     <div class="form-group">
                         <label class="input-label">NIP</label>
-                        <InputText @bind-Value="OrderDto.CompanyNIP" placeholder="NIP" class="form-control" />
-                        <ValidationMessage For="@(() => OrderDto.CompanyNIP)" class="custom-error" />
+                        <InputText @bind-Value="OrderDto.Company.NIP" placeholder="NIP" class="form-control" />
+                        <ValidationMessage For="@(() => OrderDto.Company.NIP)" class="custom-error" />
                     </div>
 
                     <div class="form-group">
                         <label class="input-label">Adres firmy</label>
-                        <InputText @bind-Value="OrderDto.CompanyAddress" placeholder="Adres firmy" class="form-control" />
-                        <ValidationMessage For="@(() => OrderDto.CompanyAddress)" class="custom-error" />
+                        <InputText @bind-Value="OrderDto.Company.Address" placeholder="Adres firmy" class="form-control" />
+                        <ValidationMessage For="@(() => OrderDto.Company.Address)" class="custom-error" />
                     </div>
                 </div>
 
                 <!-- Informacje dodatkowe -->
                 <div class="section">
                     <label class="section-title">Informacje dodatkowe</label>
+                            @if (OrderDto?.Stops != null)
+                            {
 
-                    <div class="horizontal-group">
-                        <div class="horizontal-group-element">
-                            <label class="input-label">Data załadunku</label>
-                        <InputDate @bind-Value="OrderDto.LoadingDate" class="form-control" />
-                            <ValidationMessage For="@(() => OrderDto.LoadingDate)" class="custom-error" />
-                        </div>
-                        <div class="horizontal-group-element">
-                            <label class="input-label">Data rozładunku</label>
-                        <InputDate @bind-Value="OrderDto.UnloadingDate" class="form-control" />
-                            <ValidationMessage For="@(() => OrderDto.UnloadingDate)" class="custom-error" />
-                        </div>
-                    </div>
+                                @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Unloading).OrderByDescending(s => s.Date))
+                                {
+                                <div class="horizontal-group">
+                                <label class="input-label">Data załadunku</label>
+                                    <InputDate @bind-Value="stop.Date" class="form-control" />
+                                    <ValidationMessage For="@(() => stop.Date)" class="custom-error" />
+                                </div>
+                                }
+
+                                @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Loading).OrderByDescending(s => s.Date))
+                                {
+                                    <div class="horizontal-group-element">
+                                        <label class="input-label">Data rozładunku</label>
+                                        <InputDate @bind-Value="stop.Date" class="form-control" />
+                                        <ValidationMessage For="@(() => stop.Date)" class="custom-error" />
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p>Brak dostępnych przystanków.</p>
+                            }
+                        @*<div class="horizontal-group">*@
+                        @*<div class="horizontal-group-element">*@
+                        @*<label class="input-label">Data załadunku</label> *@
+                        @* <InputDate @bind-Value="OrderDto.LoadingDate" class="form-control" /> *@
+                        @*     <ValidationMessage For="@(() => OrderDto.LoadingDate)" class="custom-error" /> *@
+                        @* </div> *@
+                        @* <div class="horizontal-group-element"> *@
+                        @*     <label class="input-label">Data rozładunku</label> *@
+                        @* <InputDate @bind-Value="OrderDto.UnloadingDate" class="form-control" /> *@
+                        @*     <ValidationMessage For="@(() => OrderDto.UnloadingDate)" class="custom-error" /> *@
+                        @* </div> *@
+                    
 
                     <div class="form-group">
                         <label class="input-label">Data faktury</label>
-                        <InputDate @bind-Value="OrderDto.InvoiceIssueDate" class="form-control" />
-                        <ValidationMessage For="@(() => OrderDto.InvoiceIssueDate)" class="custom-error" />
+                        <InputDate @bind-Value="OrderDto.IssueDate" class="form-control" />
+                        <ValidationMessage For="@(() => OrderDto.IssueDate)" class="custom-error" />
                     </div>
+                    @if (OrderDto?.Stops != null)
+                    {
 
-                    <div class="form-group">
-                        <label class="input-label">Adres rozładunku</label>
-                        <InputText @bind-Value="OrderDto.UnloadingAddress" placeholder="Adres rozładunku" class="form-control" />
-                        <ValidationMessage For="@(() => OrderDto.UnloadingAddress)" class="custom-error" />
-                    </div>
+                        @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Unloading).OrderByDescending(s => s.Date))
+                        {
+                            <div class="form-group">
+                                <label class="input-label">Adres rozładunku</label>
+                                <InputText @bind-Value="stop.Address" placeholder="Adres rozładunku" class="form-control" />
+                                <ValidationMessage For="@(() => stop.Address)" class="custom-error" />
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Brak dostępnych przystanków.</p>
+                    }
+
+
+                    @* <div class="form-group"> *@
+                    @*     <label class="input-label">Adres rozładunku</label> *@
+                    @*     <InputText @bind-Value="OrderDto.UnloadingAddress" placeholder="Adres rozładunku" class="form-control" /> *@
+                    @*     <ValidationMessage For="@(() => OrderDto.UnloadingAddress)" class="custom-error" /> *@
+                    @* </div> *@
 
                     <div class="form-group">
                         <label class="input-label">Kraj</label>
-                        <InputText @bind-Value="OrderDto.CompanyCountry" placeholder="Kraj" class="form-control" />
-                        <ValidationMessage For="@(() => OrderDto.CompanyCountry)" class="custom-error" />
+                        <InputText @bind-Value="OrderDto.Company.Country" placeholder="Kraj" class="form-control" />
+                        <ValidationMessage For="@(() => OrderDto.Company.Country)" class="custom-error" />
                     </div>
 
                     <div class="horizontal-group">
@@ -162,6 +203,11 @@
                         <label class="checkbox-label">Płatność dokonana</label>
                         
                     </div>
+                    <div class="form-group">
+                        <InputCheckbox @bind-Value="AcceptsEInvoices" class="checkbox" />
+                        <label class="checkbox-label">E-faktura</label>
+
+                    </div>
                 </div>
 
                 <div class="button-container">
@@ -175,25 +221,33 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public string Order { get; set; }
-    private OrderDto OrderDto { get; set; } = new();
+    private OrderDto OrderDto { get; set; } = new()
+        {
+            Company = new CompanyDto(),
+            Stops = new List<OrderStopDto>()
+        };
+
     private List<UserDto> Users { get; set; } = new();
     private string SelectedDriverEmail { get; set; }
-    private int InvoiceNumber;
     private bool IsBusy { get; set; } = false;
     private long maxFileSize = 5 * 1024 * 1024;
-
-    private bool HasPaidValue
+    private bool HasPaid
     {
         get => OrderDto.HasPaid ?? false;
         set => OrderDto.HasPaid = value;
     }
+    private bool AcceptsEInvoices
+    {
+        get => OrderDto.Company.AcceptsEInvoices;
+        set => OrderDto.Company.AcceptsEInvoices = value;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await GetUsers();
         if (!string.IsNullOrEmpty(Order))
         {
             OrderDto = JsonSerializer.Deserialize<OrderDto>(Uri.UnescapeDataString(Order));
-            InvoiceNumber = OrderDto.InvoiceNumber;
         }
         if (OrderDto.Driver != null)
         {
@@ -223,9 +277,10 @@
             using var stream = file.OpenReadStream(maxFileSize);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
-            OrderDto = await OrderService.Create(ms.ToArray());
-            InvoiceNumber = OrderDto.InvoiceNumber;
-            toastService.ShowSuccess($"Wysłano plik {e.File.Name}.");
+
+            OrderDto = await OrderService.Create(ms.ToArray(), file.Name);
+
+            toastService.ShowSuccess($"Wysłano plik {file.Name}.");
         }
         catch (Exception ex)
         {
@@ -236,6 +291,7 @@
             IsBusy = false;
         }
     }
+
 
 
     private async Task HandleCMRUpload(InputFileChangeEventArgs e)
@@ -282,8 +338,8 @@
         try
         {
             IsBusy = true;
-            await OrderService.UploadCMR(filesData, InvoiceNumber);
-            OrderDto = await OrderService.GetById(InvoiceNumber);
+            await OrderService.UploadCMR(filesData, OrderDto.Id, e.File.Name);
+            OrderDto = await OrderService.GetById(OrderDto.Id);
 
             toastService.ShowSuccess("Wysłano pliki CMR.");
         }
@@ -303,7 +359,7 @@
         try
         {
             OrderDto.Driver = Users.FirstOrDefault(u => u.Email == SelectedDriverEmail);
-            await OrderService.Update(OrderDto, InvoiceNumber);
+            await OrderService.Update(OrderDto, OrderDto.Id);
             toastService.ShowSuccess($"Pomyślnie zapisano zlecenie.");
 
             var previousUrl = await LocalStorage.GetItemAsync<string>("previousPage");
@@ -337,7 +393,7 @@
         try
         {
             IsBusy = true;
-            await OrderService.RemoveCMR(InvoiceNumber, cmrFile);
+            await OrderService.RemoveCMR(OrderDto.Id, cmrFile);
             toastService.ShowSuccess($"Pomyślnie usunięto {cmrFile}");
             OrderDto.CMRFiles.Remove(cmrFile);
         }
@@ -355,7 +411,7 @@
         try
         {
             IsBusy = true;
-            var fileBytes = await OrderService.DownloadFile(InvoiceNumber, fileName);
+            var fileBytes = await OrderService.DownloadFile(OrderDto.Id, fileName);
 
             await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
 
@@ -369,11 +425,5 @@
         {
             IsBusy = false;
         }
-    }
-
-    private bool HasPaid
-    {
-        get => OrderDto.HasPaid ?? false;
-        set => OrderDto.HasPaid = value;
     }
 }

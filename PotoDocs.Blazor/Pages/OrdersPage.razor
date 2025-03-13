@@ -48,9 +48,9 @@
                 {
                     string lastMonthYear = null;
 
-                    @foreach (var order in Orders.OrderByDescending(o => o.LoadingDate))
+                    @foreach (var order in Orders)
                     {
-                        string currentMonthYear = order.LoadingDate?.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
+                        string currentMonthYear = order.IssueDate.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
                         bool isExpanded = ExpandedOrderId == order.InvoiceNumber;
                         string rowClass = isExpanded ? "order-item selected-row" : "order-item";
 
@@ -63,9 +63,13 @@
                         }
 
                         <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.InvoiceNumber)">
-                            <td class="company-name-text">@order.CompanyName</td>
+                            <td class="company-name-text">@order.Company.Name</td>
                             <td class="driver-text">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</td>
-                            <td class="date-text">@(order.LoadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</td>
+                            <td class="date-text">
+                                @((order.Stops.Where(stop => stop.Type == StopType.Unloading)
+                                    .OrderByDescending(stop => stop.Date)
+                                    .FirstOrDefault()?.Date)?.ToString("dd.MM.yyyy") ?? "Brak daty")
+                            </td>
                             <td class="status-text @(order.HasPaid == true ? "status-paid" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(order.HasPaid == true ? "Zapłacono" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
                         </tr>
                         @if (isExpanded)
@@ -184,8 +188,8 @@
         try
         {
             IsBusy = true;
-            string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
-            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
+            string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
+            var fileBytes = await OrderService.DownloadInvoice(order.Id);
 
             await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
 
@@ -206,7 +210,7 @@
         if (order == null) return;
 
         var parameters = new ModalParameters();
-        string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+        string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
         parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {name}?");
 
         var modalRef = Modal.Show<ConfirmDialog>("Potwierdzenie", parameters);
@@ -217,7 +221,7 @@
             try
             {
                 IsBusy = true;
-                await OrderService.Delete(order.InvoiceNumber);
+                await OrderService.Delete(order.Id);
                 await GetAllOrders();
                 
                 toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");

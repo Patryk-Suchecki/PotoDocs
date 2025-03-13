@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PotoDocs.API.Entities;
-using PotoDocs.Shared.Models;
-
+using System.Text.Json;
 namespace PotoDocs.API.Models;
 
 public class PotodocsDbContext : DbContext
@@ -23,6 +22,24 @@ public class PotodocsDbContext : DbContext
             .WithMany()
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Order>()
+            .HasMany(o => o.Stops)
+            .WithOne(s => s.Order)
+            .HasForeignKey(s => s.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.Company)
+            .WithMany()
+            .HasForeignKey(o => o.CompanyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Company>()
+            .Property(c => c.EmailAddresses)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                v => JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>()
+            );
 
         base.OnModelCreating(modelBuilder);
     }

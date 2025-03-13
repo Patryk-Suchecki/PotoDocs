@@ -46,13 +46,13 @@ public class OpenAIService : IOpenAIService
 
         var body = new
         {
-            model = "gpt-3.5-turbo",
+            model = "gpt-4-turbo",
             messages = new[] { systemMessage, userMessage }
         };
 
         var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions",
             new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json"));
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
         if (response.IsSuccessStatusCode)
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();

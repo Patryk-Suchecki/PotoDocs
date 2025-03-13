@@ -19,7 +19,7 @@ else
         <label>PDF:</label>
         @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
         {
-            <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl, "ORDER"))">Pobierz PDF</button>
+            <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl))">Pobierz PDF</button>
         }
     </div>
 
@@ -30,7 +30,7 @@ else
                 <ul>
                     @foreach (var file in OrderDto.CMRFiles)
                     {
-                        <li><button class="download-btn" @onclick="@(() => DownloadFile(file, "CMR"))">@file</button></li>
+                        <li><button class="download-btn" @onclick="@(() => DownloadFile(file))">@file</button></li>
                     }
                 </ul>
             }
@@ -42,7 +42,7 @@ else
 
         <div class="detail-item">
             <label>Data wystawienia faktury:</label>
-            <span>@OrderDto.InvoiceIssueDate.ToString("dd.MM.yyyy")</span>
+            <span>@OrderDto.IssueDate.ToString("dd.MM.yyyy")</span>
         </div>
 
         <div class="detail-item">
@@ -52,17 +52,17 @@ else
 
         <div class="detail-item">
             <label>NIP firmy:</label>
-            <span>@OrderDto.CompanyNIP</span>
+            <span>@OrderDto.Company.NIP</span>
         </div>
 
         <div class="detail-item">
             <label>Nazwa firmy:</label>
-            <span>@OrderDto.CompanyName</span>
+            <span>@OrderDto.Company.Name</span>
         </div>
 
         <div class="detail-item">
             <label>Adres firmy:</label>
-            <span>@OrderDto.CompanyAddress</span>
+            <span>@OrderDto.Company.Address</span>
         </div>
 
         <div class="detail-item">
@@ -79,15 +79,38 @@ else
             <label>Płatność:</label>
             <span>@(OrderDto.HasPaid == true ? "Dokonano" : "Nie dokonano") </span>
         </div>
-        <div class="detail-item">
-            <label>Data załadunku:</label>
-            <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span>
-        </div>
 
         <div class="detail-item">
-            <label>Data rozładunku:</label>
-            <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span>
+            <label>Daty załadunków</label>
+            @if (OrderDto?.Stops != null)
+            {
+                @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Unloading).OrderByDescending(s => s.Date))
+                {
+                    <span>@stop.Date.ToString("dd.MM.yyyy")</span>
+                }
+            }
+         </div>
+
+        @* <div class="detail-item"> *@
+        @*     <label>Data załadunku:</label> *@
+        @*     <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span> *@
+        @* </div> *@
+
+        <div class="detail-item">
+            <label>Daty rozładunków</label>
+            @if (OrderDto?.Stops != null)
+            {
+                @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Loading).OrderByDescending(s => s.Date))
+                {
+                    <span>@stop.Date.ToString("dd.MM.yyyy")</span>
+                }
+            }
         </div>
+
+        @* <div class="detail-item"> *@
+        @*     <label>Data rozładunku:</label> *@
+        @*     <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span> *@
+        @* </div> *@
 
         <div class="detail-item">
             <label>Uwagi:</label>
@@ -166,8 +189,8 @@ else
         try
         {
             IsBusy = true;
-            await OrderService.UploadCMR(filesData, OrderDto.InvoiceNumber);
-            OrderDto = await OrderService.GetById(OrderDto.InvoiceNumber);
+            await OrderService.UploadCMR(filesData, OrderDto.Id, e.File.Name);
+            OrderDto = await OrderService.GetById(OrderDto.Id);
 
             toastService.ShowSuccess("Wysłano pliki CMR.");
         }
@@ -180,17 +203,17 @@ else
             IsBusy = false;
         }
     }
-    private async Task DownloadFile(string fileName, string fileType)
+    private async Task DownloadFile(string fileName)
     {
         try
         {
             IsBusy = true;
-            string name = OrderService.FormatInvoiceNumber(OrderDto.InvoiceNumber, fileType);
-            var fileBytes = await OrderService.DownloadFile(OrderDto.InvoiceNumber, fileName);
 
-            await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
+            var fileBytes = await OrderService.DownloadFile(OrderDto.Id, fileName);
 
-            toastService.ShowSuccess($"Pobrano {name}");
+            await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/pdf");
+
+            toastService.ShowSuccess($"Pobrano {fileName}");
         }
         catch (Exception ex)
         {

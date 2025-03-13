@@ -14,7 +14,7 @@ public interface IUserService
     ApiResponse<string> ChangePassword(ChangePasswordDto dto);
     ApiResponse<string> GeneratePassword(string email);
     ApiResponse<List<UserDto>> GetAll();
-    ApiResponse<UserDto> GetById(int id);
+    ApiResponse<UserDto> GetById(Guid id);
     void Delete(string email);
 }
 
@@ -139,7 +139,7 @@ public class UserService : IUserService
         return ApiResponse<List<UserDto>>.Success(usersDto);
     }
 
-    public ApiResponse<UserDto> GetById(int id)
+    public ApiResponse<UserDto> GetById(Guid id)
     {
         var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Id == id);
         if (user == null) return ApiResponse<UserDto>.Failure("Nie znaleziono użytkownika", HttpStatusCode.Unauthorized);

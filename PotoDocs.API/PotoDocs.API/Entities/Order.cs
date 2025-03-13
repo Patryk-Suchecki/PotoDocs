@@ -2,26 +2,20 @@
 namespace PotoDocs.API.Entities;
 public class Order
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public int? InvoiceNumber { get; set; }
-    public DateTime? InvoiceIssueDate { get; set; }
+    public DateTime? IssueDate { get; set; }
+    public virtual int? DriverId { get; set; }
     public virtual User? Driver { get; set; }
-
-    public string? CompanyNIP { get; set; }
-    public string? CompanyName { get; set;}
-    public string? CompanyAddress { get; set; }
-    public string? CompanyCountry { get; set; }
+    public int? CompanyId { get; set; }
+    public virtual Company? Company { get; set; }
 
     public decimal? Price { get; set; }
     public string? Currency { get; set; }
     public int? PaymentDeadline { get; set; }
     public bool? HasPaid { get; set; }
 
-    public DateTime? LoadingDate { get; set; }
-    public string? LoadingAddress { get; set; }
-
-    public DateTime? UnloadingDate { get; set; }
-    public string? UnloadingAddress { get; set; }
+    public virtual List<OrderStop> Stops { get; set; } = new();
 
     public string? CompanyOrderNumber { get; set; }
 

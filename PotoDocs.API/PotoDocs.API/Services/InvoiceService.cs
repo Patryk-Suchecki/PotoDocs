@@ -2,6 +2,7 @@
 using PotoDocs.API.Entities;
 using PotoDocs.API;
 using System.Globalization;
+using PotoDocs.Shared.Models;
 public interface IInvoiceService
 {
     Task<byte[]> GenerateInvoicePdf(Order order);
@@ -20,10 +21,16 @@ public class InvoiceService : IInvoiceService
 
     public async Task<byte[]> FillPdfFormAsync(Order order)
     {
-        EuroRateResult euroRateResult = await EuroRateFetcherService.GetEuroRateAsync((DateTime)order.UnloadingDate);
+
+        var lastUnloadingStop = order.Stops
+            .Where(stop => stop.Type == StopType.Unloading)
+            .OrderByDescending(stop => stop.Date)
+            .FirstOrDefault();
+
+        EuroRateResult euroRateResult = await EuroRateFetcherService.GetEuroRateAsync(lastUnloadingStop.Date);
 
         string[] acceptedPolandNames = { "poland", "polska", "pl" };
-        decimal vatRate = acceptedPolandNames.Contains(order.CompanyCountry.ToLowerInvariant()) ? 0.23m : 0m;
+        decimal vatRate = acceptedPolandNames.Contains(order.Company.Country.ToLowerInvariant()) ? 0.23m : 0m;
 
         string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/templates", templateFileName);
         string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/fonts", "tahomabd.ttf");
@@ -43,12 +50,12 @@ public class InvoiceService : IInvoiceService
             decimal vatAmountPln = vatAmount * euroRateResult.Rate;
             decimal totalAmountPln = grossAmount * euroRateResult.Rate;
 
-            pdf.SetField("NUMER_FAKTURY", $"Nr {order.InvoiceNumber / 1000000:D2}/{order.InvoiceIssueDate:MM}/{order.InvoiceIssueDate:yyyy}");
-            pdf.SetField("NAZWA_FIRMY", order.CompanyName);
-            pdf.SetField("ADRES_FIRMY", order.CompanyAddress);
-            pdf.SetField("NIP_FIRMY", order.CompanyNIP.ToString());
-            pdf.SetField("DATA_SPRZEDAZY", ((DateTime)order.UnloadingDate).ToString("dd-MM-yyyy"));
-            pdf.SetField("DATA_WYSTAWIENIA", ((DateTime)order.InvoiceIssueDate).ToString("dd-MM-yyyy"));
+            pdf.SetField("NUMER_FAKTURY", $"Nr {order.InvoiceNumber}/{order.IssueDate:MM}/{order.IssueDate:yyyy}");
+            pdf.SetField("NAZWA_FIRMY", order.Company.Name);
+            pdf.SetField("ADRES_FIRMY", order.Company.Address);
+            pdf.SetField("NIP_FIRMY", order.Company.NIP.ToString());
+            pdf.SetField("DATA_SPRZEDAZY", (lastUnloadingStop.Date).ToString("dd-MM-yyyy"));
+            pdf.SetField("DATA_WYSTAWIENIA", ((DateTime)order.IssueDate).ToString("dd-MM-yyyy"));
             pdf.SetField("TERMIN_ZAPLATY", order.PaymentDeadline + " dni");
             pdf.SetField("CENA_NETTO1", FormatCurrency(netAmount, "€"));
             pdf.SetField("CENA_NETTO2", FormatCurrency(netAmount, "€"));

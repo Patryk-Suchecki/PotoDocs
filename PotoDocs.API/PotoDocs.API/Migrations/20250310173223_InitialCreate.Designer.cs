@@ -12,8 +12,8 @@ using PotoDocs.API.Models;
 namespace PotoDocs.API.Migrations
 {
     [DbContext(typeof(PotodocsDbContext))]
-    [Migration("20241018161807_OrderUpdate5")]
-    partial class OrderUpdate5
+    [Migration("20250310173223_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,8 +33,8 @@ namespace PotoDocs.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -47,7 +47,7 @@ namespace PotoDocs.API.Migrations
                     b.ToTable("CMRFiles");
                 });
 
-            modelBuilder.Entity("PotoDocs.API.Entities.Order", b =>
+            modelBuilder.Entity("PotoDocs.API.Entities.Company", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -55,17 +55,41 @@ namespace PotoDocs.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CompanyAddress")
+                    b.Property<bool>("AcceptsEInvoices")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CompanyCountry")
+                    b.Property<string>("CorrespondenceAddress")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("CompanyNIP")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("CompanyName")
+                    b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailAddresses")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NIP")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Company");
+                });
+
+            modelBuilder.Entity("PotoDocs.API.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("CompanyOrderNumber")
                         .HasColumnType("nvarchar(max)");
@@ -76,19 +100,16 @@ namespace PotoDocs.API.Migrations
                     b.Property<int?>("DriverId")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("DriverId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool?>("HasPaid")
                         .HasColumnType("bit");
-
-                    b.Property<DateOnly>("InvoiceIssueDate")
-                        .HasColumnType("date");
 
                     b.Property<int?>("InvoiceNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("LoadingAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LoadingDate")
+                    b.Property<DateTime?>("IssueDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PDFUrl")
@@ -100,26 +121,65 @@ namespace PotoDocs.API.Migrations
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("UnloadingAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UnloadingDate")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId");
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("DriverId1");
 
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("PotoDocs.API.Entities.User", b =>
+            modelBuilder.Entity("PotoDocs.API.Entities.OrderStop", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderStop");
+                });
+
+            modelBuilder.Entity("PotoDocs.API.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("PotoDocs.API.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -147,23 +207,6 @@ namespace PotoDocs.API.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("PotoDocs.Shared.Models.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-                });
-
             modelBuilder.Entity("PotoDocs.API.Entities.CMRFile", b =>
                 {
                     b.HasOne("PotoDocs.API.Entities.Order", "Order")
@@ -177,16 +220,34 @@ namespace PotoDocs.API.Migrations
 
             modelBuilder.Entity("PotoDocs.API.Entities.Order", b =>
                 {
+                    b.HasOne("PotoDocs.API.Entities.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("PotoDocs.API.Entities.User", "Driver")
                         .WithMany()
-                        .HasForeignKey("DriverId");
+                        .HasForeignKey("DriverId1");
+
+                    b.Navigation("Company");
 
                     b.Navigation("Driver");
                 });
 
+            modelBuilder.Entity("PotoDocs.API.Entities.OrderStop", b =>
+                {
+                    b.HasOne("PotoDocs.API.Entities.Order", "Order")
+                        .WithMany("Stops")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("PotoDocs.API.Entities.User", b =>
                 {
-                    b.HasOne("PotoDocs.Shared.Models.Role", "Role")
+                    b.HasOne("PotoDocs.API.Entities.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -198,6 +259,8 @@ namespace PotoDocs.API.Migrations
             modelBuilder.Entity("PotoDocs.API.Entities.Order", b =>
                 {
                     b.Navigation("CMRFiles");
+
+                    b.Navigation("Stops");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
-using PotoDocs.Shared.Models;
 
 [Route("api/orders/")]
 [ApiController]
@@ -15,17 +14,17 @@ public class OrderFilesController : ControllerBase
         _orderService = orderService;
     }
 
-    [HttpPost("{invoiceNumber}/cmr")]
-    public async Task<ActionResult> UploadCMR(int invoiceNumber, [FromForm] List<IFormFile> files)
+    [HttpPost("{id}/cmr")]
+    public async Task<ActionResult> UploadCMR(Guid id, [FromForm] List<IFormFile> files)
     {
-        var response = await _orderService.AddCMRFileAsync(files, invoiceNumber);
+        var response = await _orderService.AddCmr(files, id);
         return StatusCode(response.StatusCode, response);
     }
 
-    [HttpDelete("{invoiceNumber}/cmr/{fileName}")]
+    [HttpDelete("{id}/cmr/{fileName}")]
     public ActionResult DeleteCMR(string fileName)
     {
-        _orderService.DeleteCMR(fileName);
+        _orderService.DeleteCmr(fileName);
         return NoContent();
     }
 
@@ -49,10 +48,10 @@ public class OrderFilesController : ControllerBase
         return File(fileStream, mimeType, fileName);
     }
 
-    [HttpGet("{invoiceNumber}/invoice")]
-    public async Task<IActionResult> GetInvoiceAsync(int invoiceNumber)
+    [HttpGet("{id}/invoice")]
+    public async Task<IActionResult> GetInvoiceAsync(Guid id)
     {
-        var pdfData = await _orderService.CreateInvoicePDF(invoiceNumber);
+        var pdfData = await _orderService.GetPdf(id);
 
         if (pdfData == null || pdfData.Length == 0)
         {
@@ -65,7 +64,7 @@ public class OrderFilesController : ControllerBase
     [HttpGet("invoices/{year}/{month}")]
     public async Task<IActionResult> GetInvoices(int year, int month)
     {
-        var pdfData = await _orderService.CreateInvoices(year, month);
+        var pdfData = await _orderService.GetZip(year, month);
 
         if (pdfData == null || pdfData.Length == 0)
         {

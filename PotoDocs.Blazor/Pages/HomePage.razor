@@ -38,9 +38,14 @@
         {
             <div class="card-container container-flex" @onclick="() => ToggleOrder(order.InvoiceNumber)">
                 <div class="order-details">
-                    <h3 class="text-large">@order.CompanyName</h3>
+                    <h3 class="text-large">@order.Company.Name</h3>
                     <div class="container-flex-no-gap">
-                        <p class="text-small">@order.LoadingDate?.ToString("dd.MM.yyyy") • @(order.Price?.ToString("0.00") ?? "0") @order.Currency</p>
+                        <p class="text-small">
+                            @(order.Stops.Where(stop => stop.Type == StopType.Unloading)
+                                .OrderByDescending(stop => stop.Date)
+                                .FirstOrDefault()?.Date.ToString("dd.MM.yyyy") ?? "Brak daty")
+                            • @(order.Price?.ToString("0.00") ?? "0") @order.Currency
+                        </p>
                         <p class="text-small"><strong>@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</strong></p>
                     </div>
                 </div>
@@ -152,8 +157,8 @@
         try
         {
             IsBusy = true;
-            string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
-            var fileBytes = await OrderService.DownloadInvoice(order.InvoiceNumber);
+            string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
+            var fileBytes = await OrderService.DownloadInvoice(order.Id);
 
             await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
 
@@ -175,7 +180,7 @@
         if (order == null) return;
 
         var parameters = new ModalParameters();
-        string name = OrderService.FormatInvoiceNumber(order.InvoiceNumber);
+        string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
 
         parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {name}?");
         
@@ -188,7 +193,7 @@
             try
             {
                 IsBusy = true;
-                await OrderService.Delete(order.InvoiceNumber);
+                await OrderService.Delete(order.Id);
                 await RefreshOrders();
                 toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");
             }

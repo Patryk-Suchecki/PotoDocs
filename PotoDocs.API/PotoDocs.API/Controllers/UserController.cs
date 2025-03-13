@@ -58,7 +58,7 @@ public class UserController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<string>> GetUser()
     {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
         var response = _userService.GetById(userId);
         return StatusCode(response.StatusCode, response);
     }
