@@ -1,4 +1,5 @@
 @import url('fonts.css');
+@import url('icons.css');
 
 :root {
     --primary-color: #8C0000;
@@ -421,6 +422,10 @@ code {
 
 .margin-bottom-15 {
     margin-bottom: 15px;
+}
+
+.margin-bottom--15 {
+    margin-bottom: -15px;
 }
 
 .flex {
