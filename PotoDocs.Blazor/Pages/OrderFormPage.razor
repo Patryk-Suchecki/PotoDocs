@@ -45,7 +45,7 @@
                         <span class="file-label">CMR</span>
                         <label class="file-upload-btn">
                             Dodaj plik
-                            <InputFile hidden OnChange="HandleCMRUpload" multiple accept=".pdf,application/pdf" />
+                            <InputFile hidden OnChange="HandleCMRUpload" multiple accept=".pdf,application/pdf" disabled="@(OrderDto?.PDFUrl == null)" />
                         </label>
                     </div>
 
@@ -211,7 +211,7 @@
                 </div>
 
                 <div class="button-container">
-                <button type="submit" class="btn-primary">Zapisz</button>
+                    <button type="submit" class="btn-primary" disabled="@(OrderDto?.PDFUrl == null)">Zapisz</button>
                 </div>
             </EditForm>
         }

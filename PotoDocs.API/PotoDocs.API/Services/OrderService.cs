@@ -250,9 +250,9 @@ public class OrderService : IOrderService
     {
         var order = await _dbContext.Orders
             .Include(o => o.Company)
-            .Include(o => o.Driver)
             .Include(o => o.Stops)
             .FirstOrDefaultAsync(o => o.Id == id);
+
         if (order == null) return null;
 
         return await _invoiceService.GenerateInvoicePdf(order);
@@ -261,6 +261,8 @@ public class OrderService : IOrderService
     {
         var orders = await _dbContext.Orders
             .Where(o => o.IssueDate.Value.Month == month && o.IssueDate.Value.Year == year)
+            .Include(o => o.Company)
+            .Include(o => o.Stops)
             .ToListAsync();
 
         if (orders == null || orders.Count == 0) return null;

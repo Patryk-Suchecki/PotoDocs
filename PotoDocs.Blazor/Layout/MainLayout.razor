@@ -23,14 +23,20 @@
 
 @code {
     private bool IsLoginPage => Navigation.Uri.Contains("/logowanie", StringComparison.OrdinalIgnoreCase);
-    protected override async Task OnInitializedAsync()
+
+    protected override void OnInitialized()
     {
-        await StorePreviousUrl();
+        Navigation.LocationChanged += OnLocationChanged;
     }
 
-    private async Task StorePreviousUrl()
+    private async void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        await LocalStorage.SetItemAsync("previousPage", Navigation.Uri);
+        var currentUrl = await LocalStorage.GetItemAsync<string>("currentPage");
+        if (!string.IsNullOrEmpty(currentUrl))
+        {
+            await LocalStorage.SetItemAsync("previousPage", currentUrl);
+        }
+        await LocalStorage.SetItemAsync("currentPage", e.Location);
     }
 
     public async Task NavigateBack()
@@ -38,5 +44,9 @@
         var previousUrl = await LocalStorage.GetItemAsync<string>("previousPage");
         Navigation.NavigateTo(previousUrl ?? "/");
     }
-}
 
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -179,9 +179,8 @@
         if (order == null) return;
 
         var parameters = new ModalParameters();
-        string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
 
-        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {name}?");
+        parameters.Add("Message", $"Czy na pewno chcesz usunąć to zlecenie?");
         
 
         var modalRef = Modal.Show<ConfirmDialog>("Potwierdzenie", parameters);
@@ -194,7 +193,7 @@
                 IsBusy = true;
                 await OrderService.Delete(order.Id);
                 await RefreshOrders();
-                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");
+                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie");
             }
             catch (Exception ex)
             {
