@@ -35,7 +35,7 @@
     {
         @foreach (var order in Orders)
         {
-            <div class="card-container container-flex" @onclick="() => ToggleOrder(order.InvoiceNumber)">
+            <div class="card-container container-flex" @onclick="() => ToggleOrder(order.Id)">
                 <div class="order-details">
                     <h3 class="text-large">@order.Company.Name</h3>
                     <div class="container-flex-no-gap">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
 
-                @if (ExpandedOrderId == order.InvoiceNumber)
+                @if (ExpandedOrderId == order.Id)
                 {
                     <div class="order-actions">
                         <button class="btn-secondary" @onclick="() => ViewOrderDetails(order)">
@@ -79,9 +79,9 @@
     private IEnumerable<OrderDto> Orders;
     private bool IsBusy = false;
     private UserDto User;
-    private int? ExpandedOrderId = null;
+    private Guid? ExpandedOrderId = null;
 
-    private void ToggleOrder(int orderId)
+    private void ToggleOrder(Guid orderId)
     {
         ExpandedOrderId = ExpandedOrderId == orderId ? null : orderId;
     }

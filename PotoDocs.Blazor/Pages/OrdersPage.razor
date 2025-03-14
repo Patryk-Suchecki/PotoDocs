@@ -50,7 +50,7 @@
                     @foreach (var order in Orders)
                     {
                         string currentMonthYear = order.IssueDate.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
-                        bool isExpanded = ExpandedOrderId == order.InvoiceNumber;
+                        bool isExpanded = ExpandedOrderId == order.Id;
                         string rowClass = isExpanded ? "order-item selected-row" : "order-item";
 
                         if (currentMonthYear != lastMonthYear)
@@ -61,7 +61,7 @@
                             </tr>
                         }
 
-                        <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.InvoiceNumber)">
+                        <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.Id)">
                             <td class="company-name-text">@order.Company.Name</td>
                             <td class="driver-text">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</td>
                             <td class="date-text">
@@ -236,9 +236,9 @@
         }
     }
 
-    private int? ExpandedOrderId { get; set; }
+    private Guid? ExpandedOrderId { get; set; }
 
-    private void ToggleOrderActions(int orderId)
+    private void ToggleOrderActions(Guid orderId)
     {
         if (ExpandedOrderId == orderId)
         {
