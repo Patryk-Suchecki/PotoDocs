@@ -35,6 +35,37 @@ else
                 </ul>
             }
         </div>
+        <!-- Lista przystanków -->
+        <div class="detail-item">
+            <label>Przystanki:</label>
+            @if (OrderDto?.Stops != null && OrderDto.Stops.Any())
+            {
+                <ul>
+                    @foreach (var stop in OrderDto.Stops)
+                    {
+                        <li><strong>@stop.Date.ToString("dd.MM.yyyy")</strong>
+                            @if(stop.Type.ToString() == "Loading")
+                            {
+                                <strong> Załadunek </strong>
+                            }
+                            else
+                            {
+                                <strong> Rozładunek </strong>
+                            }
+                            <br />
+                            @stop.Address
+                            <br />
+                            <br />
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <span>Brak przystanków.</span>
+            }
+        </div>
+
         <div class="detail-item">
             <label>Numer faktury:</label>
             <span>@OrderDto.InvoiceNumber</span>
@@ -78,33 +109,6 @@ else
         <div class="detail-item">
             <label>Płatność:</label>
             <span>@(OrderDto.HasPaid == true ? "Dokonano" : "Nie dokonano") </span>
-        </div>
-
-        <div class="detail-item">
-            <label>Daty załadunków</label>
-            @if (OrderDto?.Stops != null)
-            {
-                @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Unloading).OrderByDescending(s => s.Date))
-                {
-                    <span>@stop.Date.ToString("dd.MM.yyyy")</span>
-                }
-            }
-         </div>
-
-        @* <div class="detail-item"> *@
-        @*     <label>Data załadunku:</label> *@
-        @*     <span>@OrderDto.LoadingDate?.ToString("dd.MM.yyyy")</span> *@
-        @* </div> *@
-
-        <div class="detail-item">
-            <label>Daty rozładunków</label>
-            @if (OrderDto?.Stops != null)
-            {
-                @foreach (var stop in OrderDto.Stops.Where(s => s.Type == StopType.Loading).OrderByDescending(s => s.Date))
-                {
-                    <span>@stop.Date.ToString("dd.MM.yyyy")</span>
-                }
-            }
         </div>
 
         @* <div class="detail-item"> *@
