@@ -1,8 +1,8 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using PotoDocs.Shared.Models;
+using PotoDocs.Blazor.Helpers;
 
 namespace PotoDocs.Blazor.Services;
 
@@ -11,7 +11,7 @@ public interface IUserService
     Task RegisterAsync(UserDto dto);
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(string email);
-    Task<UserDto> GetCurrentUser();
+    Task<UserDto?> GetCurrentUser();
     Task<string?> ChangePassword(ChangePasswordDto dto);
     Task Delete(string email);
 }
@@ -24,101 +24,70 @@ public class UserService : IUserService
     {
         _authService = authService;
     }
+
     public async Task RegisterAsync(UserDto dto)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
-        var jsonContent = new StringContent(
-            JsonSerializer.Serialize(dto),
-            Encoding.UTF8,
-            "application/json"
-        );
-        var response = await httpClient.PostAsync("api/user/register", jsonContent);
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-        }
+        var response = await httpClient.PostAsJsonAsync("api/user/register", dto);
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
+
     public async Task GeneratePassword(string email)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
-        var response = await httpClient.PostAsJsonAsync($"api/user/generate-password", email);
-
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-        }
+        var response = await httpClient.PostAsJsonAsync("api/user/generate-password", email);
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
+
     public async Task<IEnumerable<UserDto>> GetAll()
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         var response = await httpClient.GetAsync("api/user/all");
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<UserDto>>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return apiResponse.Data;
-        }
 
-        return null;
+        await response.ThrowIfNotSuccessWithProblemDetails();
+
+        var result = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+        return result ?? new List<UserDto>();
     }
-    public async Task<UserDto> GetCurrentUser()
+
+    public async Task<UserDto?> GetCurrentUser()
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
+        var response = await httpClient.GetAsync("api/user/me");
 
-        var response = await httpClient.GetAsync("api/user");
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<UserDto>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return apiResponse.Data;
-        }
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-        return null;
+        return await response.Content.ReadFromJsonAsync<UserDto>();
     }
+
     public async Task<string?> ChangePassword(ChangePasswordDto dto)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PostAsJsonAsync("api/user/change-password", dto);
 
+        if (response.IsSuccessStatusCode)
+            return null;
 
-        if (!response.IsSuccessStatusCode)
+        var errorText = await response.Content.ReadAsStringAsync();
+
+        try
         {
-            var errorContent = await response.Content.ReadAsStringAsync();
-
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(errorContent, new JsonSerializerOptions
+            var problem = JsonSerializer.Deserialize<ProblemDetails>(errorText, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
-
-            return apiResponse?.Errors?.FirstOrDefault() ?? "Wystąpił nieznany błąd.";
+            return problem?.Title ?? "Wystąpił nieznany błąd.";
         }
-        return null;
+        catch
+        {
+            return $"Błąd zmiany hasła: {response.StatusCode}";
+        }
     }
+
     public async Task Delete(string email)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"api/user")
-        {
-            Content = JsonContent.Create(email)
-        };
-
-        var response = await httpClient.SendAsync(request);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Błąd: {errorContent}");
-        }
+        var response = await httpClient.DeleteAsync($"api/user/{email}");
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
-
 }

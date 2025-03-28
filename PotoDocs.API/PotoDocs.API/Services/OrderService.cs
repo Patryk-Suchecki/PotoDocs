@@ -3,26 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
-using System.Formats.Tar;
 using System.IO.Compression;
-using System.Net;
 
 namespace PotoDocs.API.Services;
 
 public interface IOrderService
 {
-    ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
-    ApiResponse<OrderDto> GetById(Guid id);
+    IEnumerable<OrderDto> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
+    OrderDto GetById(Guid id);
     void Delete(Guid id);
     void Update(Guid id, OrderDto dto);
-    Task<ApiResponse<OrderDto>> CreateFromPdf(IFormFile file);
-    Task<ApiResponse<OrderDto>> AddCmr(List<IFormFile> files, Guid id);
+    Task<OrderDto> CreateFromPdf(IFormFile file);
+    Task<OrderDto> AddCmr(List<IFormFile> files, Guid id);
     void DeleteCmr(string fileName);
     Task<byte[]> GetPdf(Guid id);
     Task<byte[]> GetZip(int year, int month);
     Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
     void DeleteFile(string filePath);
 }
+
 
 public class OrderService : IOrderService
 {
@@ -39,15 +38,14 @@ public class OrderService : IOrderService
         _invoiceService = invoiceService;
     }
 
-    public ApiResponse<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
+    public IEnumerable<OrderDto> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
     {
         var query = _dbContext.Orders
             .Include(o => o.Driver)
             .Include(o => o.CMRFiles)
             .Include(o => o.Company)
             .Include(o => o.Stops)
-            .AsNoTracking()
-            .AsQueryable();
+            .AsNoTracking();
 
         if (!string.IsNullOrEmpty(driverEmail))
         {
@@ -64,22 +62,22 @@ public class OrderService : IOrderService
             .Take(pageSize)
             .ToList();
 
-        var ordersDto = _mapper.Map<List<OrderDto>>(orders);
-
-        return ApiResponse<IEnumerable<OrderDto>>.Success(ordersDto);
+        return _mapper.Map<List<OrderDto>>(orders);
     }
 
-
-    public ApiResponse<OrderDto> GetById(Guid id)
+    public OrderDto GetById(Guid id)
     {
-        var order = _dbContext.Orders.Include(o => o.Driver)
-                                     .Include(c => c.CMRFiles)
-                                     .Include(o => o.Company)
-                                     .Include(o => o.Stops)
-                                     .FirstOrDefault(o => o.Id == id);
-        if (order == null) return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
+        var order = _dbContext.Orders
+            .Include(o => o.Driver)
+            .Include(o => o.CMRFiles)
+            .Include(o => o.Company)
+            .Include(o => o.Stops)
+            .FirstOrDefault(o => o.Id == id);
 
-        return ApiResponse<OrderDto>.Success(_mapper.Map<OrderDto>(order));
+        if (order == null)
+            throw new KeyNotFoundException("Nie znaleziono zlecenia.");
+
+        return _mapper.Map<OrderDto>(order);
     }
 
     public void Delete(Guid id)
@@ -89,10 +87,7 @@ public class OrderService : IOrderService
             .FirstOrDefault(o => o.Id == id);
 
         if (order == null)
-        {
-            Console.WriteLine($"Zamówienie o ID {id} nie istnieje.");
-            return;
-        }
+            throw new KeyNotFoundException("Zlecenie nie istnieje.");
 
         DeleteFile(order.PDFUrl);
 
@@ -129,7 +124,8 @@ public class OrderService : IOrderService
             .Include(o => o.CMRFiles)
             .FirstOrDefault(o => o.Id == id);
 
-        if (order == null) return;
+        if (order == null)
+            throw new KeyNotFoundException("Nie znaleziono zlecenia.");
 
         _mapper.Map(dto, order);
 
@@ -141,19 +137,15 @@ public class OrderService : IOrderService
         _dbContext.SaveChanges();
     }
 
-
-    public async Task<ApiResponse<OrderDto>> CreateFromPdf(IFormFile file)
+    public async Task<OrderDto> CreateFromPdf(IFormFile file)
     {
         if (file == null || file.Length == 0 || file.ContentType != "application/pdf")
         {
-            return ApiResponse<OrderDto>.Failure("Plik jest nieprawidłowy lub ma niepoprawny format", HttpStatusCode.BadRequest);
+            throw new BadHttpRequestException("Plik jest nieprawidłowy lub ma niepoprawny format");
         }
 
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
-        if (!Directory.Exists(uploadsFolderPath))
-        {
-            Directory.CreateDirectory(uploadsFolderPath);
-        }
+        Directory.CreateDirectory(uploadsFolderPath);
 
         var fileName = GetUniqueFileName(uploadsFolderPath, file.FileName);
         var filePath = Path.Combine(uploadsFolderPath, fileName);
@@ -191,23 +183,17 @@ public class OrderService : IOrderService
         return GetById(order.Id);
     }
 
-
-    public async Task<ApiResponse<OrderDto>> AddCmr(List<IFormFile> files, Guid id)
+    public async Task<OrderDto> AddCmr(List<IFormFile> files, Guid id)
     {
         if (files == null || files.Count == 0)
-            return ApiResponse<OrderDto>.Failure("Nie przesłano pliku", HttpStatusCode.BadRequest);
+            throw new BadHttpRequestException("Nie przesłano pliku");
 
         var order = _dbContext.Orders.FirstOrDefault(o => o.Id == id);
         if (order == null)
-            return ApiResponse<OrderDto>.Failure("Nie znaleziono zlecenia.", HttpStatusCode.BadRequest);
+            throw new KeyNotFoundException("Nie znaleziono zlecenia.");
 
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
-        if (!Directory.Exists(uploadsFolderPath))
-        {
-            Directory.CreateDirectory(uploadsFolderPath);
-        }
-
-        var cmrFileUrls = new List<string>();
+        Directory.CreateDirectory(uploadsFolderPath);
 
         foreach (var file in files)
         {
@@ -219,33 +205,33 @@ public class OrderService : IOrderService
                 await file.CopyToAsync(stream);
             }
 
-            var relativePath = Path.Combine("/pdfs", uniqueFileName);
-            cmrFileUrls.Add(relativePath);
-
             var cmrFile = new CMRFile
             {
                 Url = uniqueFileName,
                 OrderId = order.Id,
                 Order = order
             };
+
             _dbContext.CMRFiles.Add(cmrFile);
-            _dbContext.SaveChanges();
         }
+
+        _dbContext.SaveChanges();
 
         return GetById(id);
     }
 
-
     public void DeleteCmr(string fileName)
     {
         var cmrFile = _dbContext.CMRFiles.FirstOrDefault(c => c.Url == fileName);
-        if (cmrFile == null) return;
+        if (cmrFile == null)
+            throw new KeyNotFoundException("Nie znaleziono pliku CMR.");
 
         _dbContext.CMRFiles.Remove(cmrFile);
         _dbContext.SaveChanges();
 
         DeleteFile(cmrFile.Url);
     }
+
     public async Task<byte[]> GetPdf(Guid id)
     {
         var order = await _dbContext.Orders
@@ -253,10 +239,12 @@ public class OrderService : IOrderService
             .Include(o => o.Stops)
             .FirstOrDefaultAsync(o => o.Id == id);
 
-        if (order == null) return null;
+        if (order == null)
+            throw new KeyNotFoundException("Nie znaleziono zlecenia.");
 
         return await _invoiceService.GenerateInvoicePdf(order);
     }
+
     public async Task<byte[]> GetZip(int year, int month)
     {
         var orders = await _dbContext.Orders
@@ -265,7 +253,8 @@ public class OrderService : IOrderService
             .Include(o => o.Stops)
             .ToListAsync();
 
-        if (orders == null || orders.Count == 0) return null;
+        if (orders == null || orders.Count == 0)
+            throw new KeyNotFoundException("Brak zleceń dla wybranego miesiąca.");
 
         string tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(tempDirectory);
@@ -275,7 +264,6 @@ public class OrderService : IOrderService
             foreach (var order in orders)
             {
                 var pdfData = await _invoiceService.GenerateInvoicePdf(order);
-
                 string fileName = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}.pdf";
                 string filePath = Path.Combine(tempDirectory, fileName);
 
@@ -283,24 +271,21 @@ public class OrderService : IOrderService
             }
 
             string zipFilePath = Path.Combine(Path.GetTempPath(), $"Faktury {month:D2}-{year}.zip");
-
             if (File.Exists(zipFilePath))
             {
                 File.Delete(zipFilePath);
             }
 
             ZipFile.CreateFromDirectory(tempDirectory, zipFilePath);
-
             return await File.ReadAllBytesAsync(zipFilePath);
         }
         finally
         {
             if (Directory.Exists(tempDirectory))
-            {
                 Directory.Delete(tempDirectory, true);
-            }
         }
     }
+
     public async Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync()
     {
         var data = await _dbContext.Orders
@@ -316,6 +301,7 @@ public class OrderService : IOrderService
                 g => g.Select(o => o.Month).Distinct().OrderBy(m => m).ToList()
             );
     }
+
     private string GetUniqueFileName(string directory, string originalFileName)
     {
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(originalFileName);
@@ -331,5 +317,4 @@ public class OrderService : IOrderService
 
         return uniqueFileName;
     }
-
 }

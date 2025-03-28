@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using PotoDocs.Shared.Models;
 
 namespace PotoDocs.Blazor.Services;
@@ -25,16 +27,34 @@ public class AuthService : IAuthService
     public async Task<string?> LoginAsync(LoginDto dto)
     {
         var response = await _httpClient.PostAsJsonAsync("api/account/login", dto);
-        var authResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDto>>();
 
-        if (authResponse != null && authResponse.Status)
+        if (response.IsSuccessStatusCode)
         {
-            var token = authResponse.Data.Token;
-            await _authProvider.Login(token);
-            return null;
+            var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
+            if (loginResponse is not null)
+            {
+                await _authProvider.Login(loginResponse.Token);
+                return null;
+            }
+
+            return "Nie udało się odczytać odpowiedzi z serwera.";
         }
 
-        return authResponse?.Errors?.FirstOrDefault();
+        var errorContent = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            var problem = JsonSerializer.Deserialize<ProblemDetails>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return problem?.Title ?? $"Błąd logowania: {response.StatusCode}";
+        }
+        catch
+        {
+            return $"Błąd logowania: {response.StatusCode} - {errorContent}";
+        }
     }
 
     public async Task Logout()
@@ -45,11 +65,15 @@ public class AuthService : IAuthService
     public async Task<HttpClient> GetAuthenticatedHttpClientAsync()
     {
         var authState = await _authProvider.GetAuthenticationStateAsync();
+
         if (authState.User.Identity?.IsAuthenticated == true)
         {
+            var token = await _authProvider.GetToken();
+
             _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", await _authProvider.GetToken());
+                new AuthenticationHeaderValue("Bearer", token);
         }
+
         return _httpClient;
     }
 }

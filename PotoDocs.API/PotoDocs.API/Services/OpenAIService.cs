@@ -4,8 +4,11 @@ using Newtonsoft.Json;
 using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
 using PdfPigPage = UglyToad.PdfPig.Content.Page;
+using PotoDocs.API.Exceptions;
+using UglyToad.PdfPig;
 
 namespace PotoDocs.API.Services;
+
 public interface IOpenAIService
 {
     Task<OrderDto> GetInfoFromText(IFormFile file);
@@ -24,13 +27,17 @@ public class OpenAIService : IOpenAIService
 
     public async Task<OrderDto> GetInfoFromText(IFormFile file)
     {
+        if (file == null || file.Length == 0)
+            throw new BadRequestException("Plik PDF jest pusty lub niepoprawny.");
+
         string text;
         using (var stream = file.OpenReadStream())
         {
             text = ExtractTextFromPdf(stream);
         }
 
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_options.APIKey}");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {_options.APIKey}");
 
         var systemMessage = new
         {
@@ -44,58 +51,47 @@ public class OpenAIService : IOpenAIService
             content = _options.PromptTemplate.Replace("{TEXT}", text)
         };
 
-        var body = new
+        var requestBody = new
         {
             model = "gpt-4-turbo",
             messages = new[] { systemMessage, userMessage }
         };
 
-        var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions",
-            new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json"));
-        var errorMessage = await response.Content.ReadAsStringAsync();
-        if (response.IsSuccessStatusCode)
-        {
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var parsedResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+        var httpContent = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
 
-            string extractedContent = parsedResponse.choices[0].message.content;
+        using var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", httpContent);
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+            throw new BadRequestException($"Błąd podczas przetwarzania PDF przez OpenAI: {response.StatusCode} - {responseBody}");
+
+        try
+        {
+            var json = JsonConvert.DeserializeObject<dynamic>(responseBody);
+            string extractedContent = json.choices[0].message.content;
+
             extractedContent = extractedContent.Replace("```json", "").Replace("```", "").Trim();
 
-            try
-            {
-                var openAIResponse = JsonConvert.DeserializeObject<OrderDto>(extractedContent);
-                return openAIResponse;
-            }
-            catch
-            {
-                return new OrderDto();
-            }
+            var parsedDto = JsonConvert.DeserializeObject<OrderDto>(extractedContent);
+            return parsedDto ?? throw new Exception("Deserializacja zakończona null-em.");
         }
-        else
+        catch (Exception ex)
         {
-            throw new Exception($"Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            throw new BadRequestException("Nie udało się sparsować odpowiedzi z OpenAI. Upewnij się, że prompt generuje poprawny JSON.", ex);
         }
     }
 
     private string ExtractTextFromPdf(Stream pdfStream)
     {
-        StringBuilder textBuilder = new StringBuilder();
-        var tempFile = Path.GetTempFileName();
+        using var document = PdfDocument.Open(pdfStream);
+        var builder = new StringBuilder();
 
-        using (var fileStream = File.Create(tempFile))
+        foreach (PdfPigPage page in document.GetPages())
         {
-            pdfStream.CopyTo(fileStream);
+            builder.AppendLine(page.Text);
         }
 
-        using (var document = UglyToad.PdfPig.PdfDocument.Open(tempFile))
-        {
-            foreach (PdfPigPage page in document.GetPages())
-            {
-                textBuilder.Append(page.Text);
-            }
-        }
-
-        File.Delete(tempFile);
-        return textBuilder.ToString();
+        return builder.ToString();
     }
 }

@@ -1,16 +1,16 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 using PotoDocs.Shared.Models;
+using PotoDocs.Blazor.Helpers;
 
 namespace PotoDocs.Blazor.Services;
 
 public interface IOrderService
 {
     Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
-    Task<OrderDto> GetById(Guid id);
+    Task<OrderDto?> GetById(Guid id);
     Task Delete(Guid id);
-    Task<OrderDto> Create(byte[] fileData, string filename);
+    Task<OrderDto?> Create(byte[] fileData, string filename);
     Task Update(OrderDto dto, Guid id);
     Task<byte[]> DownloadInvoices(int year, int month);
     Task<byte[]> DownloadFile(Guid id, string fileName);
@@ -19,6 +19,7 @@ public interface IOrderService
     Task RemoveCMR(Guid id, string fileName);
     Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
 }
+
 public class OrderService : IOrderService
 {
     private readonly IAuthService _authService;
@@ -39,149 +40,104 @@ public class OrderService : IOrderService
         }
 
         var response = await httpClient.GetAsync(query);
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<OrderDto>>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return apiResponse?.Data;
-        }
-
-        throw new Exception($"API call failed with status code {response.StatusCode} and message {await response.Content.ReadAsStringAsync()}");
+        return await response.Content.ReadFromJsonAsync<IEnumerable<OrderDto>>() ?? new List<OrderDto>();
     }
-    public async Task<OrderDto> GetById(Guid id)
+
+    public async Task<OrderDto?> GetById(Guid id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         var response = await httpClient.GetAsync($"api/order/{id}");
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return apiResponse.Data;
-        }
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-        return null;
+        return await response.Content.ReadFromJsonAsync<OrderDto>();
     }
+
     public async Task Delete(Guid id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         var response = await httpClient.DeleteAsync($"api/order/{id}");
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
-    public async Task<OrderDto> Create(byte[] fileData, string fileName)
+
+    public async Task<OrderDto?> Create(byte[] fileData, string fileName)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
-        using (var multipartFormContent = new MultipartFormDataContent())
-        {
-            var streamContent = new ByteArrayContent(fileData);
-            streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+        using var multipartFormContent = new MultipartFormDataContent();
+        var streamContent = new ByteArrayContent(fileData);
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
 
-            multipartFormContent.Add(streamContent, "file", fileName);
+        multipartFormContent.Add(streamContent, "file", fileName);
 
-            var response = await httpClient.PostAsync("api/order", multipartFormContent);
+        var response = await httpClient.PostAsync("api/order", multipartFormContent);
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse<OrderDto>>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-                return apiResponse.Data;
-            }
-            else
-            {
-                throw new Exception($"Błąd API: {response.ReasonPhrase}");
-            }
-        }
+        return await response.Content.ReadFromJsonAsync<OrderDto>();
     }
 
     public async Task Update(OrderDto dto, Guid id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{id}", dto);
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
+
     public async Task<byte[]> DownloadInvoices(int year, int month)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         var response = await httpClient.GetAsync($"api/orders/invoices/{year}/{month}");
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-        if (response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadAsByteArrayAsync();
-        }
-        else
-        {
-            string errorMessage = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Błąd pobierania faktur: {response.StatusCode} - {errorMessage}");
-        }
+        return await response.Content.ReadAsByteArrayAsync();
     }
 
     public async Task<byte[]> DownloadFile(Guid id, string fileName)
     {
-        string archiveFileName = $"{fileName}";
-
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         var response = await httpClient.GetAsync($"api/orders/{id}/pdf/{fileName}");
-        if (response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadAsByteArrayAsync();
-        }
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-        return null;
+        return await response.Content.ReadAsByteArrayAsync();
     }
+
     public async Task<byte[]> DownloadInvoice(Guid id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.GetAsync($"api/orders/{id}/invoice");
-        if (response.IsSuccessStatusCode)
-        {
-            var fileBytes = await response.Content.ReadAsByteArrayAsync();
+        await response.ThrowIfNotSuccessWithProblemDetails();
 
-            return fileBytes;
-        }
-
-        return null;
+        return await response.Content.ReadAsByteArrayAsync();
     }
 
     public async Task UploadCMR(List<byte[]> filesData, Guid id, string fileName)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         using var multipartContent = new MultipartFormDataContent();
 
-        for (int i = 0; i < filesData.Count; i++)
+        foreach (var fileData in filesData)
         {
-            var fileContent = new ByteArrayContent(filesData[i]);
+            var fileContent = new ByteArrayContent(fileData);
             fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
             multipartContent.Add(fileContent, "files", fileName);
         }
 
         var response = await httpClient.PostAsync($"api/orders/{id}/cmr", multipartContent);
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
 
-    public async Task RemoveCMR(Guid id, string pdfname)
+    public async Task RemoveCMR(Guid id, string fileName)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
-        var response = await httpClient.DeleteAsync($"api/orders/{id}/cmr/{pdfname}");
+        var response = await httpClient.DeleteAsync($"api/orders/{id}/cmr/{fileName}");
+        await response.ThrowIfNotSuccessWithProblemDetails();
     }
+
     public async Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync()
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetFromJsonAsync<Dictionary<int, List<int>>>($"api/orders/invoices");
-        return response ?? new Dictionary<int, List<int>>();
+        return await httpClient.GetFromJsonAsync<Dictionary<int, List<int>>>("api/orders/invoices")
+               ?? new Dictionary<int, List<int>>();
     }
 }

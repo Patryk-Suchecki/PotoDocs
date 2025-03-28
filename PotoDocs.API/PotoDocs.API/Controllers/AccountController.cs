@@ -6,7 +6,6 @@ namespace PotoDocs.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
@@ -17,13 +16,12 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            BadRequest(ModelState);
-        }
-        var response = await _accountService.LoginAsync(dto, cancellationToken);
-        return StatusCode(response.StatusCode, response);
+            return BadRequest(ModelState);
+
+        var response = await _accountService.LoginAsync(dto);
+        return Ok(response);
     }
 }

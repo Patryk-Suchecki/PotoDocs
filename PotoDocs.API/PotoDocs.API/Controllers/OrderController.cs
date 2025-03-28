@@ -16,40 +16,41 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("all")]
+    [ProducesResponseType(typeof(IEnumerable<OrderDto>), 200)]
     public ActionResult<IEnumerable<OrderDto>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? driverEmail = null)
     {
-        var response = _orderService.GetAll(page, pageSize, driverEmail);
-
-        return StatusCode(response.StatusCode, response);
+        var orders = _orderService.GetAll(page, pageSize, driverEmail);
+        return Ok(orders);
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(OrderDto), 200)]
     public ActionResult<OrderDto> GetById([FromRoute] Guid id)
     {
-        var response = _orderService.GetById(id);
-        return StatusCode(response.StatusCode, response);
+        var order = _orderService.GetById(id);
+        return Ok(order);
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(OrderDto), 201)]
     public async Task<ActionResult<OrderDto>> Create([FromForm] IFormFile file)
     {
-        var response = await _orderService.CreateFromPdf(file);
-        return StatusCode(response.StatusCode, response);
+        var createdOrder = await _orderService.CreateFromPdf(file);
+        return CreatedAtAction(nameof(GetById), new { id = createdOrder.Id }, createdOrder);
     }
 
     [HttpPut("{id}")]
-    public ActionResult Update([FromBody] OrderDto dto, [FromRoute] Guid id)
+    public IActionResult Update([FromBody] OrderDto dto, [FromRoute] Guid id)
     {
         if (!ModelState.IsValid)
-        {
-            BadRequest(ModelState);
-        }
+            return BadRequest(ModelState);
+
         _orderService.Update(id, dto);
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete([FromRoute] Guid id)
+    public IActionResult Delete([FromRoute] Guid id)
     {
         _orderService.Delete(id);
         return NoContent();

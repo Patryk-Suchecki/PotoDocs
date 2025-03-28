@@ -1,49 +1,51 @@
 ﻿using Azure;
 using Azure.Communication.Email;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 public interface IEmailService
 {
-    void SendEmail(string toEmail, string subject, string plainTextContent, string htmlContent);
+    Task SendEmailAsync(string toEmail, string subject, string plainTextContent, string htmlContent, CancellationToken cancellationToken = default);
 }
 
 public class EmailService : IEmailService
 {
     private readonly EmailClient _emailClient;
     private readonly string _senderAddress;
+    private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration configuration)
+    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
     {
         _emailClient = new EmailClient(configuration["COMMUNICATION_SERVICES_CONNECTION_STRING"]);
-        _senderAddress = configuration["SenderAddress"];
+        _senderAddress = configuration["SenderAddress"] ?? throw new ArgumentNullException(nameof(_senderAddress));
+        _logger = logger;
     }
 
-    public void SendEmail(string toEmail, string subject, string plainTextContent, string htmlContent)
+    public async Task SendEmailAsync(string toEmail, string subject, string plainTextContent, string htmlContent, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(toEmail))
-            throw new ArgumentException("Recipient email cannot be null or empty.", nameof(toEmail));
-        if (string.IsNullOrEmpty(subject))
-            throw new ArgumentException("Email subject cannot be null or empty.", nameof(subject));
-        if (string.IsNullOrEmpty(plainTextContent))
-            throw new ArgumentException("Plain text content cannot be null or empty.", nameof(plainTextContent));
-        if (string.IsNullOrEmpty(htmlContent))
-            throw new ArgumentException("HTML content cannot be null or empty.", nameof(htmlContent));
+        ArgumentException.ThrowIfNullOrEmpty(toEmail);
+        ArgumentException.ThrowIfNullOrEmpty(subject);
+        ArgumentException.ThrowIfNullOrEmpty(plainTextContent);
+        ArgumentException.ThrowIfNullOrEmpty(htmlContent);
 
-        var emailMessage = new EmailMessage(
-            senderAddress: _senderAddress,
-            content: new EmailContent(subject)
+        var message = new EmailMessage(
+            _senderAddress,
+            new EmailRecipients(new List<EmailAddress> { new EmailAddress(toEmail) }),
+            new EmailContent(subject)
             {
                 PlainText = plainTextContent,
                 Html = htmlContent
-            },
-            recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(toEmail) }));
+            });
 
         try
         {
-            EmailSendOperation emailSendOperation = _emailClient.Send(WaitUntil.Completed, emailMessage);
+            var operation = await _emailClient.SendAsync(WaitUntil.Completed, message, cancellationToken);
+            _logger.LogInformation("Email sent to {Recipient}. Operation Id: {OperationId}", toEmail, operation.Id);
         }
         catch (RequestFailedException ex)
         {
-            throw;
+            _logger.LogError(ex, "Błąd podczas wysyłania maila do {Recipient}", toEmail);
+            throw new ApplicationException("Nie udało się wysłać wiadomości email. Spróbuj ponownie później.");
         }
     }
 }

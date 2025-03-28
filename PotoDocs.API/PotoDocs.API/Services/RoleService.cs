@@ -1,4 +1,5 @@
-﻿using PotoDocs.API.Models;
+﻿using PotoDocs.API.Exceptions;
+using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
 
 
@@ -6,8 +7,9 @@ namespace PotoDocs.API.Services;
 
 public interface IRoleService
 {
-    ApiResponse<List<string>> GetRoles();
+    List<string> GetRoles();
 }
+
 
 public class RoleService : IRoleService
 {
@@ -18,9 +20,16 @@ public class RoleService : IRoleService
         _context = context;
     }
 
-    public ApiResponse<List<string>> GetRoles()
+    public List<string> GetRoles()
     {
-        var roleNames = _context.Roles.Select(role => role.Name).ToList();
-        return ApiResponse<List<string>>.Success(roleNames);
+        var roleNames = _context.Roles
+            .Select(role => role.Name)
+            .ToList();
+
+        if (roleNames == null || roleNames.Count == 0)
+            throw new BadRequestException("Brak zdefiniowanych ról w systemie.");
+
+        return roleNames;
     }
 }
+

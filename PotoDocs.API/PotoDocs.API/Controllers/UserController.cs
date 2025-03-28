@@ -20,52 +20,54 @@ public class UserController : ControllerBase
 
     [HttpPost("register")]
     [Authorize(Roles = "admin,manager")]
-    public ActionResult Create([FromBody] UserDto dto)
+    public async Task<IActionResult> Register([FromBody] UserDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            BadRequest(ModelState);
-        }
-        var response = _userService.Register(dto);
-        return StatusCode(response.StatusCode, response);
+            return BadRequest(ModelState);
+
+        await _userService.RegisterAsync(dto);
+        return StatusCode(StatusCodes.Status201Created);
     }
 
     [HttpPost("change-password")]
-    public ActionResult ChangePassword([FromBody] ChangePasswordDto dto)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            BadRequest(ModelState);
-        }
-        var response = _userService.ChangePassword(dto);
-        return StatusCode(response.StatusCode, response);
+            return BadRequest(ModelState);
+
+        await _userService.ChangePasswordAsync(dto);
+        return NoContent();
     }
 
     [HttpPost("generate-password")]
-    public ActionResult GeneratePassword([FromBody] string email)
+    [Authorize(Roles = "admin,manager")]
+    public async Task<IActionResult> GeneratePassword([FromBody] string email)
     {
-        var response = _userService.GeneratePassword(email);
-        return StatusCode(response.StatusCode, response);
+        await _userService.GeneratePasswordAsync(email);
+        return NoContent();
     }
 
     [HttpGet("all")]
-    public ActionResult<IEnumerable<UserDto>> GetUsers()
+    [Authorize(Roles = "admin,manager")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
-        var response = _userService.GetAll();
-        return StatusCode(response.StatusCode, response);
+        var users = await _userService.GetAllAsync();
+        return Ok(users);
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<string>> GetUser()
+    [HttpGet("me")]
+    public async Task<ActionResult<UserDto>> GetUser()
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-        var response = _userService.GetById(userId);
-        return StatusCode(response.StatusCode, response);
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _userService.GetByIdAsync(userId);
+        return Ok(user);
     }
-    [HttpDelete()]
-    public ActionResult Delete([FromBody] string email)
+
+    [HttpDelete("{email}")]
+    [Authorize(Roles = "admin,manager")]
+    public async Task<IActionResult> Delete([FromRoute] string email)
     {
-        _userService.Delete(email);
+        await _userService.DeleteAsync(email);
         return NoContent();
     }
 }

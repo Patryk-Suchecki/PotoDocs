@@ -3,14 +3,14 @@ using PotoDocs.API.Models;
 using PotoDocs.Shared.Models;
 using PotoDocs.API.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 namespace PotoDocs.API.Services;
 
 public interface IAccountService
 {
-    Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default);
+    Task<LoginResponseDto> LoginAsync(LoginDto dto);
 }
+
 
 public class AccountService : IAccountService
 {
@@ -24,27 +24,27 @@ public class AccountService : IAccountService
         _hasher = hasher;
         _tokenService = tokenService;
     }
-    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
+
+    public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
     {
-        var user = _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == dto.Email);
+        var user = await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user is null)
-        {
-            return ApiResponse<LoginResponseDto>.Failure("Nieprawidłowe hasło lub adres E-mail", HttpStatusCode.Unauthorized);
-        }
+            throw new UnauthorizedAccessException("Nieprawidłowe hasło lub adres E-mail");
 
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (result == PasswordVerificationResult.Failed)
-        {
-            return ApiResponse<LoginResponseDto>.Failure("Nieprawidłowe hasło lub adres E-mail", HttpStatusCode.Unauthorized);
-        }
+            throw new UnauthorizedAccessException("Nieprawidłowe hasło lub adres E-mail");
 
         var jwt = _tokenService.GenerateJWT(user);
-        var authResponse = new LoginResponseDto
+
+        return new LoginResponseDto
         {
             Role = user.Role.Name,
             Token = jwt
         };
-        return ApiResponse<LoginResponseDto>.Success(authResponse);
     }
 }
+

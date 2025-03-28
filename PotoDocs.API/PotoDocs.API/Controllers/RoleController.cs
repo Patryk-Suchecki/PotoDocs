@@ -4,7 +4,6 @@ using PotoDocs.API.Services;
 
 namespace PotoDocs.API.Controllers;
 
-
 [Route("api/[controller]")]
 [ApiController]
 public class RoleController : ControllerBase
@@ -18,9 +17,10 @@ public class RoleController : ControllerBase
 
     [HttpGet("all")]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<string>> GetRoles()
     {
-        var response = _roleService.GetRoles();
-        return StatusCode(response.StatusCode, response);
+        var roles = _roleService.GetRoles();
+        return Ok(roles);
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PotoDocs.API.Services;
 
-[Route("api/orders/")]
+[Route("api/orders")]
 [ApiController]
 [Authorize(Roles = "admin,manager")]
 public class OrderFilesController : ControllerBase
@@ -17,12 +17,12 @@ public class OrderFilesController : ControllerBase
     [HttpPost("{id}/cmr")]
     public async Task<ActionResult> UploadCMR(Guid id, [FromForm] List<IFormFile> files)
     {
-        var response = await _orderService.AddCmr(files, id);
-        return StatusCode(response.StatusCode, response);
+        var updatedOrder = await _orderService.AddCmr(files, id);
+        return Ok(updatedOrder); // albo CreatedAtAction z ID, jeśli chcesz
     }
 
     [HttpDelete("{id}/cmr/{fileName}")]
-    public ActionResult DeleteCMR(string fileName)
+    public IActionResult DeleteCMR(string fileName)
     {
         _orderService.DeleteCmr(fileName);
         return NoContent();
@@ -35,6 +35,7 @@ public class OrderFilesController : ControllerBase
         {
             return BadRequest("Nazwa pliku jest nieprawidłowa.");
         }
+
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs", fileName);
 
         if (!System.IO.File.Exists(filePath))
@@ -54,30 +55,26 @@ public class OrderFilesController : ControllerBase
         var pdfData = await _orderService.GetPdf(id);
 
         if (pdfData == null || pdfData.Length == 0)
-        {
-            return BadRequest("Nie udało się wygenerować faktury.");
-        }
+            return NotFound("Nie udało się wygenerować faktury.");
 
-        return File(pdfData, "application/pdf");
+        return File(pdfData, "application/pdf", $"faktura-{id}.pdf");
     }
 
     [HttpGet("invoices/{year}/{month}")]
     public async Task<IActionResult> GetInvoices(int year, int month)
     {
-        var pdfData = await _orderService.GetZip(year, month);
+        var zipData = await _orderService.GetZip(year, month);
 
-        if (pdfData == null || pdfData.Length == 0)
-        {
-            return BadRequest("Nie udało się wygenerować faktury.");
-        }
+        if (zipData == null || zipData.Length == 0)
+            return NotFound("Brak faktur dla danego miesiąca.");
 
-        return File(pdfData, "application/zip");
+        return File(zipData, "application/zip", $"faktury-{month:D2}-{year}.zip");
     }
+
     [HttpGet("invoices")]
     public async Task<IActionResult> GetAvailableYearsAndMonths()
     {
         var data = await _orderService.GetAvailableYearsAndMonthsAsync();
         return Ok(data);
     }
-
 }

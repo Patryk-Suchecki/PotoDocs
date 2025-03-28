@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using PotoDocs.Shared.Models;
+﻿using System.Net.Http.Json;
+using PotoDocs.Blazor.Helpers;
 
 namespace PotoDocs.Blazor.Services;
 
@@ -16,16 +16,15 @@ public class RoleService : IRoleService
     {
         _authService = authService;
     }
+
     public async Task<IEnumerable<string>> GetRoles()
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync("api/role/all");
 
-        var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<string>>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-        return apiResponse.Data;
+        var response = await httpClient.GetAsync("api/role/all");
+        await response.ThrowIfNotSuccessWithProblemDetails(); // 💥
+
+        var roles = await response.Content.ReadFromJsonAsync<IEnumerable<string>>();
+        return roles ?? new List<string>();
     }
 }
