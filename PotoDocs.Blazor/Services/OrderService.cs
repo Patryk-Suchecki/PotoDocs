@@ -8,7 +8,7 @@ namespace PotoDocs.Blazor.Services;
 public interface IOrderService
 {
     Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
-    Task<OrderDto?> GetById(Guid id);
+    Task<OrderDto> GetById(Guid id);
     Task Delete(Guid id);
     Task<OrderDto?> Create(byte[] fileData, string filename);
     Task Update(OrderDto dto, Guid id);
@@ -29,14 +29,14 @@ public class OrderService : IOrderService
         _authService = authService;
     }
 
-    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null)
+    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, Guid? userId = null)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
 
         var query = $"api/order/all?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrEmpty(driverEmail))
+        if (userId != null)
         {
-            query += $"&driverEmail={Uri.EscapeDataString(driverEmail)}";
+            query += $"&userId={userId}";
         }
 
         var response = await httpClient.GetAsync(query);
