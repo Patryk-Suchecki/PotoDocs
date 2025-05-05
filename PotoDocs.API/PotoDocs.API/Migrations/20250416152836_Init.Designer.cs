@@ -12,8 +12,8 @@ using PotoDocs.API.Models;
 namespace PotoDocs.API.Migrations
 {
     [DbContext(typeof(PotodocsDbContext))]
-    [Migration("20250310173223_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250416152836_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

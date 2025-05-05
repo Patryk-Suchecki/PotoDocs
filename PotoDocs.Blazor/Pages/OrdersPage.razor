@@ -49,7 +49,7 @@
 
                     @foreach (var order in Orders)
                     {
-                        string currentMonthYear = order.IssueDate.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
+                        string currentMonthYear = order.IssueDate?.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
                         bool isExpanded = ExpandedOrderId == order.Id;
                         string rowClass = isExpanded ? "order-item selected-row" : "order-item";
 
@@ -238,15 +238,8 @@
 
     private Guid? ExpandedOrderId { get; set; }
 
-    private void ToggleOrderActions(Guid orderId)
+    private void ToggleOrderActions(Guid? orderId)
     {
-        if (ExpandedOrderId == orderId)
-        {
-            ExpandedOrderId = null; // Zamknij, jeśli już jest otwarte
-        }
-        else
-        {
-            ExpandedOrderId = orderId; // Otwórz nowe
-        }
+        ExpandedOrderId = ExpandedOrderId == orderId ? null : orderId;
     }
 }

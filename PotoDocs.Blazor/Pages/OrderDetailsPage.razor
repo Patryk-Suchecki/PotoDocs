@@ -7,7 +7,7 @@
 
 <h3 class="header">Szczegóły zlecenia</h3>
 <div class="card-container">
-    @if (IsBusy)
+@if (IsBusy)
 {
     <div class="spinner-border text-danger" role="status">
         <span class="visually-hidden">Ładowanie...</span>
@@ -73,7 +73,7 @@ else
 
         <div class="detail-item">
             <label>Data wystawienia faktury:</label>
-            <span>@OrderDto.IssueDate.ToString("dd.MM.yyyy")</span>
+            <span>@OrderDto.IssueDate?.ToString("dd.MM.yyyy")</span>
         </div>
 
         <div class="detail-item">

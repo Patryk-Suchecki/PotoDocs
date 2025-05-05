@@ -8,8 +8,17 @@ using PotoDocs.API.Models;
 using PotoDocs.API.Models.Validators;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
+using QuestPDF.Drawing;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = LicenseType.Community;
+
+using var tahomaRegular = File.OpenRead("wwwroot/fonts/tahoma.ttf");
+FontManager.RegisterFontWithCustomName("Tahoma", tahomaRegular);
+
+using var tahomaBold = File.OpenRead("wwwroot/fonts/tahomabd.ttf");
+FontManager.RegisterFontWithCustomName("Tahoma-Bold", tahomaBold);
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.AddAuthentication(x =>
 {

@@ -4,6 +4,7 @@ namespace PotoDocs.Shared.Models;
 
 public class UserDto
 {
+    public Guid Id { get; set; }
     [Required(ErrorMessage = "Imię jest wymagane.")]
     [RegularExpression(@"^[a-zA-ZĄĆĘŁŃÓŚŹŻąćęłńóśźż]+$", ErrorMessage = "Imię może zawierać tylko litery.")]
     [StringLength(50, ErrorMessage = "Imię może mieć maksymalnie 50 znaków.")]

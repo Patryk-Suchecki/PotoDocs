@@ -7,16 +7,16 @@ namespace PotoDocs.Blazor.Services;
 
 public interface IOrderService
 {
-    Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, string? driverEmail = null);
-    Task<OrderDto> GetById(Guid id);
-    Task Delete(Guid id);
+    Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, Guid? userId = null);
+    Task<OrderDto> GetById(Guid? id);
+    Task Delete(Guid? id);
     Task<OrderDto?> Create(byte[] fileData, string filename);
-    Task Update(OrderDto dto, Guid id);
+    Task Update(OrderDto dto, Guid? id);
     Task<byte[]> DownloadInvoices(int year, int month);
-    Task<byte[]> DownloadFile(Guid id, string fileName);
-    Task<byte[]> DownloadInvoice(Guid id);
-    Task UploadCMR(List<byte[]> filesData, Guid id, string fileName);
-    Task RemoveCMR(Guid id, string fileName);
+    Task<byte[]> DownloadFile(Guid? id, string fileName);
+    Task<byte[]> DownloadInvoice(Guid? id);
+    Task UploadCMR(List<byte[]> filesData, Guid? id, string fileName);
+    Task RemoveCMR(Guid? id, string fileName);
     Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
 }
 
@@ -45,7 +45,7 @@ public class OrderService : IOrderService
         return await response.Content.ReadFromJsonAsync<IEnumerable<OrderDto>>() ?? new List<OrderDto>();
     }
 
-    public async Task<OrderDto?> GetById(Guid id)
+    public async Task<OrderDto?> GetById(Guid? id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.GetAsync($"api/order/{id}");
@@ -54,7 +54,7 @@ public class OrderService : IOrderService
         return await response.Content.ReadFromJsonAsync<OrderDto>();
     }
 
-    public async Task Delete(Guid id)
+    public async Task Delete(Guid? id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.DeleteAsync($"api/order/{id}");
@@ -77,7 +77,7 @@ public class OrderService : IOrderService
         return await response.Content.ReadFromJsonAsync<OrderDto>();
     }
 
-    public async Task Update(OrderDto dto, Guid id)
+    public async Task Update(OrderDto dto, Guid? id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.PutAsJsonAsync($"api/order/{id}", dto);
@@ -93,7 +93,7 @@ public class OrderService : IOrderService
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    public async Task<byte[]> DownloadFile(Guid id, string fileName)
+    public async Task<byte[]> DownloadFile(Guid? id, string fileName)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.GetAsync($"api/orders/{id}/pdf/{fileName}");
@@ -102,7 +102,7 @@ public class OrderService : IOrderService
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    public async Task<byte[]> DownloadInvoice(Guid id)
+    public async Task<byte[]> DownloadInvoice(Guid? id)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.GetAsync($"api/orders/{id}/invoice");
@@ -111,7 +111,7 @@ public class OrderService : IOrderService
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    public async Task UploadCMR(List<byte[]> filesData, Guid id, string fileName)
+    public async Task UploadCMR(List<byte[]> filesData, Guid? id, string fileName)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         using var multipartContent = new MultipartFormDataContent();
@@ -127,7 +127,7 @@ public class OrderService : IOrderService
         await response.ThrowIfNotSuccessWithProblemDetails();
     }
 
-    public async Task RemoveCMR(Guid id, string fileName)
+    public async Task RemoveCMR(Guid? id, string fileName)
     {
         var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
         var response = await httpClient.DeleteAsync($"api/orders/{id}/cmr/{fileName}");

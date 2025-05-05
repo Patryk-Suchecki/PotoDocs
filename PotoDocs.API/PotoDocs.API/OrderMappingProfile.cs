@@ -36,6 +36,7 @@ public class OrderMappingProfile : Profile
         // Mapowanie OrderDto → Order
         CreateMap<OrderDto, Order>()
             .ForMember(dest => dest.Driver, opt => opt.Ignore()) // ✅ Ignorujemy Driver, bo jest tylko Email w DTO
+            .ForMember(dest => dest.DriverId, opt => opt.Ignore())
             .ForMember(dest => dest.CMRFiles, opt => opt.Ignore()) // ✅ CMRFiles muszą być obsługiwane osobno
             .ForMember(dest => dest.Stops, opt => opt.MapFrom(src => src.Stops)) // ✅ Mapowanie listy przystanków
             .ForMember(dest => dest.Company, opt => opt.MapFrom(src => src.Company)); // ✅ Mapowanie firmy

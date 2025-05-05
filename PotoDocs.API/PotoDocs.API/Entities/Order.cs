@@ -1,5 +1,4 @@
-﻿using PotoDocs.API.Entities;
-namespace PotoDocs.API.Entities;
+﻿namespace PotoDocs.API.Entities;
 public class Order
 {
     public Guid Id { get; set; } = Guid.NewGuid();

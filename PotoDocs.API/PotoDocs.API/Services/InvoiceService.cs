@@ -1,33 +1,21 @@
-﻿using iTextSharp.text.pdf;
-using PotoDocs.API.Entities;
+﻿using PotoDocs.API.Entities;
 using PotoDocs.API;
 using System.Globalization;
 using PotoDocs.Shared.Models;
+using QuestPDF.Fluent;
+
 public interface IInvoiceService
 {
     Task<byte[]> GenerateInvoicePdf(Order order);
 }
+
 public class InvoiceService : IInvoiceService
 {
-    private readonly string _templateFilePath;
-    private readonly string _fontPath;
-
-    public InvoiceService()
-    {
-        _templateFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/templates", "template.pdf");
-        _fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/fonts", "tahomabd.ttf");
-    }
-
-    public Task<byte[]> GenerateInvoicePdf(Order order)
+    public async Task<byte[]> GenerateInvoicePdf(Order order)
     {
         if (order == null)
             throw new ArgumentNullException(nameof(order));
 
-        return FillPdfFormAsync(order);
-    }
-
-    private async Task<byte[]> FillPdfFormAsync(Order order)
-    {
         var lastUnloadingStop = order.Stops
             .Where(stop => stop.Type == StopType.Unloading)
             .OrderByDescending(stop => stop.Date)
@@ -40,63 +28,96 @@ public class InvoiceService : IInvoiceService
 
         string[] acceptedPolandNames = { "poland", "polska", "pl" };
         decimal vatRate = acceptedPolandNames.Contains(order.Company.Country.ToLowerInvariant()) ? 0.23m : 0m;
+        decimal netAmount = order.Price ?? 0;
+        decimal grossAmount = Math.Round(netAmount * (1 + vatRate), 2);
+        decimal vatAmount = Math.Round(netAmount * vatRate, 2);
+        decimal vatAmountPln = Math.Round(vatAmount * euroRateResult.Rate, 2);
+        decimal totalAmountPln = Math.Round(grossAmount * euroRateResult.Rate, 2);
 
-        if (!File.Exists(_templateFilePath))
-            throw new FileNotFoundException("Szablon PDF nie został znaleziony.", _templateFilePath);
+        var model = new InvoiceViewModel
+        {
+            DocumentTitle = "FAKTURA VAT",
+            DocumentNumber = $"Nr {order.InvoiceNumber}/{(order.IssueDate ?? DateTime.Now):MM/yyyy}",
 
-        if (!File.Exists(_fontPath))
-            throw new FileNotFoundException("Font PDF nie został znaleziony.", _fontPath);
+            Seller = new PartyInfo
+            {
+                Name = "Jakub Potoniec POTO-EXPRESS Transport",
+                Address = "Jana Pawła II 44, 34-600 Limanowa",
+                NIP = "7372233342"
+            },
+            Buyer = new PartyInfo
+            {
+                Name = order.Company.Name,
+                Address = order.Company.Address,
+                NIP = order.Company.NIP.ToString()
+            },
 
-        using var pdfReader = new PdfReader(_templateFilePath);
-        using var memoryStream = new MemoryStream();
-        using var pdfStamper = new PdfStamper(pdfReader, memoryStream);
+            PlaceOfIssue = "Limanowa",
+            SaleDate = lastUnloadingStop.Date,
+            IssueDate = order.IssueDate ?? DateTime.Now,
+            PaymentMethod = "Przelew",
+            PaymentDeadline = $"{order.PaymentDeadline} dni",
 
-        var pdf = pdfStamper.AcroFields;
+            Bank = new BankInfo
+            {
+                BankName = "mBank S.A.",
+                AccountPLN = "44 1140 2004 0000 3002 8244 7469",
+                AccountEUR = "73 1140 2004 0000 3512 1581 5428",
+                IBAN = "PL73 1140 2004 0000 3512 1581 5428",
+                SWIFT = "BREXPLPWMBK"
+            },
 
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        BaseFont bfArialBold = BaseFont.CreateFont(_fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            Comments = $"Zlecenie Transportowe nr {order.CompanyOrderNumber}",
 
-        decimal netAmount = (decimal)order.Price;
-        decimal grossAmount = netAmount * (vatRate + 1);
-        decimal vatAmount = netAmount * vatRate;
-        decimal vatAmountPln = vatAmount * euroRateResult.Rate;
-        decimal totalAmountPln = grossAmount * euroRateResult.Rate;
+            Items = new List<InvoiceItem>
+            {
+                new InvoiceItem
+                {
+                    Number = "1",
+                    Name = "Usługa Transportowa",
+                    Quantity = "1",
+                    Unit = "Usługa",
+                    NetPrice = FormatCurrency(netAmount, "€"),
+                    NetValue = FormatCurrency(netAmount, "€"),
+                    VatRate = vatRate == 0 ? "NP" : (vatRate * 100).ToString("F0") + "%",
+                    VatAmount = FormatCurrency(vatAmount, "€"),
+                    GrossValue = FormatCurrency(grossAmount, "€")
+                }
+            },
 
-        pdf.SetField("NUMER_FAKTURY", $"Nr {order.InvoiceNumber}/{order.IssueDate:MM}/{order.IssueDate:yyyy}");
-        pdf.SetField("NAZWA_FIRMY", order.Company.Name);
-        pdf.SetField("ADRES_FIRMY", order.Company.Address);
-        pdf.SetField("NIP_FIRMY", order.Company.NIP.ToString());
-        pdf.SetField("DATA_SPRZEDAZY", lastUnloadingStop.Date.ToString("dd-MM-yyyy"));
-        pdf.SetField("DATA_WYSTAWIENIA", order.IssueDate?.ToString("dd-MM-yyyy"));
-        pdf.SetField("TERMIN_ZAPLATY", order.PaymentDeadline + " dni");
-        pdf.SetField("CENA_NETTO1", FormatCurrency(netAmount, "€"));
-        pdf.SetField("CENA_NETTO2", FormatCurrency(netAmount, "€"));
-        pdf.SetField("CENA_NETTO3", FormatCurrency(netAmount, "€"));
-        pdf.SetField("WARTOSC_BRUTTO1", FormatCurrency(grossAmount, "€"));
-        pdf.SetFieldProperty("WARTOSC_BRUTTO2", "textfont", bfArialBold, null);
-        pdf.SetFieldProperty("WARTOSC_BRUTTO3", "textfont", bfArialBold, null);
-        pdf.SetField("WARTOSC_BRUTTO2", FormatCurrency(grossAmount, "€"));
-        pdf.SetField("WARTOSC_BRUTTO3", FormatCurrency(grossAmount, "€"));
-        pdf.SetField("STAWKA_VAT", vatRate == 0 ? "NP" : (vatRate * 100).ToString("F0") + "%");
-        pdf.SetField("KWOTA_VAT1", FormatCurrency(vatAmount, "€"));
-        pdf.SetField("KWOTA_VAT2", FormatCurrency(vatAmount, "€"));
-        pdf.SetField("SLOWNIE_EURO", NumberToWordsConverter.AmountInWords(grossAmount, "EUR"));
-        pdf.SetField("CENA_EURO", euroRateResult.Rate.ToString("F4", CultureInfo.InvariantCulture));
-        pdf.SetField("KWOTA_VAT_PLN", FormatCurrency(vatAmountPln, "zł"));
-        pdf.SetField("SLOWNIE_KWOTA_VAT_PLN", NumberToWordsConverter.AmountInWords(vatAmountPln, "PLN"));
-        pdf.SetField("CALA_KWOTA_PLN", FormatCurrency(totalAmountPln, "zł"));
-        pdf.SetField("SLOWNIE_CALA_KWOTA_PLN", NumberToWordsConverter.AmountInWords(totalAmountPln, "PLN"));
-        pdf.SetField("KURS_EURO_INFO", euroRateResult.Message);
-        pdf.SetFieldProperty("UWAGI", "textfont", bfArialBold, null);
-        pdf.SetField("UWAGI", order.CompanyOrderNumber);
+            Summary = new InvoiceSummary
+            {
+                TotalToPay = FormatCurrency(grossAmount, "€"),
+                TotalNet = FormatCurrency(netAmount, "€"),
+                TotalVat = FormatCurrency(vatAmount, "€"),
+                TotalGross = FormatCurrency(grossAmount, "€"),
+                InWordsEuro = NumberToWordsConverter.AmountInWords(grossAmount, "EUR"),
+                VatInPLN = FormatCurrency(vatAmountPln, "zł"),
+                VatInPLNWords = NumberToWordsConverter.AmountInWords(vatAmountPln, "PLN"),
+                AllInPLN = FormatCurrency(totalAmountPln, "zł"),
+                AllInPLNWords = NumberToWordsConverter.AmountInWords(totalAmountPln, "PLN")
+            },
 
-        pdfStamper.FormFlattening = true;
+            Currency = new CurrencyInfo
+            {
+                ExchangeRate = euroRateResult.Rate.ToString("F4", CultureInfo.GetCultureInfo("pl-PL")) + " zł",
+                NbpTable = euroRateResult.TableNumber,
+                NbpDate = euroRateResult.EffectiveDate.ToString("dd-MM-yyyy")
+            },
 
-        return memoryStream.ToArray();
+            PrimaryColorLight = "#E68E8C",
+            PrimaryColorDark = "#D9534F",
+            LabelColor = "#616161"
+        };
+
+        var document = new InvoiceDocument(model);
+        using var stream = new MemoryStream();
+        document.GeneratePdf(stream);
+        return stream.ToArray();
     }
 
     private string FormatCurrency(decimal amount, string currencySymbol = "")
     {
-        return string.Format(CultureInfo.InvariantCulture, "{0:N2} {1}", amount, currencySymbol).Trim();
+        return string.Format(CultureInfo.GetCultureInfo("pl-PL"), "{0:N2} {1}", amount, currencySymbol).Trim();
     }
 }

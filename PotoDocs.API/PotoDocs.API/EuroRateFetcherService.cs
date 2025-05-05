@@ -6,56 +6,42 @@ public static class EuroRateFetcherService
 {
     public static async Task<EuroRateResult> GetEuroRateAsync(DateTime requestedDate)
     {
-        string apiUrl = "http://api.nbp.pl/api/exchangerates/rates/a/EUR/{0}/?format=json";
-        string formattedDate = requestedDate.AddDays(-1).ToString("yyyy-MM-dd");
-        string url = string.Format(apiUrl, formattedDate);
+        const string apiUrl = "http://api.nbp.pl/api/exchangerates/rates/a/EUR/{0}/?format=json";
 
-        using (HttpClient client = new HttpClient())
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+
+        for (int i = 1; i <= 5; i++)
         {
-            HttpResponseMessage response;
+            string formattedDate = requestedDate.AddDays(-i).ToString("yyyy-MM-dd");
+            string url = string.Format(apiUrl, formattedDate);
 
-            while (true)
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
             {
-                url = string.Format(apiUrl, formattedDate);
-                response = await client.GetAsync(url);
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var exchangeRateData = JsonSerializer.Deserialize<ExchangeRatesSeries>(jsonContent, options);
 
-                if (response.IsSuccessStatusCode)
+                var rate = exchangeRateData.Rates[0];
+
+                return new EuroRateResult
                 {
-                    break;
-                }
-                else
-                {
-                    requestedDate = requestedDate.AddDays(-1);
-                    formattedDate = requestedDate.ToString("yyyy-MM-dd");
-                }
+                    Rate = rate.Mid,
+                    TableNumber = rate.No,
+                    EffectiveDate = rate.EffectiveDate
+                };
             }
-
-            string jsonContent = await response.Content.ReadAsStringAsync();
-
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var exchangeRateData = JsonSerializer.Deserialize<ExchangeRatesSeries>(jsonContent, options);
-
-            var rate = exchangeRateData.Rates[0].Mid;
-            var tableNo = exchangeRateData.Rates[0].No;
-            var effectiveDate = exchangeRateData.Rates[0].EffectiveDate.ToString("dd-MM-yyyy");
-
-
-            string message = $"Kwota VAT została przeliczona na złote polskie po kursie średnim NBP dla EUR, Tabela nr\n{tableNo} z {effectiveDate}.";
-
-            return new EuroRateResult
-            {
-                Rate = rate,
-                Message = message
-            };
         }
-    }
 
+        throw new Exception("Nie udało się pobrać kursu EUR z ostatnich 5 dni.");
+    }
 }
 
 public class EuroRateResult
 {
     public decimal Rate { get; set; }
-    public string Message { get; set; }
+    public string TableNumber { get; set; }
+    public DateTime EffectiveDate { get; set; }
 }
 
 public class ExchangeRatesSeries
@@ -70,5 +56,5 @@ public class Rate
 {
     public string No { get; set; }
     public DateTime EffectiveDate { get; set; }
-    public decimal Mid { get; set; } 
+    public decimal Mid { get; set; }
 }

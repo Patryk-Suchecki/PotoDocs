@@ -2,16 +2,16 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using PotoDocs.API.Models;
-using PotoDocs.Shared.Models;
 using PdfPigPage = UglyToad.PdfPig.Content.Page;
 using PotoDocs.API.Exceptions;
 using UglyToad.PdfPig;
+using PotoDocs.API.Entities;
 
 namespace PotoDocs.API.Services;
 
 public interface IOpenAIService
 {
-    Task<OrderDto> GetInfoFromText(IFormFile file);
+    Task<Order> GetInfoFromText(IFormFile file);
 }
 
 public class OpenAIService : IOpenAIService
@@ -25,7 +25,7 @@ public class OpenAIService : IOpenAIService
         _options = options.Value;
     }
 
-    public async Task<OrderDto> GetInfoFromText(IFormFile file)
+    public async Task<Order> GetInfoFromText(IFormFile file)
     {
         if (file == null || file.Length == 0)
             throw new BadRequestException("Plik PDF jest pusty lub niepoprawny.");
@@ -73,8 +73,8 @@ public class OpenAIService : IOpenAIService
 
             extractedContent = extractedContent.Replace("```json", "").Replace("```", "").Trim();
 
-            var parsedDto = JsonConvert.DeserializeObject<OrderDto>(extractedContent);
-            return parsedDto ?? throw new Exception("Deserializacja zakończona null-em.");
+            var parsed = JsonConvert.DeserializeObject<Order>(extractedContent);
+            return parsed ?? throw new Exception("Deserializacja zakończona null-em.");
         }
         catch (Exception ex)
         {

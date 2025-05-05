@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\SendEmailPage.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Pages\SendEmailPage.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Blazored.Modal" Version="7.3.1" />

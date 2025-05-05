@@ -155,15 +155,15 @@ public class OrderService : IOrderService
             await file.CopyToAsync(stream);
         }
 
-        var orderDto = await _openAIService.GetInfoFromText(file);
+        var order = await _openAIService.GetInfoFromText(file);
 
-        var lastUnloadingStop = orderDto.Stops
+        var lastUnloadingStop = order.Stops
             .Where(stop => stop.Type == StopType.Unloading)
             .OrderByDescending(stop => stop.Date)
             .FirstOrDefault();
 
         var issueDate = lastUnloadingStop?.Date ?? DateTime.Now;
-        orderDto.IssueDate = issueDate;
+        order.IssueDate = issueDate;
 
         int lastInvoiceNumber = _dbContext.Orders
             .Where(o => o.IssueDate.HasValue &&
@@ -173,10 +173,9 @@ public class OrderService : IOrderService
             .Select(o => o.InvoiceNumber ?? 0)
             .FirstOrDefault();
 
-        orderDto.InvoiceNumber = lastInvoiceNumber + 1;
-        orderDto.PDFUrl = fileName;
-
-        var order = _mapper.Map<Order>(orderDto);
+        order.InvoiceNumber = lastInvoiceNumber + 1;
+        order.PDFUrl = fileName;
+        
         _dbContext.Orders.Add(order);
         _dbContext.SaveChanges();
 

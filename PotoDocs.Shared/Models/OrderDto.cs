@@ -7,9 +7,9 @@ public class OrderDto
     /*
         Dane o zleceniu
     */
-    public Guid Id { get; set; }
-    public int InvoiceNumber { get; set; }
-    public DateTime IssueDate { get; set; }
+    public Guid? Id { get; set; }
+    public int? InvoiceNumber { get; set; }
+    public DateTime? IssueDate { get; set; }
     public UserDto? Driver { get; set; }
 
     public CompanyDto Company { get; set; }
@@ -36,7 +36,7 @@ public class OrderDto
     /*
         Pliki
     */
-    public string PDFUrl { get; set; }
+    public string? PDFUrl { get; set; }
 
     public List<string>? CMRFiles { get; set; }
 }
