@@ -40,7 +40,7 @@
                             @(order.Stops.Where(stop => stop.Type == StopType.Unloading)
                                 .OrderByDescending(stop => stop.Date)
                                 .FirstOrDefault()?.Date.ToString("dd.MM.yyyy") ?? "Brak daty")
-                            • @(order.Price?.ToString("0.00") ?? "0") @order.Currency
+                            • @(order.Price?.ToString("N2", new CultureInfo("pl-PL")) ?? "0") @order.Currency
                         </p>
                         <p class="text-small"><strong>@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</strong></p>
                     </div>
@@ -109,7 +109,7 @@
             Navigation.NavigateTo($"/zlecenie/szczegoly?order={orderJson}");
         }
     }
-     
+
     private async Task ShowMoreOrders()
     {
         try

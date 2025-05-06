@@ -128,6 +128,7 @@ public class OrderService : IOrderService
             throw new KeyNotFoundException("Nie znaleziono zlecenia.");
 
         _mapper.Map(dto, order);
+        order.Company.EmailAddresses = dto.Company.EmailAddresses.ToList();
 
         if (dto.Driver?.Email != null)
         {
@@ -175,7 +176,7 @@ public class OrderService : IOrderService
 
         order.InvoiceNumber = lastInvoiceNumber + 1;
         order.PDFUrl = fileName;
-        
+
         _dbContext.Orders.Add(order);
         _dbContext.SaveChanges();
 

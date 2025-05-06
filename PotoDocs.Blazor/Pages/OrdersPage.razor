@@ -29,9 +29,10 @@
         <table class="orders-table">
             <thead>
                 <tr>
+                    <th>Lp</th>
                     <th>Nazwa firmy</th>
                     <th>Kierowca</th>
-                    <th>Załadunek</th>
+                    <th>Rozładunek</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -49,7 +50,7 @@
 
                     @foreach (var order in Orders)
                     {
-                        string currentMonthYear = order.IssueDate?.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"));
+                        string currentMonthYear = order.IssueDate?.ToString("MMMM yyyy", new CultureInfo("pl-PL"));
                         bool isExpanded = ExpandedOrderId == order.Id;
                         string rowClass = isExpanded ? "order-item selected-row" : "order-item";
 
@@ -57,11 +58,12 @@
                         {
                             lastMonthYear = currentMonthYear;
                             <tr class="month-header">
-                                <td colspan="4">@currentMonthYear</td>
+                                <td colspan="5">@currentMonthYear</td>
                             </tr>
                         }
 
                         <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.Id)">
+                            <td class="company-name-text">@order.InvoiceNumber</td>
                             <td class="company-name-text">@order.Company.Name</td>
                             <td class="driver-text">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</td>
                             <td class="date-text">
@@ -222,7 +224,7 @@
                 IsBusy = true;
                 await OrderService.Delete(order.Id);
                 await GetAllOrders();
-                
+
                 toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");
             }
             catch (Exception ex)

@@ -7,21 +7,21 @@
 
 <h3 class="header">Szczegóły zlecenia</h3>
 <div class="card-container">
-@if (IsBusy)
-{
-    <div class="spinner-border text-danger" role="status">
-        <span class="visually-hidden">Ładowanie...</span>
-    </div>
-}
-else
-{
-    <div class="detail-item">
-        <label>PDF:</label>
-        @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
-        {
-            <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl))">Pobierz PDF</button>
-        }
-    </div>
+    @if (IsBusy)
+    {
+        <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Ładowanie...</span>
+        </div>
+    }
+    else
+    {
+        <div class="detail-item">
+            <label>PDF:</label>
+            @if (!string.IsNullOrEmpty(OrderDto.PDFUrl))
+            {
+                <button class="download-btn" @onclick="@(() => DownloadFile(OrderDto.PDFUrl))">Pobierz PDF</button>
+            }
+        </div>
 
         <div class="detail-item">
             <label>CMR:</label>
@@ -43,19 +43,10 @@ else
                 <ul>
                     @foreach (var stop in OrderDto.Stops)
                     {
-                        <li><strong>@stop.Date.ToString("dd.MM.yyyy")</strong>
-                            @if(stop.Type.ToString() == "Loading")
-                            {
-                                <strong> Załadunek </strong>
-                            }
-                            else
-                            {
-                                <strong> Rozładunek </strong>
-                            }
-                            <br />
-                            @stop.Address
-                            <br />
-                            <br />
+                        <li>
+                            <strong>@stop.Date.ToString("dd.MM.yyyy")</strong>
+                            <strong>@(stop.Type == StopType.Loading ? "Załadunek" : "Rozładunek")</strong>
+                            <br />@stop.Address<br /><br />
                         </li>
                     }
                 </ul>
@@ -103,18 +94,13 @@ else
 
         <div class="detail-item">
             <label>Kwota:</label>
-            <span>@OrderDto.Price PLN</span>
+            <span>@(OrderDto.Price?.ToString("N2", new CultureInfo("pl-PL"))) @OrderDto.Currency</span>
         </div>
 
         <div class="detail-item">
             <label>Płatność:</label>
             <span>@(OrderDto.HasPaid == true ? "Dokonano" : "Nie dokonano") </span>
         </div>
-
-        @* <div class="detail-item"> *@
-        @*     <label>Data rozładunku:</label> *@
-        @*     <span>@OrderDto.UnloadingDate?.ToString("dd.MM.yyyy")</span> *@
-        @* </div> *@
 
         <div class="detail-item">
             <label>Uwagi:</label>
@@ -124,6 +110,24 @@ else
             <label>Status:</label>
             <td class="status-text @(OrderDto.HasPaid == true ? "status-paid" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(OrderDto.HasPaid == true ? "Zapłacono" : (OrderDto.CMRFiles == null || OrderDto.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
         </div>
+        <div class="detail-item">
+            <label>E-faktura:</label>
+            <span>@(OrderDto.Company.AcceptsEInvoices ? "Tak" : "Nie")</span>
+        </div>
+
+        @if (OrderDto.Company.EmailAddresses != null && OrderDto.Company.EmailAddresses.Any())
+        {
+            <div class="detail-item">
+                <label>Adresy e-mail:</label>
+                <ul>
+                    @foreach (var email in OrderDto.Company.EmailAddresses)
+                    {
+                        <li>@email</li>
+                    }
+                </ul>
+            </div>
+        }
+
     }
 </div>
 <div class="btn-container-flex margin-bottom-15">

@@ -8,9 +8,9 @@
 
 @page "/zlecenie/edycja"
 <div class="background">
-<h3 class="header">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
-<div class="card-container">
-@if (IsBusy)
+    <h3 class="header">@(OrderDto.InvoiceNumber == 0 ? "Nowe zlecenie" : "Edytowanie")</h3>
+    <div class="card-container">
+        @if (IsBusy)
         {
             <div class="spinner-border text-danger" role="status">
                 <span class="visually-hidden">Ładowanie...</span>
@@ -33,11 +33,11 @@
                     </div>
                     @if (OrderDto.PDFUrl != null)
                     {
-                    <div class="file-list">
-                        <div class="file-item">
-                            <button class="download-btn" @onclick="() => DownloadFile(OrderDto.PDFUrl)">@OrderDto.PDFUrl</button>
+                        <div class="file-list">
+                            <div class="file-item">
+                                <button class="download-btn" @onclick="() => DownloadFile(OrderDto.PDFUrl)">@OrderDto.PDFUrl</button>
+                            </div>
                         </div>
-                    </div>
                     }
 
 
@@ -116,18 +116,8 @@
                                 <div class="horizontal-group">
                                     <InputText class="form-control" @bind-Value="stop.Address" placeholder="Adres przystanku" />
                                     <InputDate class="form-control" @bind-Value="stop.Date" />
-                                    @if (stop == OrderDto.Stops.First())
-                                    {
-                                        <label class="input-label">Załadunek</label>
-                                    }
-                                    else
-                                    {
-                                        <label class="input-label">Rozładunek</label>
-                                    }
-                                    @if (stop != OrderDto.Stops.First())
-                                    {
-                                        <button class="delete-btn" @onclick="() => RemoveStop(stop)">Usuń</button>
-                                    }
+                                    <label class="input-label">@(stop.Type == StopType.Loading ? "Załadunek" : "Rozładunek")</label>
+                                    <button class="delete-btn" @onclick="() => RemoveStop(stop)">Usuń</button>
                                 </div>
                                 <div class="line" />
                             }
@@ -156,12 +146,21 @@
                     <div class="horizontal-group">
                         <div class="horizontal-group-element">
                             <label class="input-label">Kwota</label>
-                        <InputNumber @bind-Value="OrderDto.Price" placeholder="Kwota" class="form-control" />
+                            <InputNumber @bind-Value="OrderDto.Price" @bind-Value:format="F2" placeholder="Kwota" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.Price)" class="custom-error" />
                         </div>
                         <div class="horizontal-group-element">
+                            <label class="input-label">Waluta</label>
+                            <InputSelect @bind-Value="OrderDto.Currency" class="form-control">
+                                <option value="">Wybierz walutę</option>
+                                <option value="PLN">PLN</option>
+                                <option value="EUR">EUR</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => OrderDto.Currency)" class="custom-error" />
+                        </div>
+                        <div class="horizontal-group-element">
                             <label class="input-label">Dni do płatności</label>
-                        <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" class="form-control" />
+                            <InputNumber @bind-Value="OrderDto.PaymentDeadline" placeholder="Dni do płatności" class="form-control" />
                             <ValidationMessage For="@(() => OrderDto.PaymentDeadline)" class="custom-error" />
                         </div>
                     </div>
@@ -175,13 +174,37 @@
                     <div class="form-group">
                         <InputCheckbox @bind-Value="HasPaid" class="checkbox" />
                         <label class="checkbox-label">Płatność dokonana</label>
-                        
+
                     </div>
                     <div class="form-group">
                         <InputCheckbox @bind-Value="AcceptsEInvoices" class="checkbox" />
                         <label class="checkbox-label">E-faktura</label>
 
                     </div>
+                </div>
+
+                <!-- Sekcja email -->
+                <div class="section">
+                    <label class="section-title">Adresy email</label>
+                    <button class="new-stop-btn" @onclick="AddEmail" @onclick:preventDefault>Dodaj Email</button>
+
+                    @if (OrderDto.Company.EmailAddresses != null && OrderDto.Company.EmailAddresses.Any())
+                    {
+                        <div class="container-flex-column">
+                            @for (int i = 0; i < OrderDto.Company.EmailAddresses.Count; i++)
+                            {
+                                <div class="horizontal-group">
+                                    <InputText class="form-control" @bind-Value="OrderDto.Company.EmailAddresses[i]" placeholder="adres email" />
+                                    <button class="delete-btn" @onclick="() => RemoveEmail(OrderDto.Company.EmailAddresses[i])">Usuń</button>
+                                </div>
+                                <div class="line" />
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p>Brak dodanych adresów email.</p>
+                    }
                 </div>
 
                 <div class="button-container">
@@ -214,6 +237,16 @@
     {
         get => OrderDto.Company.AcceptsEInvoices;
         set => OrderDto.Company.AcceptsEInvoices = value;
+    }
+
+    private void AddEmail()
+    {
+        OrderDto.Company.EmailAddresses.Add(string.Empty);
+    }
+
+    private void RemoveEmail(string email)
+    {
+        OrderDto.Company.EmailAddresses.Remove(email);
     }
 
     protected override async Task OnInitializedAsync()
