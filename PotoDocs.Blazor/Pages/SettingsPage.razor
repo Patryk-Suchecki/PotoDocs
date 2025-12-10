@@ -1,109 +1,37 @@
 ﻿@attribute [Authorize]
 @page "/ustawienia"
-@inject IUserService UserService
-@inject NavigationManager Navigation
-@inject ILocalStorageService LocalStorage
-@inject IToastService toastService
 
-<h3 class="header">Ustawienia</h3>
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+<PageTitle>Ustawienia</PageTitle>
+<MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Ustawienia</MudText>
 
-@if (IsBusy)
+@if (IsLoading)
 {
-    <div class="spinner-border text-danger" role="status">
-        <span class="visually-hidden">Ładowanie...</span>
-    </div>
+    <MudGrid Justify="Justify.Center" Class="pa-10">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </MudGrid>
 }
 else
 {
-    <div class="card-container">
-        <div class="section">
-            <h4>Profil</h4>
-            <div class="profile-info">
-                <p><strong>Użytkownik:</strong> @UserDto.FirstName @UserDto.LastName</p>
-                <p><strong>E-mail:</strong> @UserDto.Email</p>
-                <p><strong>Rola:</strong> @UserDto.Role</p>
-            </div>
-        </div>
+    <MudText Typo="Typo.h6">Profil</MudText>
+    <MudText Align="Align.Left"><b>Użytkownik:</b> @UserDto.FirstAndLastName</MudText>
+    <MudText Align="Align.Left"><b>E-mail:</b> @UserDto.Email</MudText>
+    <MudText Align="Align.Left"><b>Rola:</b> @UserDto.Role</MudText>
 
-        <div class="section">
-            <h4>Zmiana hasła</h4>
-            <EditForm Model="@ChangePasswordDto" OnValidSubmit="ChangePasswordAsync">
-                <DataAnnotationsValidator />
+    <MudText Typo="Typo.h6">Zmiana hasła</MudText>
 
-                <div class="form-group margin-top-15">
-                    <label class="input-label">Stare hasło:</label>
-                    <InputText @bind-Value="ChangePasswordDto.OldPassword" type="password" class="form-control" />
-                    <ValidationMessage For="@(() => ChangePasswordDto.OldPassword)" />
-                </div>
+    <MudForm @ref="form" Model="@ChangePasswordDto" Validation="@(passwordValidator.ValidateValue)" ValidationDelay="0">
+        <MudTextField @bind-Value="ChangePasswordDto.OldPassword"
+                      Label="Stare hasło"
+                      Variant="Variant.Outlined"
+                      For="@(() => ChangePasswordDto.OldPassword)"
+                      InputType="InputType.Password" />
+        <MudTextField @bind-Value="ChangePasswordDto.NewPassword"
+                      Label="Nowe hasło"
+                      Variant="Variant.Outlined"
+                      For="@(() => ChangePasswordDto.NewPassword)"
+                      InputType="InputType.Password" />
 
-                <div class="form-group">
-                    <label class="input-label">Nowe hasło:</label>
-                    <InputText @bind-Value="ChangePasswordDto.NewPassword" type="password" class="form-control" />
-                    <ValidationMessage For="@(() => ChangePasswordDto.NewPassword)" />
-                </div>
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <p class="error-message">@errorMessage</p>
-                }
-
-                <div class="btn-section">
-                <button type="submit" class="btn-primary">Zmień hasło</button>
-                </div>
-            </EditForm>
-        </div>
-    </div>
-}
-
-@code {
-    private UserDto UserDto { get; set; } = new();
-    private ChangePasswordDto ChangePasswordDto { get; set; } = new();
-    private bool IsBusy { get; set; } = true;
-    private string? errorMessage;
-
-    private async Task OnAreNotificationsEnabledChanged(bool value)
-    {
-        await LocalStorage.SetItemAsync("AreNotificationsEnabled", value);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadUser();
-        IsBusy = false;
-    }
-
-    private async Task LoadUser()
-    {
-        try
-        {
-            UserDto = await UserService.GetCurrentUser();
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd: {ex.Message}");
-        }
-    }
-
-    private async Task ChangePasswordAsync()
-    {
-        try
-        {
-            ChangePasswordDto.Email = UserDto.Email;
-            var result = await UserService.ChangePassword(ChangePasswordDto);
-
-            if (string.IsNullOrEmpty(result))
-            {
-                toastService.ShowSuccess($"Hasło zostało zmienione, zaloguj się ponownie");
-                Navigation.NavigateTo("/logowanie");
-            }
-            else
-            {
-                toastService.ShowError(result);
-                errorMessage = result;
-            }
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd zmiany hasła: {ex.Message}");
-        }
-    }
+        <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Button" OnClick="SubmitAsync" Color="Color.Primary" Disabled="@IsLoading">Zmień hasło</MudButton>
+    </MudForm>
 }

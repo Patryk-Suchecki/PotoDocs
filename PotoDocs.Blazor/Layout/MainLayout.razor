@@ -1,52 +1,67 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage
-@using Blazored.Toast.Configuration
+@inject IAuthService AuthService
 
-<CascadingBlazoredModal>
-    <div class="page">
-        @if (!IsLoginPage)
-        {
-            <div class="sidebar">
-                <NavMenu />
-            </div>
-        }
+<CascadingBlazoredModal />
 
-        <main>
-            <BlazoredToasts Position="ToastPosition.TopRight" Timeout="5" />
+@if (!IsLoginPage)
+{
+    <MudLayout>
+        <MudAppBar Elevation="1" Color="Color.Primary">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="@_open" ClipMode="@DrawerClipMode.Always" Elevation="1" Variant="@DrawerVariant.Responsive">
+            <MudDrawerHeader>
+                <MudStack>
+                    <MudImage Src="images/logo.png" Height="50" />
+                    <MudText Typo="Typo.h6">PotoDocs</MudText>
+                </MudStack>
+            </MudDrawerHeader>
+            <MudNavMenu>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" Href="/">Strona główna</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Assignment" Href="zlecenia">Zlecenia</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ReceiptLong" Href="faktury">Faktury</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LocalShipping" Href="kierowcy">Kierowcy</MudNavLink>
+            </MudNavMenu>
+            <MudSpacer />
+            <MudNavMenu Class="pb-4">
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Settings" Href="ustawienia">Ustawienia</MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.Logout" @onclick="Logout">Wyloguj</MudNavLink>
+            </MudNavMenu>
+        </MudDrawer>
+
+        <MudMainContent>
             <article class="content px-4">
                 @Body
             </article>
-        </main>
-    </div>
-</CascadingBlazoredModal>
+        </MudMainContent>
+    </MudLayout>
+}
+else
+{
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+}
+
 
 @code {
     private bool IsLoginPage => Navigation.Uri.Contains("/logowanie", StringComparison.OrdinalIgnoreCase);
 
-    protected override void OnInitialized()
+    private bool _open = true;
+
+    private void ToggleDrawer()
     {
-        Navigation.LocationChanged += OnLocationChanged;
+        _open = !_open;
     }
 
-    private async void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private async Task Logout()
     {
-        var currentUrl = await LocalStorage.GetItemAsync<string>("currentPage");
-        if (!string.IsNullOrEmpty(currentUrl))
-        {
-            await LocalStorage.SetItemAsync("previousPage", currentUrl);
-        }
-        await LocalStorage.SetItemAsync("currentPage", e.Location);
-    }
-
-    public async Task NavigateBack()
-    {
-        var previousUrl = await LocalStorage.GetItemAsync<string>("previousPage");
-        Navigation.NavigateTo(previousUrl ?? "/");
-    }
-
-    public void Dispose()
-    {
-        Navigation.LocationChanged -= OnLocationChanged;
+        await AuthService.Logout();
+        Navigation.NavigateTo("/logowanie");
     }
 }

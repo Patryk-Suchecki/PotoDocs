@@ -1,15 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
 
 namespace PotoDocs.Shared.Models;
 
 public class LoginDto
 {
-    [Required(ErrorMessage = "Email jest wymagany.")]
-    [EmailAddress(ErrorMessage = "Nieprawidłowy adres email.")]
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
+public class LoginDtoValidator : AbstractValidator<LoginDto>
+{
+    public LoginDtoValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email jest wymagany.")
+            .EmailAddress().WithMessage("Nieprawidłowy adres email.");
 
-
-    [Required(ErrorMessage = "Hasło jest wymagane.")]
-    [StringLength(50, MinimumLength = 1, ErrorMessage = "Hasło musi mieć od 8 do 50 znaków.")]
-    public string Password { get; set; }
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Hasło jest wymagane.")
+            .MaximumLength(50).WithMessage("Hasło musi mieć do 50 znaków.");
+    }
+    public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
+    {
+        var result = await ValidateAsync(ValidationContext<LoginDto>.CreateWithOptions((LoginDto)model, x => x.IncludeProperties(propertyName)));
+        if (result.IsValid)
+            return [];
+        return result.Errors.Select(e => e.ErrorMessage);
+    };
 }

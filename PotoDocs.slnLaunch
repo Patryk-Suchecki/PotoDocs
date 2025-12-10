@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "API + Blazor",
+    "Projects": [
+      {
+        "Path": "PotoDocs.Blazor\\PotoDocs.Blazor.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "PotoDocs.API\\PotoDocs.API.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      }
+    ]
+  }
+]

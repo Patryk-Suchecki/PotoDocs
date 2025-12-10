@@ -1,143 +1,123 @@
-﻿using System.Net.Http.Headers;
-using System.Net.Http.Json;
+﻿using PotoDocs.Blazor.Dialogs;
 using PotoDocs.Shared.Models;
-using PotoDocs.Blazor.Helpers;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace PotoDocs.Blazor.Services;
 
 public interface IOrderService
 {
-    Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, Guid? userId = null);
-    Task<OrderDto> GetById(Guid? id);
-    Task Delete(Guid? id);
-    Task<OrderDto?> Create(byte[] fileData, string filename);
-    Task Update(OrderDto dto, Guid? id);
-    Task<byte[]> DownloadInvoices(int year, int month);
-    Task<byte[]> DownloadFile(Guid? id, string fileName);
-    Task<byte[]> DownloadInvoice(Guid? id);
-    Task UploadCMR(List<byte[]> filesData, Guid? id, string fileName);
-    Task RemoveCMR(Guid? id, string fileName);
-    Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync();
+    Task<IEnumerable<OrderDto>> GetAll();
+    Task<OrderDto> GetById(Guid id);
+    Task Delete(Guid id);
+    Task<OrderDto> Create(OrderDto order, IEnumerable<FileUploadDto> orderfiles, IEnumerable<FileUploadDto> cmrfiles);
+    Task Update(OrderDto order, IEnumerable<FileUploadDto> newOrderFiles, IEnumerable<FileUploadDto> newCmrFiles, IEnumerable<Guid> fileIdsToDelete);
+    Task<FileDownloadResult> DownloadFile(Guid id);
+    Task<OrderDto> ParseOrder(FileUploadDto file);
+    Task<OrderDto> ParseExistingOrder(Guid id);
+    Task SendDocuments(Guid id);
+    Task MarkOrdersAsSentAsync(List<Guid> orderIds, DateTime dateSent);
 }
 
-public class OrderService : IOrderService
+public class OrderService(IAuthService authService) : BaseService(authService), IOrderService
 {
-    private readonly IAuthService _authService;
-
-    public OrderService(IAuthService authService)
+    public async Task<IEnumerable<OrderDto>> GetAll()
     {
-        _authService = authService;
+        return await GetAsync<IEnumerable<OrderDto>>("api/orders/all");
     }
 
-    public async Task<IEnumerable<OrderDto>> GetAll(int page = 1, int pageSize = 5, Guid? userId = null)
+    public async Task<OrderDto> GetById(Guid id)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
-        var query = $"api/order/all?page={page}&pageSize={pageSize}";
-        if (userId != null)
-        {
-            query += $"&userId={userId}";
-        }
-
-        var response = await httpClient.GetAsync(query);
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadFromJsonAsync<IEnumerable<OrderDto>>() ?? new List<OrderDto>();
+        return await GetAsync<OrderDto>($"api/orders/{id}");
     }
 
-    public async Task<OrderDto?> GetById(Guid? id)
+    public async Task Delete(Guid id)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync($"api/order/{id}");
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadFromJsonAsync<OrderDto>();
+        await DeleteAsync($"api/orders/{id}");
     }
 
-    public async Task Delete(Guid? id)
+    public async Task<OrderDto> Create(OrderDto order, IEnumerable<FileUploadDto> orderfiles, IEnumerable<FileUploadDto> cmrfiles)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.DeleteAsync($"api/order/{id}");
-        await response.ThrowIfNotSuccessWithProblemDetails();
-    }
-
-    public async Task<OrderDto?> Create(byte[] fileData, string fileName)
-    {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-
         using var multipartFormContent = new MultipartFormDataContent();
-        var streamContent = new ByteArrayContent(fileData);
-        streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
 
-        multipartFormContent.Add(streamContent, "file", fileName);
+        var orderJson = JsonSerializer.Serialize(order);
+        multipartFormContent.Add(new StringContent(orderJson), "orderDtoJson");
 
-        var response = await httpClient.PostAsync("api/order", multipartFormContent);
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadFromJsonAsync<OrderDto>();
-    }
-
-    public async Task Update(OrderDto dto, Guid? id)
-    {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.PutAsJsonAsync($"api/order/{id}", dto);
-        await response.ThrowIfNotSuccessWithProblemDetails();
-    }
-
-    public async Task<byte[]> DownloadInvoices(int year, int month)
-    {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync($"api/orders/invoices/{year}/{month}");
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadAsByteArrayAsync();
-    }
-
-    public async Task<byte[]> DownloadFile(Guid? id, string fileName)
-    {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync($"api/orders/{id}/pdf/{fileName}");
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadAsByteArrayAsync();
-    }
-
-    public async Task<byte[]> DownloadInvoice(Guid? id)
-    {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync($"api/orders/{id}/invoice");
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadAsByteArrayAsync();
-    }
-
-    public async Task UploadCMR(List<byte[]> filesData, Guid? id, string fileName)
-    {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        using var multipartContent = new MultipartFormDataContent();
-
-        foreach (var fileData in filesData)
+        foreach (var file in orderfiles)
         {
-            var fileContent = new ByteArrayContent(fileData);
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
-            multipartContent.Add(fileContent, "files", fileName);
+            var fileContent = new ByteArrayContent(file.Data);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            multipartFormContent.Add(fileContent, "orderFiles", file.Name);
         }
 
-        var response = await httpClient.PostAsync($"api/orders/{id}/cmr", multipartContent);
-        await response.ThrowIfNotSuccessWithProblemDetails();
+        foreach (var file in cmrfiles)
+        {
+            var fileContent = new ByteArrayContent(file.Data);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            multipartFormContent.Add(fileContent, "cmrFiles", file.Name);
+        }
+
+        return await PostMultipartAsync<OrderDto>("api/orders", multipartFormContent);
     }
 
-    public async Task RemoveCMR(Guid? id, string fileName)
+    public async Task<OrderDto> ParseOrder(FileUploadDto file)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.DeleteAsync($"api/orders/{id}/cmr/{fileName}");
-        await response.ThrowIfNotSuccessWithProblemDetails();
+        using var multipartFormContent = new MultipartFormDataContent();
+
+        var fileContent = new ByteArrayContent(file.Data);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+        multipartFormContent.Add(fileContent, "file", file.Name);
+
+        return await PostMultipartAsync<OrderDto>("api/orders/parse", multipartFormContent);
     }
 
-    public async Task<Dictionary<int, List<int>>> GetAvailableYearsAndMonthsAsync()
+    public async Task<OrderDto> ParseExistingOrder(Guid id)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        return await httpClient.GetFromJsonAsync<Dictionary<int, List<int>>>("api/orders/invoices")
-               ?? new Dictionary<int, List<int>>();
+        return await GetAsync<OrderDto>($"api/orders/parse/{id}");
+    }
+
+    public async Task Update(OrderDto order, IEnumerable<FileUploadDto> newOrderFiles, IEnumerable<FileUploadDto> newCmrFiles, IEnumerable<Guid> fileIdsToDelete)
+    {
+        using var multipartFormContent = new MultipartFormDataContent();
+
+        var orderJson = JsonSerializer.Serialize(order);
+        multipartFormContent.Add(new StringContent(orderJson), "orderDtoJson");
+
+        foreach (var file in newOrderFiles)
+        {
+            var fileContent = new ByteArrayContent(file.Data);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            multipartFormContent.Add(fileContent, "orderFiles", file.Name);
+        }
+
+        foreach (var file in newCmrFiles)
+        {
+            var fileContent = new ByteArrayContent(file.Data);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            multipartFormContent.Add(fileContent, "cmrFiles", file.Name);
+        }
+
+        foreach (var id in fileIdsToDelete)
+        {
+            multipartFormContent.Add(new StringContent(id.ToString()), "fileIdsToDelete");
+        }
+
+        await PutMultipartAsync($"api/orders/{order.Id}", multipartFormContent);
+    }
+
+    public async Task<FileDownloadResult> DownloadFile(Guid id)
+    {
+        return await GetFileAsync($"api/orders/files/{id}");
+    }
+
+    public async Task SendDocuments(Guid id)
+    {
+        await PostAsync($"api/orders/{id}/send-documents", null);
+    }
+    public async Task MarkOrdersAsSentAsync(List<Guid> orderIds, DateTime sentDate)
+    {
+        var formattedDate = sentDate.ToString("s");
+        await PostAsync($"api/orders/mark-as-sent?sentDate={formattedDate}", orderIds);
     }
 }

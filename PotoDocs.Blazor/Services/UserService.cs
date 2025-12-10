@@ -1,8 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 using PotoDocs.Shared.Models;
-using PotoDocs.Blazor.Helpers;
 
 namespace PotoDocs.Blazor.Services;
 
@@ -11,83 +9,62 @@ public interface IUserService
     Task RegisterAsync(UserDto dto);
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(string email);
-    Task<UserDto?> GetCurrentUser();
-    Task<string?> ChangePassword(ChangePasswordDto dto);
+    Task<UserDto> GetCurrentUser();
+    Task<string> ChangePassword(ChangePasswordDto dto);
     Task Delete(string email);
 }
 
-public class UserService : IUserService
+public class UserService(IAuthService authService) : BaseService(authService), IUserService
 {
-    private readonly IAuthService _authService;
+    private readonly IAuthService _authService = authService;
 
-    public UserService(IAuthService authService)
+    private static readonly JsonSerializerOptions _json = new()
     {
-        _authService = authService;
-    }
+        PropertyNameCaseInsensitive = true
+    };
 
     public async Task RegisterAsync(UserDto dto)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.PostAsJsonAsync("api/user/register", dto);
-        await response.ThrowIfNotSuccessWithProblemDetails();
+        await PostAsync("api/user/register", dto);
     }
 
     public async Task GeneratePassword(string email)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.PostAsJsonAsync("api/user/generate-password", email);
-        await response.ThrowIfNotSuccessWithProblemDetails();
+        await PostAsync("api/user/generate-password", email);
     }
 
     public async Task<IEnumerable<UserDto>> GetAll()
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync("api/user/all");
-
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        var result = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        return result ?? new List<UserDto>();
+        return await GetAsync<IEnumerable<UserDto>>("api/user/all");
     }
 
-    public async Task<UserDto?> GetCurrentUser()
+    public async Task<UserDto> GetCurrentUser()
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.GetAsync("api/user/me");
-
-        await response.ThrowIfNotSuccessWithProblemDetails();
-
-        return await response.Content.ReadFromJsonAsync<UserDto>();
+        return await GetAsync<UserDto>("api/user/me");
     }
 
-    public async Task<string?> ChangePassword(ChangePasswordDto dto)
+    public async Task<string> ChangePassword(ChangePasswordDto dto)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.PostAsJsonAsync("api/user/change-password", dto);
+        var http = await _authService.GetAuthenticatedHttpClientAsync();
+        var resp = await http.PostAsJsonAsync("api/user/change-password", dto);
 
-        if (response.IsSuccessStatusCode)
-            return null;
-
-        var errorText = await response.Content.ReadAsStringAsync();
-
+        var raw = await resp.Content.ReadAsStringAsync();
         try
         {
-            var problem = JsonSerializer.Deserialize<ProblemDetails>(errorText, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return problem?.Title ?? "Wystąpił nieznany błąd.";
+            var pd = JsonSerializer.Deserialize<ProblemDetailsDto>(raw, _json);
+
+            var msg = pd?.Detail ?? pd?.Title ?? $"Błąd zmiany hasła: {(int)resp.StatusCode}";
+
+            return msg;
         }
-        catch
+        catch (JsonException)
         {
-            return $"Błąd zmiany hasła: {response.StatusCode}";
+            return $"Błąd zmiany hasła: {(int)resp.StatusCode} - {raw}";
         }
     }
 
     public async Task Delete(string email)
     {
-        var httpClient = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await httpClient.DeleteAsync($"api/user/{email}");
-        await response.ThrowIfNotSuccessWithProblemDetails();
+        await DeleteAsync($"api/user/{email}");
     }
 }

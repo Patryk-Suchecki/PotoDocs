@@ -1,64 +1,19 @@
 ﻿@page "/logowanie"
-@inject IAuthService AuthService
-@inject NavigationManager Navigation
-@inject IToastService toastService
+@layout LoginLayout 
 
-<div class="login-container">
-    <img src="images/logo.png" alt="Logo" class="logo" />
+<MudImage Src="images/logo.png" Width="320" Class="mb-8" />
 
-    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-        <DataAnnotationsValidator />
-
-        <div class="input-group">
-            <input @bind-value="loginModel.Email" class="input-text" placeholder="E-mail" />
-            <label class="input-text-label">E-mail</label>
-            <ValidationMessage For="@(() => loginModel.Email)"/>
-        </div>
-
-        <div class="input-group">
-            <input @bind-value="loginModel.Password" class="input-text" type="password" placeholder="Hasło" />
-            <label class="input-text-label">Hasło</label>
-            <ValidationMessage For="@(() => loginModel.Password)"/>
-        </div>
+<MudPaper Class="pa-8" Style="background: none; box-shadow: none;">
+    <MudForm @ref="form" Model="@LoginDto" Validation="@(loginValidator.ValidateValue)" ValidationDelay="0">
+        <MudTextField @bind-Value="LoginDto.Email" Label="Adres e-mail" Variant="Variant.Outlined" For="@(() => LoginDto.Email)" />
+        <MudTextField @bind-Value="LoginDto.Password" Label="Hasło" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" For="@(() => LoginDto.Password)" />
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <p class="error-message">@errorMessage</p>
+            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
         }
-        <div class="btn-section">
-        <button type="submit" class="btn-primary">Logowanie</button>
-        </div>
-    </EditForm>
+        <MudButton Color="Color.Primary" ButtonType="ButtonType.Button" OnClick="SubmitAsync" FullWidth="true" Class="mt-4">Logowanie</MudButton>
+    </MudForm>
+</MudPaper>
 
-    <img src="images/caranim.gif" alt="Truck" class="truck-image" />
-</div>
-
-@code {
-    private LoginDto loginModel = new();
-    private string? errorMessage;
-
-    private async Task HandleLogin()
-    {
-        errorMessage = null;
-        StateHasChanged();
-        try
-        {
-            var result = await AuthService.LoginAsync(loginModel);
-            if (string.IsNullOrEmpty(result))
-            {
-                toastService.ShowSuccess("Zalogowano pomyślnie!");
-                Navigation.NavigateTo("/", true);
-            }
-            else
-            {
-                toastService.ShowError(result);
-                errorMessage = result;
-            }
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd logowania: {ex.Message}");
-            errorMessage = "Wystąpił błąd. Spróbuj ponownie.";
-        }
-    }
-}
+<MudImage Src="images/caranim.gif" Height="280" Class="mt-8" />

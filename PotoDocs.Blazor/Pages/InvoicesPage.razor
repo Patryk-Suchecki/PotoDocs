@@ -1,0 +1,64 @@
+﻿@attribute [Authorize]
+@page "/faktury"
+
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+<PageTitle>Faktury</PageTitle>
+<MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Faktury</MudText>
+
+<MudTable Items="@invoices" Filter="new Func<InvoiceDto, bool>(FilterFunc1)" GroupBy="@_groupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedInvoices">
+    <ToolBarContent>
+        <MudTextField @bind-Value="searchString" Placeholder="Szukaj" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="Create" Class="mr-2" />
+        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+            <MudMenuItem Label="Pobierz paczkę" Icon="@Icons.Material.Filled.FolderZip" @onclick="() => DownloadInvoices()" />
+        </MudMenu>
+    </ToolBarContent>
+
+    <HeaderContent>
+        <MudTh>Lp</MudTh>
+        <MudTh>Nazwa firmy</MudTh>
+        <MudTh>Data wystawienia</MudTh>
+        <MudTh>Płatność</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+
+    <GroupHeaderTemplate>
+        <MudTh Class="mud-table-cell-custom-group" colspan="7">@($"{context.Key}") </MudTh>
+    </GroupHeaderTemplate>
+
+    <RowTemplate>
+        <MudTd DataLabel="Lp">@context.InvoiceNumber</MudTd>
+        <MudTd DataLabel="Nazwa firmy">@context.BuyerName</MudTd>
+        <MudTd DataLabel="Data wystawienia">@context.IssueDate</MudTd>
+        <MudTd DataLabel="Płatność">
+            @if (context.HasPaid == true)
+            {
+                <span class="mud-text-success">Zapłacono</span>
+            }
+            else
+            {
+                if (context.DaysUntilDue < 0)
+                {
+                    <span class="mud-text-error">Po terminie (@Math.Abs(context.DaysUntilDue) dni)</span>
+                }
+                else if (context.DaysUntilDue == 0)
+                {
+                    <span class="mud-text-warning">Dziś</span>
+                }
+                else
+                {
+                    <span>@context.DaysUntilDue dni</span>
+                }
+            }
+        </MudTd>
+        <MudTd DataLabel="Akcje" Style="text-align:right">
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                <MudMenuItem Label="Pobierz" Icon="@Icons.Material.Filled.Download" @onclick="() => Download(context)" />
+                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
+                <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
+                <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
+            </MudMenu>
+        </MudTd>
+    </RowTemplate>
+</MudTable>

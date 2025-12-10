@@ -1,247 +1,54 @@
 ﻿@attribute [Authorize]
 @page "/zlecenia"
-@inject IOrderService OrderService
-@inject NavigationManager Navigation
-@inject IToastService toastService
-@inject IBlazorDownloadFileService BlazorDownloadFileService
-@inject IModalService Modal
 
-<PageTitle>Wszystkie zlecenia</PageTitle>
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+<PageTitle>Zlecenia</PageTitle>
+<MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Zlecenia</MudText>
 
-<div class="orders-container">
-    <div class="header-section">
-        <h2 class="header">Wszystkie zlecenia</h2>
-        <div class="controls">
-            <button class="refresh-button bi-icon-refresh" @onclick="GetAllOrders" disabled="@IsBusy">
-            </button>
-        </div>
-    </div>
+<MudTable Items="@orders" Filter="new Func<OrderDto, bool>(FilterFunc1)" GroupBy="@_groupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedOrders">
+    <ToolBarContent>
+        <MudTextField @bind-Value="searchString" Placeholder="Szukaj" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="Create" Class="mr-2" />
+        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+            <MudMenuItem Label="Zarejestruj wysyłkę pocztą" Icon="@Icons.Material.Filled.MarkEmailRead" @onclick="() => OpenMarkSentDialogAsync()" />
+            <MudMenuItem Label="Pobierz pliki zleceń" Icon="@Icons.Material.Filled.PictureAsPdf" @onclick="() => DownloadOrders()" />
+            <MudMenuItem Label="Pobierz komplet dokumentów" Icon="@Icons.Material.Filled.FolderZip" @onclick="() => DownloadDocuments()" />
+        </MudMenu>
+    </ToolBarContent>
 
-    @if (IsBusy)
-    {
-        <div class="spinner-border text-danger" role="status">
-            <span class="visually-hidden">Ładowanie...</span>
-        </div>
-    }
-    else
-    {
+    <HeaderContent>
+        <MudTh>Zleceniodawca</MudTh>
+        <MudTh>Kierowca</MudTh>
+        <MudTh>Rozładunek</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Kwota</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
 
-        <table class="orders-table">
-            <thead>
-                <tr>
-                    <th>Lp</th>
-                    <th>Nazwa firmy</th>
-                    <th>Kierowca</th>
-                    <th>Rozładunek</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Orders == null || Orders.Count == 0)
+    <GroupHeaderTemplate>
+        <MudTh Class="mud-table-cell-custom-group" colspan="6">@($"{context.Key}") </MudTh>
+    </GroupHeaderTemplate>
+    <RowTemplate>
+        <MudTd DataLabel="Zleceniodawca">@context.Company.Name</MudTd>
+        <MudTd DataLabel="Kierowca">@(context.Driver?.FirstAndLastName ?? "Brak kierowcy")</MudTd>
+        <MudTd DataLabel="Rozładunek">@((context.Stops.Where(stop => stop.Type == StopType.Unloading).OrderByDescending(stop => stop.Date).FirstOrDefault()?.Date)?.ToString("dd.MM.yyyy") ?? "Brak daty")</MudTd>
+        <MudTd DataLabel="Status">@(context.Files.Where(o => o.Type == FileType.Cmr).Count() > 0 ? "Nie zapłacono" : "Brak CMR")</MudTd>
+        <MudTd DataLabel="Cena">@FormatMoney(context.Price, context.Currency)</MudTd>
+        <MudTd DataLabel="Akcje" Style="text-align:right">
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                @if (!context.HasInvoice)
                 {
-                    <tr>
-                        <td colspan="4">Brak dostępnych zleceń.</td>
-                    </tr>
+                    <MudMenuItem Label="Wystaw fakturę" Icon="@Icons.Material.Filled.Download" @onclick="() => CreateInvoice(context)" />
                 }
-                else
+                @if (context.Company != null && context.Company.AcceptsEInvoices)
                 {
-                    string lastMonthYear = null;
-
-                    @foreach (var order in Orders)
-                    {
-                        string currentMonthYear = order.IssueDate?.ToString("MMMM yyyy", new CultureInfo("pl-PL"));
-                        bool isExpanded = ExpandedOrderId == order.Id;
-                        string rowClass = isExpanded ? "order-item selected-row" : "order-item";
-
-                        if (currentMonthYear != lastMonthYear)
-                        {
-                            lastMonthYear = currentMonthYear;
-                            <tr class="month-header">
-                                <td colspan="5">@currentMonthYear</td>
-                            </tr>
-                        }
-
-                        <tr class="@rowClass" @onclick="() => ToggleOrderActions(order.Id)">
-                            <td class="company-name-text">@order.InvoiceNumber</td>
-                            <td class="company-name-text">@order.Company.Name</td>
-                            <td class="driver-text">@(order.Driver != null ? order.Driver.FirstAndLastName : "Brak kierowcy")</td>
-                            <td class="date-text">
-                                @((order.Stops.Where(stop => stop.Type == StopType.Unloading)
-                                    .OrderByDescending(stop => stop.Date)
-                                    .FirstOrDefault()?.Date)?.ToString("dd.MM.yyyy") ?? "Brak daty")
-                            </td>
-                            <td class="status-text @(order.HasPaid == true ? "status-paid" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "status-unpaid" : "status-nocmr"))">@(order.HasPaid == true ? "Zapłacono" : (order.CMRFiles == null || order.CMRFiles.Count != 0 ? "Nie zapłacono" : "Brak CMR"))</td>
-                        </tr>
-                        @if (isExpanded)
-                        {
-                            <tr>
-                                <td colspan="4">
-                                    <div class="order-actions">
-                                        <button class="btn-secondary" @onclick="() => ViewOrderDetails(order)">
-                                            <span alt="Details" class="bi-icon-add-order" />Szczegóły
-                                        </button>
-                                        <button class="btn-secondary" @onclick="() => EditOrder(order)">
-                                            <span alt="Edit" class="bi-icon-edit" />Edytuj
-                                        </button>
-                                        <button class="btn-secondary" @onclick="() => DownloadInvoice(order)">
-                                            <span alt="Download" class="bi-icon-download" />Faktura
-                                        </button>
-                                        <button class="btn-secondary btn-delete" @onclick="() => DeleteOrder(order)">
-                                            <span alt="Delete" class="bi-icon-delete" />Usuń
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
+                    <MudMenuItem Label="Wyślij e-mail" Icon="@Icons.Material.Filled.Email" @onclick="() => SendEmail(context)" />
                 }
-            </tbody>
-        </table>
-    }
-    <div class="load-more-container">
-        <button @onclick="ShowMoreOrders" class="btn-primary">Pokaż więcej</button>
-    </div>
-</div>
-
-@code {
-    private List<OrderDto> Orders { get; set; } = new List<OrderDto>();
-    private bool IsBusy = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await GetAllOrders();
-    }
-
-    private async Task GetAllOrders()
-    {
-        try
-        {
-            IsBusy = true;
-            Orders = (await OrderService.GetAll()).ToList();
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task ShowMoreOrders()
-    {
-        try
-        {
-            IsBusy = true;
-
-            var ordersList = Orders.ToList();
-
-            if (ordersList.Count % 5 == 0)
-            {
-                int currentPage = ordersList.Count / 5 + 1;
-                var newOrders = await OrderService.GetAll(currentPage, 5);
-
-                if (newOrders?.Any() == true)
-                {
-                    ordersList.AddRange(newOrders);
-                    Orders = ordersList;
-                }
-            }
-            else
-            {
-                toastService.ShowInfo($"Brak zleceń do pobrania.");
-            }
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private void EditOrder(OrderDto order)
-    {
-        if (order != null)
-        {
-            var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
-            Navigation.NavigateTo($"/zlecenie/edycja?order={orderJson}");
-        }
-    }
-
-    private void ViewOrderDetails(OrderDto order)
-    {
-        if (order != null)
-        {
-            var orderJson = Uri.EscapeDataString(JsonSerializer.Serialize(order));
-            Navigation.NavigateTo($"/zlecenie/szczegoly?order={orderJson}");
-        }
-    }
-
-    private async Task DownloadInvoice(OrderDto order)
-    {
-        if (order == null) return;
-
-        try
-        {
-            IsBusy = true;
-            string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
-            var fileBytes = await OrderService.DownloadInvoice(order.Id);
-
-            await BlazorDownloadFileService.DownloadFile(name, fileBytes, "application/pdf");
-
-            toastService.ShowSuccess($"Pobrano {name}");
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError($"Błąd podczas pobierania faktury: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task DeleteOrder(OrderDto order)
-    {
-        if (order == null) return;
-
-        var parameters = new ModalParameters();
-        string name = $"FAKTURA {order.InvoiceNumber}-{order.IssueDate:MM-yyyy}";
-        parameters.Add("Message", $"Czy na pewno chcesz usunąć zlecenie {name}?");
-
-        var modalRef = Modal.Show<ConfirmDialog>("Potwierdzenie", parameters);
-        var result = await modalRef.Result;
-
-        if (!result.Cancelled)
-        {
-            try
-            {
-                IsBusy = true;
-                await OrderService.Delete(order.Id);
-                await GetAllOrders();
-
-                toastService.ShowSuccess($"Pomyślnie usunięto zlecenie {name}");
-            }
-            catch (Exception ex)
-            {
-                toastService.ShowError($"Błąd podczas usuwania zlecenia: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-    }
-
-    private Guid? ExpandedOrderId { get; set; }
-
-    private void ToggleOrderActions(Guid? orderId)
-    {
-        ExpandedOrderId = ExpandedOrderId == orderId ? null : orderId;
-    }
-}
+                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
+                <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
+                <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
+            </MudMenu>
+        </MudTd>
+    </RowTemplate>
+</MudTable>

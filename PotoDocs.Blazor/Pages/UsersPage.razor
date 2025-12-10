@@ -1,0 +1,46 @@
+﻿@attribute [Authorize]
+@page "/kierowcy"
+
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+<PageTitle>Użytkownicy</PageTitle>
+<MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Użytkownicy</MudText>
+
+<MudTable T="UserDto" ServerData="@ServerReload" LoadingContentBody="@LoadingContent" @ref="table" LoadingProgressColor="Color.Primary">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="Create" Class="mr-2" />
+    </ToolBarContent>
+
+    <HeaderContent>
+        <MudTh>Imię i nazwisko</MudTh>
+        <MudTh>E-mail</MudTh>
+        <MudTh>Rola</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Imię i nazwisko">@context.FirstAndLastName</MudTd>
+        <MudTd DataLabel="E-mail">@context.Email</MudTd>
+        <MudTd DataLabel="Rola">@context.Role</MudTd>
+        <MudTd DataLabel="Akcje" Style="text-align:right">
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                <MudMenuItem Label="Generuj hasło" Icon="@Icons.Material.Filled.LockReset" @onclick="() => GeneratePassword(context.Email)" />
+                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
+                <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
+                <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
+            </MudMenu>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+@code{
+    private readonly RenderFragment LoadingContent = @<text>
+    @for (var i = 0; i< 5; i++)
+        {
+        <MudTr>
+            <MudTd><MudSkeleton /></MudTd>
+            <MudTd><MudSkeleton /></MudTd>
+            <MudTd><MudSkeleton /></MudTd>
+            <MudTd><MudSkeleton /></MudTd>
+        </MudTr>
+        }
+    </text>;
+}

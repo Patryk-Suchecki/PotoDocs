@@ -1,42 +1,52 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
 
 namespace PotoDocs.Shared.Models;
 
 public class OrderDto
 {
-    /*
-        Dane o zleceniu
-    */
-    public Guid? Id { get; set; }
-    public int? InvoiceNumber { get; set; }
-    public DateTime? IssueDate { get; set; }
+
+    public Guid Id { get; set; }
+    public DateTime? UnloadingDate { get; set; }
+    public string OrderNumber { get; set; } = string.Empty;
     public UserDto? Driver { get; set; }
+    public CompanyDto Company { get; set; } = new CompanyDto();
 
-    public CompanyDto Company { get; set; }
-
-    /*
-        Dane zapłata
-    */
-    [Range(0, double.MaxValue, ErrorMessage = "Cena nie może być ujemna.")]
-    public decimal? Price { get; set; }
-
-    public string? Currency { get; set; }
-
+    public decimal Price { get; set; }
+    public CurrencyType Currency { get; set; } = CurrencyType.EUR;
     public int? PaymentDeadline { get; set; }
-    public bool? HasPaid { get; set; }
 
-    public List<OrderStopDto> Stops { get; set; }
+    public List<OrderStopDto> Stops { get; set; } = [];
+    public List<OrderFileDto> Files { get; set; } = [];
+    public Guid? InvoiceId { get; set; }
+    public bool HasInvoice => InvoiceId.HasValue;
+}
+public class OrderDtoValidator : AbstractValidator<OrderDto>
+{
+    public OrderDtoValidator()
+    {
+        RuleFor(x => x.UnloadingDate)
+            .NotNull().WithMessage("Data wystawienia jest wymagana.");
 
-    /*
-        Inne
-    */
-    [StringLength(50, ErrorMessage = "Numer zamówienia firmy nie może mieć więcej niż 50 znaków.")]
-    public string? CompanyOrderNumber { get; set; }
+        RuleFor(x => x.Price)
+            .GreaterThan(0m).WithMessage("Cena musi być większa od 0.");
 
-    /*
-        Pliki
-    */
-    public string? PDFUrl { get; set; }
+        RuleFor(x => x.PaymentDeadline)
+            .GreaterThan(0).WithMessage("Termin płatności jest wymagany.");
 
-    public List<string>? CMRFiles { get; set; }
+        RuleFor(x => x.OrderNumber)
+            .MaximumLength(200).WithMessage("Numer zamówienia firmy nie może mieć więcej niż 200 znaków.");
+
+        RuleFor(x => x.Company)
+            .SetValidator(new CompanyDtoValidator());
+
+        RuleForEach(x => x.Stops)
+            .SetValidator(new OrderStopDtoValidator());
+    }
+    public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
+    {
+        var result = await ValidateAsync(ValidationContext<OrderDto>.CreateWithOptions((OrderDto)model, x => x.IncludeProperties(propertyName)));
+        if (result.IsValid)
+            return [];
+        return result.Errors.Select(e => e.ErrorMessage);
+    };
 }

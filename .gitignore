@@ -368,3 +368,6 @@ FodyWeavers.xsd
 /PotoDocs.API/PotoDocs.API/wwwroot/pdfs
 /PotoDocs.Blazor/wwwroot/appsettings.Production.json
 /PotoDocs.API/PotoDocs.API/appsettings.Production.json
+/PotoDocs.API/appsettings.Production.json
+/PotoDocs.API/PrivateFiles/cmr
+/PotoDocs.API/PrivateFiles/zlecenia
