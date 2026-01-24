@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Azure.Communication.Email;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph.Models;
 using PotoDocs.API.Entities;
 using PotoDocs.Shared.Models;
-using System.Linq;
 
 namespace PotoDocs.API.Services;
 
@@ -287,24 +287,36 @@ public class OrderService : IOrderService
     public async Task SendDocumentsAsync(Guid orderId)
     {
         var invoice = await _dbContext.Invoices
-            .Include(i => i.Order)
-                .ThenInclude(o => o!.Company)
-            .Include(i => i.Order)
-                .ThenInclude(o => o!.Files)
-            .FirstOrDefaultAsync(i => i.OrderId == orderId)
-            ?? throw new KeyNotFoundException($"Nie znaleziono faktury dla zlecenia.");
+                .Include(i => i.Order)
+                    .ThenInclude(o => o!.Company)
+                .Include(i => i.Order)
+                    .ThenInclude(o => o!.Files)
+                .Include(i => i.Corrections)
+                .FirstOrDefaultAsync(i => i.OrderId == orderId)
+                ?? throw new KeyNotFoundException($"Nie znaleziono faktury dla zlecenia.");
 
         if (string.IsNullOrWhiteSpace(invoice.Order!.Company.EmailAddress))
             throw new InvalidOperationException($"Firma {invoice.Order.Company.Name} nie ma zdefiniowanego adresu e-mail.");
 
-        string subject = $"PotoDocs Documents for Order: {invoice.Order.OrderNumber ?? invoice.InvoiceNumber.ToString()}";
+        Invoice invoiceToSend = invoice;
+
+        var latestCorrection = invoice.Corrections
+            .OrderByDescending(c => c.IssueDate)
+            .ThenByDescending(c => c.InvoiceNumber)
+            .FirstOrDefault();
+
+        if (latestCorrection != null)
+        {
+            invoiceToSend = latestCorrection;
+        }
+        string subject = $"PotoDocs Documents for Order: {invoice.Order.OrderNumber ?? invoiceToSend.InvoiceNumber.ToString()}";
         string emailTo = invoice.Order.Company.EmailAddress;
 
         try
         {
             var attachmentsList = new List<EmailAttachment>();
 
-            var (fakturaPdfBytes, _, fakturaName) = await _invoiceService.GetInvoiceAsync(invoice.Id);
+            var (fakturaPdfBytes, _, fakturaName) = await _invoiceService.GetInvoiceAsync(invoiceToSend.Id);
             attachmentsList.Add(new EmailAttachment(
                 fakturaName,
                 "application/pdf",
@@ -325,7 +337,7 @@ public class OrderService : IOrderService
                 ));
             }
 
-            string htmlBody = await LoadAndFormatEmailTemplate(invoice);
+            string htmlBody = await LoadAndFormatEmailTemplate(invoiceToSend, invoice.Order, cmrFiles.Count != 0);
 
             await _emailService.SendEmailAsync(
                 toEmail: emailTo,
@@ -335,8 +347,8 @@ public class OrderService : IOrderService
                 attachments: attachmentsList
             );
 
-            invoice.SentDate = DateTime.Now;
-            invoice.DeliveryMethod = DeliveryMethodType.Email;
+            invoiceToSend.SentDate = DateTime.Now;
+            invoiceToSend.DeliveryMethod = DeliveryMethodType.Email;
 
             await _dbContext.SaveChangesAsync();
         }
@@ -346,8 +358,10 @@ public class OrderService : IOrderService
         }
     }
 
-    private async Task<string> LoadAndFormatEmailTemplate(Invoice invoice)
+    private async Task<string> LoadAndFormatEmailTemplate(Invoice invoice, Order order, bool hasCmr)
     {
+        string cmrHtml = hasCmr ? "<li style=\"padding: 5px 0;\">✔️ CMR / Proof of Delivery</li>" : "";
+
         var templatePath = Path.Combine(_env.WebRootPath, "emails", "invoice-documents.html");
         if (!File.Exists(templatePath))
         {
@@ -356,9 +370,11 @@ public class OrderService : IOrderService
 
         var template = await File.ReadAllTextAsync(templatePath);
 
-        template = template.Replace("{clientName}", invoice.Order!.Company.Name);
-        template = template.Replace("{orderNumber}", invoice.Order.OrderNumber);
-        template = template.Replace("{invoiceNumber}", $"{invoice.InvoiceNumber}/{invoice.IssueDate:MM'/'yyyy}");
+
+        template = template.Replace("{clientName}", order.Company.Name)
+            .Replace("{orderNumber}", order.OrderNumber)
+            .Replace("{invoiceNumber}", $"{invoice.InvoiceNumber}/{invoice.IssueDate:MM'/'yyyy}")
+            .Replace("{cmrLine}", cmrHtml);
 
         return template;
     }

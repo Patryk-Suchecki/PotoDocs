@@ -3,9 +3,13 @@
         <MudForm @ref="form" Model="@InvoiceDto" Validation="@(invoiceValidator.ValidateValue)" ValidationDelay="0">
             <MudText Typo="Typo.h6" Class="mt-4">Faktura</MudText>
             <MudGrid Spacing="2">
-                <MudItem xs="12" sm="4">
-                    <MudNumericField @bind-Value="InvoiceDto.InvoiceNumber" Label="Numer faktury" Variant="Variant.Outlined" Min="0" Disabled="@IsDisabled" For="@(() => InvoiceDto.InvoiceNumber)" />
-                </MudItem>
+                @if (Type != InvoiceFormType.Create)
+                {
+                    <MudItem xs="12" sm="4">
+                        <MudNumericField @bind-Value="InvoiceDto.InvoiceNumber" Label="Numer faktury" Variant="Variant.Outlined" Min="0" Disabled="@IsDisabled" For="@(() => InvoiceDto.InvoiceNumber)" />
+                    </MudItem>
+                }
+
                 <MudItem xs="12" sm="4">
                     <MudDatePicker Label="Data wystawienia" Editable="true" @bind-Date="InvoiceDto.IssueDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.IssueDate)" />
                 </MudItem>
@@ -58,7 +62,7 @@
                 
                 </MudItem>
             </MudGrid>
-
+            <MudTextField @bind-Value="InvoiceDto.Comments" Label="Uwagi" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.Comments)" />
             <MudTable Items="@InvoiceDto.Items"
                       RowEditCommit="OnItemCommit"
                       RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
@@ -78,14 +82,21 @@
                     <MudTh>Cena netto</MudTh>
                     <MudTh>VAT</MudTh>
                     <MudTh>Wartość brutto</MudTh>
+                    <MudTh Style="width: 50px;"></MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Nazwa">@context.Name</MudTd>
                     <MudTd DataLabel="Ilość">@context.Quantity</MudTd>
                     <MudTd DataLabel="JM">@context.Unit</MudTd>
-                    <MudTd DataLabel="Cena netto">@context.NetPrice.ToString("C2")</MudTd>
+                    <MudTd DataLabel="Cena netto">@context.NetPrice.FormatMoney(InvoiceDto.Currency)</MudTd>
                     <MudTd DataLabel="VAT">@context.VatRate.ToString("P0")</MudTd>
-                    <MudTd DataLabel="Wartość brutto">@context.GrossValue.ToString("C2")</MudTd>
+                    <MudTd DataLabel="Wartość brutto">@context.GrossValue.FormatMoney(InvoiceDto.Currency)</MudTd>
+                    <MudTd>
+                        @if (!IsDisabled)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveItem(context))" />
+                        }
+                    </MudTd>
                 </RowTemplate>
                 <RowEditingTemplate>
                     <MudTd DataLabel="Nazwa">
@@ -107,6 +118,7 @@
                     <MudTd DataLabel="VAT">
                         <MudNumericField @bind-Value="context.VatRate" Required Min="0" Format="F2" Label="Stawka"/>
                     </MudTd>
+
                 </RowEditingTemplate>
                 <EditButtonContent Context="button">
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />

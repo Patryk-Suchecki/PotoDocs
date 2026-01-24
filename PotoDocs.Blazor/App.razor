@@ -1,8 +1,11 @@
-﻿<MudThemeProvider Theme="_theme" />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<MudPopoverProvider />
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
 <CascadingAuthenticationState>
+    <MudThemeProvider Theme="_theme" />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+    <MudPopoverProvider />
+
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">

@@ -4,6 +4,7 @@ public class Invoice
 {
     public Guid Id { get; set; }
     public required int InvoiceNumber { get; set; }
+    public InvoiceType Type { get; set; } = InvoiceType.Original;
     public DateTime IssueDate { get; set; }
     public DateTime SaleDate { get; set; }
     public DateTime? SentDate { get; set; }
@@ -27,4 +28,9 @@ public class Invoice
     public virtual ICollection<InvoiceItem> Items { get; set; } = [];
     public Guid? OrderId { get; set; }
     public virtual Order? Order { get; set; }
+
+    public Guid? OriginalInvoiceId { get; set; }
+    public virtual Invoice? OriginalInvoice { get; set; }
+
+    public virtual ICollection<Invoice> Corrections { get; set; } = [];
 }

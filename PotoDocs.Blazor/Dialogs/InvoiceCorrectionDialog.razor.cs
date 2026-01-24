@@ -4,55 +4,49 @@ using PotoDocs.Shared.Models;
 
 namespace PotoDocs.Blazor.Dialogs;
 
-public partial class InvoiceDialog
+public partial class InvoiceCorrectionDialog
 {
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public InvoiceDto InvoiceDto { get; set; } = new InvoiceDto();
-    [Parameter] public InvoiceFormType Type { get; set; } = InvoiceFormType.Update;
+    [Parameter] public InvoiceCorrectionDto InvoiceCorrectionDto { get; set; } = default!;
+    [Parameter] public InvoiceCorrectionFormType Type { get; set; } = InvoiceCorrectionFormType.Update;
 
-    private bool IsDisabled => Type == InvoiceFormType.Delete || Type == InvoiceFormType.Details;
+    private bool IsDisabled => Type == InvoiceCorrectionFormType.Delete || Type == InvoiceCorrectionFormType.Details;
 
     private InvoiceItemDto elementBeforeEdit = new();
 
     private MudForm form = default!;
-    private readonly InvoiceDtoValidator invoiceValidator = new();
+    private readonly InvoiceCorrectionDtoValidator invoiceCorrectionValidator = new();
 
     private string ButtonLabel => Type switch
     {
-        InvoiceFormType.Update => "Zapisz",
-        InvoiceFormType.Delete => "Usuń",
-        InvoiceFormType.Details => "Zamknij",
+        InvoiceCorrectionFormType.Update => "Zapisz",
+        InvoiceCorrectionFormType.Delete => "Usuń",
+        InvoiceCorrectionFormType.Details => "Zamknij",
         _ => "Zapisz"
     };
-
-    protected override void OnParametersSet()
-    {
-        InvoiceDto ??= new InvoiceDto();
-        InvoiceDto.Items ??= [];
-    }
     private void AddNewItem()
     {
-        InvoiceDto.Items.Add(new InvoiceItemDto());
+        InvoiceCorrectionDto.Items.Add(new InvoiceItemDto());
     }
 
     private async Task SubmitAsync()
     {
-        if (Type == InvoiceFormType.Details)
+        if (Type == InvoiceCorrectionFormType.Details)
         {
             MudDialog.Cancel();
             return;
         }
 
-        if (Type == InvoiceFormType.Delete)
+        if (Type == InvoiceCorrectionFormType.Delete)
         {
             CloseDialogWithResult();
             return;
         }
 
         await form.Validate();
-        if (form.IsValid)
+        if (form.IsValid && InvoiceCorrectionDto.Items.Count != 0)
         {
             CloseDialogWithResult();
         }
@@ -65,7 +59,7 @@ public partial class InvoiceDialog
     private void CloseDialogWithResult()
     {
 
-        MudDialog.Close(DialogResult.Ok(InvoiceDto));
+        MudDialog.Close(DialogResult.Ok(InvoiceCorrectionDto));
     }
     private void BackupItem(object item)
     {
@@ -94,9 +88,26 @@ public partial class InvoiceDialog
         ((InvoiceItemDto)item).VatAmount = Math.Round(((InvoiceItemDto)item).NetValue * ((InvoiceItemDto)item).VatRate, 2);
         ((InvoiceItemDto)item).GrossValue = ((InvoiceItemDto)item).NetValue + ((InvoiceItemDto)item).VatAmount;
     }
+    private void CopyItemToCorrection(InvoiceItemDto dto)
+    {
+        var item = new InvoiceItemDto
+        {
+            Id = Guid.Empty,
+            Name = dto.Name,
+            Unit = dto.Unit,
+            Quantity = dto.Quantity,
+            NetPrice = dto.NetPrice,
+            VatRate = dto.VatRate,
+            NetValue = dto.NetValue,
+            VatAmount = dto.VatAmount,
+            GrossValue = dto.GrossValue
+        };
+
+        InvoiceCorrectionDto.Items.Add(item);
+    }
     private void RemoveItem(InvoiceItemDto item)
     {
-        InvoiceDto.Items.Remove(item);
+        InvoiceCorrectionDto.Items.Remove(item);
     }
 }
-public enum InvoiceFormType { Create, Details, Update, Delete }
+public enum InvoiceCorrectionFormType { Create, Details, Update, Delete }

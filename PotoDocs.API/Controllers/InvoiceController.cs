@@ -19,6 +19,13 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
         var order = await _invoiceService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
     }
+    [HttpPost("correction")]
+    [ProducesResponseType(typeof(InvoiceDto), 201)]
+    public async Task<ActionResult<InvoiceDto>> CreateCorrection([FromBody] InvoiceCorrectionDto dto)
+    {
+        var correction = await _invoiceService.CreateCorrectionAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = correction.Id }, correction);
+    }
 
     [HttpGet("all")]
     [ProducesResponseType(typeof(IEnumerable<InvoiceDto>), 200)]
@@ -40,6 +47,13 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     public async Task<ActionResult> Update([FromBody] InvoiceDto dto)
     {
         await _invoiceService.UpdateAsync(dto);
+        return NoContent();
+    }
+
+    [HttpPut("correction")]
+    public async Task<ActionResult> UpdateCorrection([FromBody] InvoiceCorrectionDto dto)
+    {
+        await _invoiceService.UpdateCorrectionAsync(dto);
         return NoContent();
     }
 

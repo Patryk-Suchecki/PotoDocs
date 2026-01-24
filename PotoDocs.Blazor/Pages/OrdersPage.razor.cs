@@ -1,10 +1,9 @@
-﻿using BlazorDownloadFile;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using PotoDocs.Blazor.Dialogs;
+using PotoDocs.Blazor.Helpers;
 using PotoDocs.Blazor.Services;
 using PotoDocs.Shared.Models;
-using System.Globalization;
 using System.Text.Json;
 
 namespace PotoDocs.Blazor.Pages;
@@ -13,51 +12,35 @@ public partial class OrdersPage
 {
     [Inject] private IOrderService OrderService { get; set; } = default!;
     [Inject] private IInvoiceService InvoiceService { get; set; } = default!;
-    [Inject] private IBlazorDownloadFileService BlazorDownloadFileService { get; set; } = default!;
+    [Inject] private IFileDownloadHelper FileDownloader { get; set; } = default!;
     [Inject] private IDownloadsService DownloadsService { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? searchString { get; set; }
+
     private HashSet<OrderDto> selectedOrders = [];
     private bool IsLoading = true;
-    private string searchString = "";
     private List<OrderDto> orders = [];
     private List<UserDto> users = [];
     private readonly List<BreadcrumbItem> _items = [new("Strona główna", href: "#"), new("Zlecenia", href: null, disabled: true)];
-    private static readonly CultureInfo _plCulture = new("pl-PL");
-    private readonly TableGroupDefinition<OrderDto> _groupDefinition = new()
-    {
-        Indentation = false,
-        Expandable = true,
-        IsInitiallyExpanded = false,
-        Selector = (e) =>
-        {
-            string dateString = e.UnloadingDate?.ToString("MMMM - yyyy", new CultureInfo("pl-PL")) ?? "Brak daty";
-            return new CultureInfo("pl-PL").TextInfo.ToTitleCase(dateString);
-        }
-    };
-    private static string FormatMoney(decimal price, CurrencyType currency)
-    {
-        var culture = currency == CurrencyType.PLN
-            ? CultureInfo.GetCultureInfo("pl-PL")
-            : CultureInfo.GetCultureInfo("de-DE");
 
-        return price.ToString("C", culture);
+    private readonly TableGroupSorter<OrderDto> _sorter = new(x => x.UnloadingDate, "Data rozładunku");
+
+    private void OnSortDirectionChanged(SortDirection direction)
+    {
+        if (_sorter.UpdateDirection(direction))
+        {
+            StateHasChanged();
+        }
     }
+   
     protected override async Task OnInitializedAsync()
     {
-        _groupDefinition.Selector = GroupSelector;
         await LoadUsers();
         await LoadOrders();
-    }
-    private string GroupSelector(OrderDto e)
-    {
-        if (e.UnloadingDate is null)
-            return "Brak daty";
-
-        string dateString = e.UnloadingDate.Value.ToString("MMMM - yyyy", _plCulture);
-
-        return _plCulture.TextInfo.ToTitleCase(dateString);
     }
 
     private async Task LoadUsers()
@@ -101,17 +84,25 @@ public partial class OrdersPage
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if (order.Driver?.FirstAndLastName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
+        if (order.OrderNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (order.Invoice?.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
+            return true;
+        if (order.Invoice?.InvoiceNumber.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             return true;
         if (order.Company?.Name?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
+            return true;
+        if (order.UnloadingDate?.ToString("dd.MM.yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             return true;
         return false;
     }
 
     private async Task Create()
     {
+        var order = new OrderDto() { Driver = await UserService.GetCurrentUser() };
         var parameters = new DialogParameters
         {
+            { nameof(OrderDialog.OrderDto), order },
             { nameof(OrderDialog.Users), users },
             { nameof(OrderDialog.Type), OrderFormType.Create }
         };
@@ -126,15 +117,16 @@ public partial class OrdersPage
         var dialogRef = await DialogService.ShowAsync<OrderDialog>("Dodawanie zlecenia", parameters, options);
         var result = await dialogRef.Result;
 
-        if (result is not null && !result.Canceled && result.Data is OrderDialogResult orderFormDialogResult)
+        if (result is not null && !result.Canceled && result.Data is OrderDialogResult orderDialogResult)
         {
             try
             {
-                await OrderService.Create(orderFormDialogResult.Order, orderFormDialogResult.OrderFiles, orderFormDialogResult.CmrFiles);
+                await OrderService.Create(orderDialogResult.Order, orderDialogResult.OrderFiles, orderDialogResult.CmrFiles);
 
                 Snackbar.Add("Pomyślnie zapisano zlecenie.", Severity.Success);
 
                 await LoadOrders();
+                searchString = orderDialogResult.Order.OrderNumber;
                 StateHasChanged();
             }
             catch (Exception ex)
@@ -244,6 +236,8 @@ public partial class OrdersPage
         try
         {
             await OrderService.SendDocuments(order.Id);
+            await LoadOrders();
+            StateHasChanged();
             Snackbar.Add($"Pomyślnie wysłano dokumenty dla {order.OrderNumber}", Severity.Success);
         }
         catch (Exception ex)
@@ -258,6 +252,8 @@ public partial class OrdersPage
         try
         {
             var invoice = await InvoiceService.CreateFromOrder(order.Id);
+            await LoadOrders();
+            StateHasChanged();
             Snackbar.Add($"Pomyślnie wystawiono fakturę nr {invoice.Name}", Severity.Success);
         }
         catch (Exception ex)
@@ -285,37 +281,6 @@ public partial class OrdersPage
             Snackbar.Add($"Oznaczono {orderIds.Count} zleceń jako wysłane.", Severity.Success);
         }
     }
-    private async Task DownloadDocuments()
-    {
-        if (selectedOrders.Count == 0)
-        {
-            Snackbar.Add("Zaznacz najpierw zlecenia", Severity.Warning);
-            return;
-        }
-        try
-        {
-            IsLoading = true;
-            List<Guid> orderIds = [.. selectedOrders.Select(o => o.Id)];
-            var file = await DownloadsService.DownloadDocuments(orderIds);
-
-            if (file.FileContent == null || file.FileContent.Length == 0)
-            {
-                Snackbar.Add("Nie znaleziono plików dla wybranych kryteriów.", Severity.Info);
-                return;
-            }
-
-            await BlazorDownloadFileService.DownloadFile(file.FileName, file.FileContent, file.ContentType);
-            Snackbar.Add($"Pobrano {file.FileName}", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
     private async Task DownloadOrders()
     {
         if (selectedOrders.Count == 0)
@@ -323,28 +288,36 @@ public partial class OrdersPage
             Snackbar.Add("Zaznacz najpierw zlecenia", Severity.Warning);
             return;
         }
-        try
-        {
-            IsLoading = true;
-            List<Guid> orderIds = [.. selectedOrders.Select(o => o.Id)];
-            var file = await DownloadsService.DownloadOrders(orderIds);
 
-            if (file.FileContent == null || file.FileContent.Length == 0)
-            {
-                Snackbar.Add("Nie znaleziono plików dla wybranych kryteriów.", Severity.Info);
-                return;
-            }
+        var ids = selectedOrders.Select(o => o.Id).ToList();
 
-            await BlazorDownloadFileService.DownloadFile(file.FileName, file.FileContent, file.ContentType);
-            Snackbar.Add($"Pobrano {file.FileName}", Severity.Success);
-        }
-        catch (Exception ex)
+        await FileDownloader.DownloadFromServerAsync(
+            () => DownloadsService.DownloadOrders(ids),
+            isLoading => IsLoading = isLoading
+        );
+    }
+
+    private async Task DownloadDocuments()
+    {
+        if (selectedOrders.Count == 0)
         {
-            Snackbar.Add(ex.Message, Severity.Error);
+            Snackbar.Add("Zaznacz najpierw zlecenia", Severity.Warning);
+            return;
         }
-        finally
-        {
-            IsLoading = false;
-        }
+
+        var ids = selectedOrders.Select(o => o.Id).ToList();
+
+        await FileDownloader.DownloadFromServerAsync(
+            () => DownloadsService.DownloadDocuments(ids),
+            isLoading => IsLoading = isLoading
+        );
+    }
+    private void GoToInvoice(string invoiceName)
+    {
+        if (string.IsNullOrWhiteSpace(invoiceName)) return;
+
+        var encodedName = Uri.EscapeDataString(invoiceName);
+
+        NavigationManager.NavigateTo($"/faktury?search={encodedName}");
     }
 }

@@ -6,11 +6,11 @@ public class InvoiceItemDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public string Unit { get; set; } = string.Empty;
+    public int Quantity { get; set; } = 1;
+    public string Unit { get; set; } = "Usługa";
     public decimal NetPrice { get; set; }
     public decimal NetValue { get; set; }
-    public decimal VatRate { get; set; }
+    public decimal VatRate { get; set; } = 0.23m;
     public decimal VatAmount { get; set; }
     public decimal GrossValue { get; set; }
 }

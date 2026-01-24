@@ -1,14 +1,18 @@
 ﻿using BlazorDownloadFile;
 using Blazored.LocalStorage;
 using Blazored.Modal;
+using FluentValidation;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 using PotoDocs.Blazor;
+using PotoDocs.Blazor.Helpers;
 using PotoDocs.Blazor.Models;
 using PotoDocs.Blazor.Services;
+using PotoDocs.Blazor.Services.Strategies;
+using PotoDocs.Shared.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -56,12 +60,19 @@ if (apiSettings is null || string.IsNullOrEmpty(apiSettings.BaseAddress))
 
 
 // 🔹 **Serwisy aplikacyjne**
+builder.Services.AddScoped<IFileDownloadHelper, FileDownloadHelper>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IDownloadsService, DownloadsService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+
+builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
+
+builder.Services.AddScoped<IInvoiceActionStrategy, OriginalInvoiceStrategy>();
+builder.Services.AddScoped<IInvoiceActionStrategy, CorrectionStrategy>();
+builder.Services.AddScoped<InvoiceStrategyFactory>();
 
 // 🔹 **HttpClient z poprawnym adresem API**
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiSettings.BaseAddress) });

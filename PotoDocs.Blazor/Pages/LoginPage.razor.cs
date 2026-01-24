@@ -10,26 +10,19 @@ public partial class LoginPage
     [Inject] private IAuthService AuthService { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
-    private readonly LoginDto LoginDto = new();
-    private readonly LoginDtoValidator loginValidator = new();
-    private MudForm form = default!;
+    private LoginDto _loginModel = new();
 
-    private string? errorMessage;
-    bool isShow;
-    InputType PasswordInput = InputType.Password;
-    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private string? _errorMessage;
+
+    private bool _isPasswordVisible;
+    private InputType _passwordInputType = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
 
     private async Task SubmitAsync()
     {
-        errorMessage = null;
+        _errorMessage = null;
 
-        await form.Validate();
-        if (!form.IsValid)
-        {
-            return;
-        }
-
-        var result = await AuthService.LoginAsync(LoginDto);
+        var result = await AuthService.LoginAsync(_loginModel);
 
         if (result.IsSuccess)
         {
@@ -37,24 +30,23 @@ public partial class LoginPage
         }
         else
         {
-            errorMessage = result.ErrorMessage;
-
+            _errorMessage = result.ErrorMessage;
         }
     }
 
-    void ButtonTestclick()
+    private void TogglePasswordVisibility()
     {
-        if (isShow)
+        if (_isPasswordVisible)
         {
-            isShow = false;
-            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
-            PasswordInput = InputType.Password;
+            _isPasswordVisible = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInputType = InputType.Password;
         }
         else
         {
-            isShow = true;
-            PasswordInputIcon = Icons.Material.Filled.Visibility;
-            PasswordInput = InputType.Text;
+            _isPasswordVisible = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInputType = InputType.Text;
         }
     }
 }

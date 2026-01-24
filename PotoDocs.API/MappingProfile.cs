@@ -25,6 +25,14 @@ namespace PotoDocs.API.Mappings
                 .ReverseMap()
                 .ForMember(dest => dest.Files, opt => opt.Ignore())
                 .ForMember(dest => dest.Invoice, opt => opt.Ignore());
+
+            CreateMap<Invoice, Invoice>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.InvoiceNumber, opt => opt.Ignore())
+            .ForMember(dest => dest.Items, opt => opt.Ignore())
+            .ForMember(dest => dest.Corrections, opt => opt.Ignore())
+            .ForMember(dest => dest.OriginalInvoice, opt => opt.Ignore())
+            .ForMember(dest => dest.OriginalInvoiceId, opt => opt.Ignore());
         }
     }
 }

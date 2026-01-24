@@ -24,6 +24,14 @@ public class UserController(IUserService userService) : ControllerBase
         return StatusCode(StatusCodes.Status201Created);
     }
 
+    [HttpPut]
+    [Authorize(Roles = "admin,manager")]
+    public async Task<ActionResult> Update([FromBody] UserDto dto)
+    {
+        await _userService.UpdateAsync(dto);
+        return NoContent();
+    }
+
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
@@ -43,7 +51,6 @@ public class UserController(IUserService userService) : ControllerBase
     }
 
     [HttpGet("all")]
-    [Authorize(Roles = "admin,manager")]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         var users = await _userService.GetAllAsync();

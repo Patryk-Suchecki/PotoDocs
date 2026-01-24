@@ -1,19 +1,45 @@
 ﻿@page "/logowanie"
-@layout LoginLayout 
+@layout LoginLayout
+
 
 <MudImage Src="images/logo.png" Width="320" Class="mb-8" />
 
 <MudPaper Class="pa-8" Style="background: none; box-shadow: none;">
-    <MudForm @ref="form" Model="@LoginDto" Validation="@(loginValidator.ValidateValue)" ValidationDelay="0">
-        <MudTextField @bind-Value="LoginDto.Email" Label="Adres e-mail" Variant="Variant.Outlined" For="@(() => LoginDto.Email)" />
-        <MudTextField @bind-Value="LoginDto.Password" Label="Hasło" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" For="@(() => LoginDto.Password)" />
+    <EditForm Model="@_loginModel" OnValidSubmit="SubmitAsync">
 
-        @if (!string.IsNullOrEmpty(errorMessage))
+        <FluentValidationValidator />
+
+        <MudTextField @bind-Value="_loginModel.Email"
+                      Label="Adres e-mail"
+                      Variant="Variant.Outlined"
+                      For="@(() => _loginModel.Email)"
+                      Immediate="true" />
+
+        <MudTextField @bind-Value="_loginModel.Password"
+                      Label="Hasło"
+                      Variant="Variant.Outlined"
+                      InputType="@_passwordInputType"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@_passwordInputIcon"
+                      OnAdornmentClick="TogglePasswordVisibility"
+                      AdornmentAriaLabel="Pokaż hasło"
+                      For="@(() => _loginModel.Password)"
+                      Immediate="true" />
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
         {
-            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+            <MudAlert Severity="MudBlazor.Severity.Error" Class="mt-2">@_errorMessage</MudAlert>
         }
-        <MudButton Color="Color.Primary" ButtonType="ButtonType.Button" OnClick="SubmitAsync" FullWidth="true" Class="mt-4">Logowanie</MudButton>
-    </MudForm>
+
+        <MudButton ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth="true"
+                   Class="mt-4">
+            Logowanie
+        </MudButton>
+
+    </EditForm>
 </MudPaper>
 
 <MudImage Src="images/caranim.gif" Height="280" Class="mt-8" />

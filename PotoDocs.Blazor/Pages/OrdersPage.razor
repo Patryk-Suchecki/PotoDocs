@@ -5,49 +5,129 @@
 <PageTitle>Zlecenia</PageTitle>
 <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Zlecenia</MudText>
 
-<MudTable Items="@orders" Filter="new Func<OrderDto, bool>(FilterFunc1)" GroupBy="@_groupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedOrders">
+<MudTable T="OrderDto"
+          Items="@orders"
+          Filter="new Func<OrderDto, bool>(FilterFunc1)"
+          GroupBy="@_sorter.GroupDefinition"
+          Loading="@IsLoading"
+          LoadingProgressColor="Color.Primary"
+          MultiSelection="true"
+          @bind-SelectedItems="selectedOrders"
+          Striped="true"
+          Hover="true">
     <ToolBarContent>
         <MudTextField @bind-Value="searchString" Placeholder="Szukaj" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="Create" Class="mr-2" />
-        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-            <MudMenuItem Label="Zarejestruj wysyłkę pocztą" Icon="@Icons.Material.Filled.MarkEmailRead" @onclick="() => OpenMarkSentDialogAsync()" />
-            <MudMenuItem Label="Pobierz pliki zleceń" Icon="@Icons.Material.Filled.PictureAsPdf" @onclick="() => DownloadOrders()" />
-            <MudMenuItem Label="Pobierz komplet dokumentów" Icon="@Icons.Material.Filled.FolderZip" @onclick="() => DownloadDocuments()" />
-        </MudMenu>
+        <AuthorizeView Roles="admin">
+            <Authorized>
+                <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                    <MudMenuItem Label="Zarejestruj wysyłkę pocztą" Icon="@Icons.Material.Filled.MarkEmailRead" @onclick="() => OpenMarkSentDialogAsync()" />
+                    <MudMenuItem Label="Pobierz pliki zleceń" Icon="@Icons.Material.Filled.PictureAsPdf" @onclick="() => DownloadOrders()" />
+                    <MudMenuItem Label="Pobierz komplet dokumentów" Icon="@Icons.Material.Filled.FolderZip" @onclick="() => DownloadDocuments()" />
+                </MudMenu>
+            </Authorized>
+        </AuthorizeView>
     </ToolBarContent>
 
     <HeaderContent>
-        <MudTh>Zleceniodawca</MudTh>
-        <MudTh>Kierowca</MudTh>
-        <MudTh>Rozładunek</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.OrderNumber)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="OrderDto">
+                Numer
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.Invoice?.InvoiceNumber ?? int.MinValue)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="OrderDto">
+                Faktura
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.Company.Name)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="OrderDto">
+                Zleceniodawca
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.UnloadingDate ?? DateTime.MinValue)"
+                               InitialDirection="SortDirection.Descending"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="OrderDto">
+                Rozładunek
+            </MudTableSortLabel>
+        </MudTh>
+
         <MudTh>Status</MudTh>
-        <MudTh>Kwota</MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.Price)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="OrderDto">
+                Kwota
+            </MudTableSortLabel>
+        </MudTh>
+
         <MudTh></MudTh>
     </HeaderContent>
 
     <GroupHeaderTemplate>
-        <MudTh Class="mud-table-cell-custom-group" colspan="6">@($"{context.Key}") </MudTh>
+        <MudTh colspan="7">
+            @{
+                var dateKey = context.Key as DateTime?;
+            }
+            @if (dateKey.HasValue && dateKey.Value != DateTime.MinValue)
+            {
+                <b>@System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(dateKey.Value.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL")))</b>
+            }
+            else
+            {
+                <b>Brak daty rozładunku</b>
+            }
+        </MudTh>
     </GroupHeaderTemplate>
+
     <RowTemplate>
+        <MudTd DataLabel="Numer">@context.OrderNumber</MudTd>
+        <MudTd DataLabel="Faktura">@context.Invoice?.Name</MudTd>
         <MudTd DataLabel="Zleceniodawca">@context.Company.Name</MudTd>
-        <MudTd DataLabel="Kierowca">@(context.Driver?.FirstAndLastName ?? "Brak kierowcy")</MudTd>
-        <MudTd DataLabel="Rozładunek">@((context.Stops.Where(stop => stop.Type == StopType.Unloading).OrderByDescending(stop => stop.Date).FirstOrDefault()?.Date)?.ToString("dd.MM.yyyy") ?? "Brak daty")</MudTd>
-        <MudTd DataLabel="Status">@(context.Files.Where(o => o.Type == FileType.Cmr).Count() > 0 ? "Nie zapłacono" : "Brak CMR")</MudTd>
-        <MudTd DataLabel="Cena">@FormatMoney(context.Price, context.Currency)</MudTd>
+        <MudTd DataLabel="Rozładunek">@(context.UnloadingDate?.ToString("dd.MM.yyyy") ?? "Brak daty")</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string" Variant="Variant.Text" Size="Size.Small" Color="@context.GetStatusColor()">
+                @context.GetStatusText()
+            </MudChip>
+        </MudTd>
+        <MudTd DataLabel="Cena">@context.Price.FormatMoney(context.Currency)</MudTd>
         <MudTd DataLabel="Akcje" Style="text-align:right">
             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                @if (!context.HasInvoice)
-                {
-                    <MudMenuItem Label="Wystaw fakturę" Icon="@Icons.Material.Filled.Download" @onclick="() => CreateInvoice(context)" />
-                }
-                @if (context.Company != null && context.Company.AcceptsEInvoices)
-                {
-                    <MudMenuItem Label="Wyślij e-mail" Icon="@Icons.Material.Filled.Email" @onclick="() => SendEmail(context)" />
-                }
+                <AuthorizeView Roles="admin" Context="authContext">
+                    <Authorized>
+                        @if (context.Invoice == null)
+                        {
+                            <MudMenuItem Label="Wystaw fakturę" Icon="@Icons.Material.Filled.Download" @onclick="() => CreateInvoice(context)" />
+                        }
+                        @if (context.Company != null && context.Company.AcceptsEInvoices && context.Invoice != null)
+                        {
+                            <MudMenuItem Label="Wyślij e-mail" Icon="@Icons.Material.Filled.Email" @onclick="() => SendEmail(context)" />
+                        }
+                        @if(context.Invoice != null)
+                        {
+                            <MudMenuItem Label="Pokaż fakturę" Icon="@Icons.Material.Filled.ReceiptLong" OnClick="@(() => GoToInvoice(context.Invoice.Name))" />
+                        }
+
+                    </Authorized>
+                </AuthorizeView>
+
                 <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
                 <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
                 <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
+
             </MudMenu>
         </MudTd>
     </RowTemplate>

@@ -1,4 +1,5 @@
-﻿using PotoDocs.Shared.Models;
+﻿using PotoDocs.Blazor.Helpers;
+using PotoDocs.Shared.Models;
 using System.Net.Http.Json;
 
 namespace PotoDocs.Blazor.Services;

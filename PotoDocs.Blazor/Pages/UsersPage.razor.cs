@@ -81,7 +81,7 @@ public partial class UsersPage
         {
             try
             {
-                //await UserService.
+                await UserService.Update(userdto);
 
                 Snackbar.Add("Pomyślnie zaktualizowano użytkownika.", Severity.Success);
 

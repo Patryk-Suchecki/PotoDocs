@@ -11,6 +11,7 @@ using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
 using QuestPDF.Drawing;
 using QuestPDF.Infrastructure;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
@@ -49,15 +50,22 @@ builder.Services.AddAuthentication(x =>
     });
 builder.Services.AddTransient<ITokenService, TokenService>()
                 .AddTransient<IAccountService, AccountService>();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
+var provider = builder.Configuration.GetValue<string>("DatabaseProvider");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<PotodocsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
 builder.Services.AddScoped<DBSeeder>();
 builder.Services.AddCors(options =>
 {

@@ -17,8 +17,8 @@ public class OrderDto
 
     public List<OrderStopDto> Stops { get; set; } = [];
     public List<OrderFileDto> Files { get; set; } = [];
-    public Guid? InvoiceId { get; set; }
-    public bool HasInvoice => InvoiceId.HasValue;
+    public InvoiceDto? Invoice { get; set; }
+
 }
 public class OrderDtoValidator : AbstractValidator<OrderDto>
 {

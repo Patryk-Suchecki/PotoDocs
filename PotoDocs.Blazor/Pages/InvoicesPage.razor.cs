@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using PotoDocs.Blazor.Dialogs;
+using PotoDocs.Blazor.Helpers;
 using PotoDocs.Blazor.Services;
+using PotoDocs.Blazor.Services.Strategies;
 using PotoDocs.Shared.Models;
-using System.Globalization;
 using System.Text.Json;
 
 namespace PotoDocs.Blazor.Pages;
@@ -13,15 +14,28 @@ public partial class InvoicesPage
 {
     [Inject] private IInvoiceService InvoiceService { get; set; } = default!;
     [Inject] private IDownloadsService DownloadsService { get; set; } = default!;
-    [Inject] private IBlazorDownloadFileService BlazorDownloadFileService { get; set; } = default!;
+    [Inject] private IFileDownloadHelper FileDownloader { get; set; } = default!;
+    [Inject] private InvoiceStrategyFactory InvoiceStrategyFactory { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? searchString { get; set; }
+
+    private readonly List<BreadcrumbItem> _items = [new("Strona główna", href: "#"), new("Faktury", href: null, disabled: true)];
+    private readonly TableGroupSorter<InvoiceDto> _sorter = new(x => x.IssueDate, "Data wystawienia");
+    private List<InvoiceDto> invoices = [];
     private HashSet<InvoiceDto> selectedInvoices = [];
     private bool IsLoading = true;
-    private string searchString = "";
-    private List<InvoiceDto> invoices = [];
-    private readonly List<BreadcrumbItem> _items = [new("Strona główna", href: "#"), new("Faktury", href: null, disabled: true)];
 
+    private void OnSortDirectionChanged(SortDirection direction)
+    {
+        if (_sorter.UpdateDirection(direction))
+        {
+            StateHasChanged();
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         await LoadInvoices();
@@ -43,17 +57,6 @@ public partial class InvoicesPage
             IsLoading = false;
         }
     }
-    private readonly TableGroupDefinition<InvoiceDto> _groupDefinition = new()
-    {
-        Indentation = false,
-        Expandable = true,
-        IsInitiallyExpanded = false,
-        Selector = (e) =>
-        {
-            string dateString = e.IssueDate?.ToString("MMMM - yyyy", new CultureInfo("pl-PL")) ?? "Brak daty";
-            return new CultureInfo("pl-PL").TextInfo.ToTitleCase(dateString);
-        }
-    };
 
     private bool FilterFunc1(InvoiceDto invoice) => FilterFunc(invoice, searchString);
 
@@ -63,7 +66,13 @@ public partial class InvoicesPage
             return true;
         if (invoice.InvoiceNumber.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
+        if (invoice.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (invoice.Comments.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
         if (invoice.BuyerName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
+            return true;
+        if (invoice.IssueDate?.ToString("dd.MM.yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             return true;
         return false;
     }
@@ -100,106 +109,6 @@ public partial class InvoicesPage
             }
         }
     }
-
-    private async Task Edit(InvoiceDto invoice)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceDialog.InvoiceDto), JsonSerializer.Deserialize<InvoiceDto>(JsonSerializer.Serialize(invoice))! },
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Update }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.ExtraLarge
-        };
-
-        var dialogRef = await DialogService.ShowAsync<InvoiceDialog>($"Edytuj fakture nr {invoice.Name}", parameters, options);
-        var result = await dialogRef.Result;
-
-        if (result is not null && !result.Canceled && result.Data is InvoiceDto dto)
-        {
-            try
-            {
-                await InvoiceService.Update(dto);
-                Snackbar.Add("Pomyślnie zaktualizowano fakturę.", Severity.Success);
-                await LoadInvoices();
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Błąd przy aktualizacji faktury: {ex.Message}", Severity.Error);
-            }
-        }
-    }
-
-    private async Task Delete(InvoiceDto invoice)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceDialog.InvoiceDto), invoice },
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Delete }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.ExtraLarge
-        };
-
-        var dialogRef = await DialogService.ShowAsync<InvoiceDialog>($"Usuń fakturę nr {invoice.Name}", parameters, options);
-        var result = await dialogRef.Result;
-
-        if (result is not null && !result.Canceled)
-        {
-            try
-            {
-                await InvoiceService.Delete(invoice.Id);
-                Snackbar.Add($"Pomyślnie usunięto fakturę {invoice.Name}", Severity.Success);
-                invoices?.Remove(invoice);
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
-        }
-    }
-
-    private async Task Details(InvoiceDto invoice)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceDialog.InvoiceDto), invoice },
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Details }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.ExtraLarge
-        };
-
-        await DialogService.ShowAsync<InvoiceDialog>($"Szczegóły zlecenia nr {invoice.Name}", parameters, options);
-    }
-
-    private async Task Download(InvoiceDto invoice)
-    {
-        try
-        {
-            var file = await InvoiceService.Download(invoice.Id);
-            await BlazorDownloadFileService.DownloadFile(file.FileName, file.FileContent, file.ContentType);
-            Snackbar.Add($"Pobrano {file.FileName}", Severity.Info);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
-    }
     private async Task DownloadInvoices()
     {
         if (selectedInvoices.Count == 0)
@@ -207,28 +116,27 @@ public partial class InvoicesPage
             Snackbar.Add("Zaznacz najpierw faktury", Severity.Warning);
             return;
         }
+
+        var ids = selectedInvoices.Select(i => i.Id).ToList();
+
+        await FileDownloader.DownloadFromServerAsync(() => DownloadsService.DownloadInvoices(ids), isLoading => IsLoading = isLoading);
+    }
+    private async Task HandleAction(Func<Task> action)
+    {
         try
         {
-            IsLoading = true;
-            List<Guid> invoiceIds = [.. selectedInvoices.Select(i => i.Id)];
-            var file = await DownloadsService.DownloadInvoices(invoiceIds);
-
-            if (file.FileContent == null || file.FileContent.Length == 0)
-            {
-                Snackbar.Add("Nie znaleziono plików dla wybranych kryteriów.", Severity.Info);
-                return;
-            }
-
-            await BlazorDownloadFileService.DownloadFile(file.FileName, file.FileContent, file.ContentType);
-            Snackbar.Add($"Pobrano {file.FileName}", Severity.Success);
+            await action();
+            await LoadInvoices();
         }
         catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        finally
-        {
-            IsLoading = false;
-        }
+    }
+    private void GoToOrder(string orderName)
+    {
+        if (string.IsNullOrWhiteSpace(orderName)) return;
+        var encodedName = Uri.EscapeDataString(orderName);
+        NavigationManager.NavigateTo($"/zlecenia?search={encodedName}");
     }
 }

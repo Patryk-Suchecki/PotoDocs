@@ -8,51 +8,56 @@
 <MudGrid Spacing="3">
     <MudItem xs="12" sm="6" md="3">
         <MudLink Href="/zlecenia" Underline="Underline.None">
-        
             <MudCard Elevation="3">
                 <MudCardHeader>
                     <CardHeaderContent>
                         <MudText Typo="Typo.h6">Zlecenia</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
-                    <MudCardContent>
-                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Class="d-block mx-auto" />
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary mt-5">Zarządzaj zleceniami.</MudText>
-                    </MudCardContent>
-            </MudCard>
-        </MudLink>
-    </MudItem>
-
-    <MudItem xs="12" sm="6" md="3">
-        <MudLink Href="/faktury" Underline="Underline.None">
-            <MudCard Elevation="3">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Faktury</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
                 <MudCardContent>
-                    <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Large" Class="d-block mx-auto" />
-                    <MudText Typo="Typo.body2" Class="mud-text-secondary mt-5">Zarządzaj fakturami.</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Class="d-block mx-auto" />
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary mt-5">Zarządzaj zleceniami.</MudText>
                 </MudCardContent>
             </MudCard>
         </MudLink>
     </MudItem>
 
-    <MudItem xs="12" sm="6" md="3">
-        <MudLink Href="/kierowcy" Underline="Underline.None">
-            <MudCard Elevation="3">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Kierowcy</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Large" Class="d-block mx-auto" />
-                    <MudText Typo="Typo.body2" Class="mud-text-secondary mt-5">Zarządzaj kierowcami.</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudLink>
-    </MudItem>
+    <AuthorizeView Roles="admin">
+        <Authorized>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudLink Href="/faktury" Underline="Underline.None">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Faktury</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Large" Class="d-block mx-auto" />
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary mt-5">Zarządzaj fakturami.</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudLink>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudLink Href="/kierowcy" Underline="Underline.None">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Kierowcy</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Large" Class="d-block mx-auto" />
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary mt-5">Zarządzaj kierowcami.</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudLink>
+            </MudItem>
+
+        </Authorized>
+    </AuthorizeView>
 
 </MudGrid>

@@ -11,6 +11,8 @@ public interface IInvoiceService
     Task<InvoiceDto> CreateFromOrder(Guid id);
     Task Update(InvoiceDto dto);
     Task<FileDownloadResult> Download(Guid id);
+    Task CreateCorrection(InvoiceCorrectionDto dto);
+    Task UpdateCorrection(InvoiceCorrectionDto dto);
 }
 
 public class InvoiceService(IAuthService authService) : BaseService(authService), IInvoiceService
@@ -46,5 +48,13 @@ public class InvoiceService(IAuthService authService) : BaseService(authService)
     public async Task<FileDownloadResult> Download(Guid id)
     {
         return await GetFileAsync($"api/invoice/{id}/pdf");
+    }
+    public async Task CreateCorrection(InvoiceCorrectionDto dto)
+    {
+        await PostAsync("api/invoice/correction", dto);
+    }
+    public async Task UpdateCorrection(InvoiceCorrectionDto dto)
+    {
+        await PutAsync("api/invoice/correction", dto);
     }
 }

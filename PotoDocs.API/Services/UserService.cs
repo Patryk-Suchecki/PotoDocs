@@ -11,6 +11,7 @@ namespace PotoDocs.API.Services;
 public interface IUserService
 {
     Task RegisterAsync(UserDto dto);
+    Task UpdateAsync(UserDto dto);
     Task ChangePasswordAsync(ChangePasswordDto dto);
     Task GeneratePasswordAsync(string email);
     Task<List<UserDto>> GetAllAsync();
@@ -63,7 +64,18 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
         user.Role = role;
         await _context.SaveChangesAsync();
     }
+    public async Task UpdateAsync(UserDto dto)
+    {
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role)
+            ?? throw new BadRequestException($"Rola '{dto.Role}' nie istnieje.");
 
+        var user = await _context.Users
+            .SingleOrDefaultAsync(o => o.Id == dto.Id) ?? throw new KeyNotFoundException("Nie znaleziono użytkownika do aktualizacji.");
+        _mapper.Map(dto, user);
+
+        user.Role = role;
+        await _context.SaveChangesAsync();
+    }
     public async Task ChangePasswordAsync(ChangePasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email)

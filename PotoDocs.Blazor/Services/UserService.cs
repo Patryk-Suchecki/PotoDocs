@@ -7,6 +7,7 @@ namespace PotoDocs.Blazor.Services;
 public interface IUserService
 {
     Task RegisterAsync(UserDto dto);
+    Task Update(UserDto dto);
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(string email);
     Task<UserDto> GetCurrentUser();
@@ -26,6 +27,10 @@ public class UserService(IAuthService authService) : BaseService(authService), I
     public async Task RegisterAsync(UserDto dto)
     {
         await PostAsync("api/user/register", dto);
+    }
+    public async Task Update(UserDto dto)
+    {
+        await PutAsync("api/user", dto);
     }
 
     public async Task GeneratePassword(string email)

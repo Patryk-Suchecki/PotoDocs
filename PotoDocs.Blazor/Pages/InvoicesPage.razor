@@ -5,7 +5,7 @@
 <PageTitle>Faktury</PageTitle>
 <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Faktury</MudText>
 
-<MudTable Items="@invoices" Filter="new Func<InvoiceDto, bool>(FilterFunc1)" GroupBy="@_groupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedInvoices">
+<MudTable T="InvoiceDto" Items="@invoices" Filter="new Func<InvoiceDto, bool>(FilterFunc1)" GroupBy="@_sorter.GroupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedInvoices" Striped="true" Hover="true">
     <ToolBarContent>
         <MudTextField @bind-Value="searchString" Placeholder="Szukaj" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
@@ -16,48 +16,77 @@
     </ToolBarContent>
 
     <HeaderContent>
-        <MudTh>Lp</MudTh>
-        <MudTh>Nazwa firmy</MudTh>
-        <MudTh>Data wystawienia</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.InvoiceNumber)"
+                               InitialDirection="SortDirection.Descending"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="InvoiceDto">
+                Nr
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.BuyerName)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="InvoiceDto">
+                Nabywca
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.IssueDate)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="InvoiceDto">
+                Data wystawienia
+            </MudTableSortLabel>
+        </MudTh>
+
         <MudTh>Płatność</MudTh>
+
         <MudTh></MudTh>
     </HeaderContent>
-
     <GroupHeaderTemplate>
-        <MudTh Class="mud-table-cell-custom-group" colspan="7">@($"{context.Key}") </MudTh>
-    </GroupHeaderTemplate>
-
-    <RowTemplate>
-        <MudTd DataLabel="Lp">@context.InvoiceNumber</MudTd>
-        <MudTd DataLabel="Nazwa firmy">@context.BuyerName</MudTd>
-        <MudTd DataLabel="Data wystawienia">@context.IssueDate</MudTd>
-        <MudTd DataLabel="Płatność">
-            @if (context.HasPaid == true)
+        <MudTh colspan="6">
+            @{
+                var dateKey = context.Key as DateTime?;
+            }
+            @if (dateKey.HasValue && dateKey.Value != DateTime.MinValue)
             {
-                <span class="mud-text-success">Zapłacono</span>
+                <b>@System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(dateKey.Value.ToString("MMMM yyyy", new System.Globalization.CultureInfo("pl-PL")))</b>
             }
             else
             {
-                if (context.DaysUntilDue < 0)
-                {
-                    <span class="mud-text-error">Po terminie (@Math.Abs(context.DaysUntilDue) dni)</span>
-                }
-                else if (context.DaysUntilDue == 0)
-                {
-                    <span class="mud-text-warning">Dziś</span>
-                }
-                else
-                {
-                    <span>@context.DaysUntilDue dni</span>
-                }
+                <b>Brak daty rozładunku</b>
             }
-        </MudTd>
+        </MudTh>
+    </GroupHeaderTemplate>
+
+    <RowTemplate>
+        <MudTd DataLabel="Nr">@context.Name</MudTd>
+        <MudTd DataLabel="Nabywca">@context.BuyerName</MudTd>
+        <MudTd DataLabel="Data wystawienia">@context.IssueDate?.ToString("dd.MM.yyyy")</MudTd>
+        <MudTd DataLabel="Płatność">
+            <MudChip T="string" Color="@context.GetStatusColor()" Size="Size.Small" Variant="Variant.Text">@context.GetStatusText()</MudChip>
+            </MudTd>
         <MudTd DataLabel="Akcje" Style="text-align:right">
+            @{
+                var strategy = InvoiceStrategyFactory.GetStrategy(context.Type);
+            }
             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                <MudMenuItem Label="Pobierz" Icon="@Icons.Material.Filled.Download" @onclick="() => Download(context)" />
-                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
-                <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
-                <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
+                <MudMenuItem Label="Pobierz" Icon="@Icons.Material.Filled.Download" @onclick="async () => await strategy.DownloadAsync(context)" />
+                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="async () => await strategy.DetailsAsync(context)" />
+
+                @if (strategy.CanEdit(context))
+                {
+                    <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="async () => await HandleAction(() => strategy.EditAsync(context))" />
+                    <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="async () => await HandleAction(() => strategy.DeleteAsync(context))" />
+                }
+
+                @if (strategy.CanCorrect(context))
+                {
+                    <MudMenuItem Label="Koryguj" Icon="@Icons.Material.Filled.PostAdd" @onclick="async () => await HandleAction(() => strategy.CorrectAsync(context))" />
+                }
+                <MudMenuItem Label="Pokaż zlecenie" Icon="@Icons.Material.Filled.Assignment" OnClick="@(() => GoToOrder(context.Name))" />
+
             </MudMenu>
         </MudTd>
     </RowTemplate>

@@ -7,20 +7,17 @@ namespace PotoDocs.Shared.Models
     {
         public Guid Id { get; set; }
         public int InvoiceNumber { get; set; }
-        public DateTime? IssueDate { get; set; }
+        public InvoiceType Type { get; set; }
+        public DateTime? IssueDate { get; set; } = DateTime.UtcNow;
         public DateTime? SaleDate { get; set; }
         public DateTime? SentDate { get; set; }
         public DeliveryMethodType? DeliveryMethod { get; set; }
+        public InvoiceDto? OriginalInvoice { get; set; }
         public bool HasPaid { get; set; } = false;
-
 
         public string BuyerName { get; set; } = string.Empty;
         public string BuyerAddress { get; set; } = string.Empty;
         public string BuyerNIP { get; set; } = string.Empty;
-
-
-        public Guid? OrderId { get; set; }
-
 
         public decimal TotalNetAmount { get; set; }
         public decimal TotalVatAmount { get; set; }
@@ -28,13 +25,15 @@ namespace PotoDocs.Shared.Models
         public CurrencyType Currency { get; set; } = CurrencyType.EUR;
 
 
-        public string PaymentMethod { get; set; } = string.Empty;
-        public int? PaymentDeadlineDays { get; set; }
+        public string PaymentMethod { get; set; } = "Przelew";
+        public int PaymentDeadlineDays { get; set; } = 60;
+        public string Comments { get; set; } = "Brak";
 
         public ICollection<InvoiceItemDto> Items { get; set; } = [];
+        public virtual ICollection<InvoiceDto> Corrections { get; set; } = [];
 
-        public string Name => $"{InvoiceNumber}/{IssueDate:MM}/{IssueDate:yyyy}";
-        public int DaysUntilDue => PaymentDeadlineDays.HasValue && IssueDate.HasValue ? (IssueDate.Value.AddDays(PaymentDeadlineDays.Value) - DateTime.UtcNow).Days : 0;
+        public string Name => $"{InvoiceNumber}/{IssueDate:MM}/{IssueDate:yyyy}{(Type == InvoiceType.Correction ? "K" : "")}";
+        public int DaysUntilDue => SentDate.HasValue ? (SentDate.Value.AddDays(PaymentDeadlineDays) - DateTime.UtcNow).Days : 0;
     }
 }
 public class InvoiceDtoValidator : AbstractValidator<InvoiceDto>
@@ -89,6 +88,43 @@ public class InvoiceDtoValidator : AbstractValidator<InvoiceDto>
         return result.Errors.Select(e => e.ErrorMessage);
     };
 }
+public static class InvoiceExtensions
+{
+    public static InvoiceCorrectionDto ToCorrectionDto(this InvoiceDto invoice)
+    {
+        if (invoice.Type != InvoiceType.Correction)
+            throw new InvalidOperationException("To nie jest faktura korygująca.");
+
+        var original = invoice.OriginalInvoice
+                       ?? throw new InvalidOperationException("Faktura korygująca nie ma załączonego oryginału.");
+
+        return new InvoiceCorrectionDto
+        {
+            Id = invoice.Id,
+            InvoiceNumber = invoice.InvoiceNumber,
+            IssueDate = invoice.IssueDate,
+            SentDate = invoice.SentDate,
+            DeliveryMethod = invoice.DeliveryMethod,
+            HasPaid = invoice.HasPaid,
+            Comments = invoice.Comments,
+
+            OriginalInvoice = original,
+
+            Items = [.. invoice.Items.Select(i => new InvoiceItemDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Quantity = i.Quantity,
+                Unit = i.Unit,
+                NetPrice = i.NetPrice,
+                NetValue = i.NetValue,
+                VatRate = i.VatRate,
+                VatAmount = i.VatAmount,
+                GrossValue = i.GrossValue
+            })]
+        };
+    }
+}
 public enum CurrencyType
 {
     EUR,
@@ -98,4 +134,9 @@ public enum DeliveryMethodType
 {
     Post,
     Email,
+}
+public enum InvoiceType
+{
+    Original,
+    Correction
 }

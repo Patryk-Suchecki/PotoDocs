@@ -1,7 +1,7 @@
 ﻿using PotoDocs.Shared.Models;
 using System.Text.Json;
 
-namespace PotoDocs.Blazor;
+namespace PotoDocs.Blazor.Helpers;
 
 public static class HttpHelper
 {

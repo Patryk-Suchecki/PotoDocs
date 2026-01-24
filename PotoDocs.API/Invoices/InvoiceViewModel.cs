@@ -1,6 +1,20 @@
 ﻿namespace PotoDocs.API.Invoices;
 public class InvoiceViewModel
 {
+    public bool IsCorrection { get; set; } = false;
+    public string CorrectionReason { get; set; } = string.Empty;
+    public List<InvoiceItemViewModel> OriginalItems { get; set; } = [];
+    public List<InvoiceItemViewModel> DifferenceItems { get; set; } = [];
+    public CurrencyType Currency { get; set; } = CurrencyType.PLN;
+
+    public string CurrencySymbol => Currency switch
+    {
+        CurrencyType.PLN => "zł",
+        CurrencyType.EUR => "€",
+        _ => Currency.ToString()
+    };
+
+    public bool RequiresCurrencyConversion => Currency != CurrencyType.PLN;
     // Tytuł i numer dokumentu
     public string DocumentTitle { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
@@ -31,11 +45,13 @@ public class InvoiceViewModel
     public InvoiceSummaryViewModel Summary { get; set; } = new InvoiceSummaryViewModel();
 
     // Informacje walutowe i przeliczenia
-    public CurrencyInfoViewModel Currency { get; set; } = new CurrencyInfoViewModel();
+    public CurrencyInfoViewModel ExchangeRateInfo { get; set; } = new CurrencyInfoViewModel();
 
     // Kolory
     public string PrimaryColorLight { get; set; } = string.Empty;
     public string PrimaryColorDark { get; set; } = string.Empty;
+    public string SecondaryColorLight { get; set; } = string.Empty;
+    public string SecondaryColorDark { get; set; } = string.Empty;
     public string LabelColor { get; set; } = string.Empty;
 }
 

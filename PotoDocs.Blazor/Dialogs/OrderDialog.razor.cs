@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
+using PotoDocs.Blazor.Helpers;
 using PotoDocs.Blazor.Services;
 using PotoDocs.Shared.Models;
 
@@ -10,7 +11,7 @@ namespace PotoDocs.Blazor.Dialogs;
 public partial class OrderDialog
 {
     [Inject] private IOrderService OrderService { get; set; } = default!;
-    [Inject] private IBlazorDownloadFileService BlazorDownloadFileService { get; set; } = default!;
+    [Inject] private IFileDownloadHelper FileDownloader { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
@@ -24,7 +25,7 @@ public partial class OrderDialog
     private IList<FileUploadDto> OrderFiles = [];
     private IList<FileUploadDto> CmrFiles = [];
     private IList<Guid> FileIdsToDelete = [];
-    private long MaxFileSize = 512 * 1024 * 1024;
+    private readonly long MaxFileSize = 512 * 1024 * 1024;
 
     private MudForm form = default!;
     private OrderDtoValidator orderValidator = new();
@@ -47,7 +48,7 @@ public partial class OrderDialog
 
     protected override void OnParametersSet()
     {
-        OrderDto ??= new OrderDto();
+        OrderDto ??= new OrderDto() { };
         OrderDto.Stops ??= [];
     }
 
@@ -122,11 +123,6 @@ public partial class OrderDialog
         if (!OrderFiles.Remove(file)) CmrFiles.Remove(file);
     }
 
-    private async Task DownloadFile(FileUploadDto file)
-    {
-        await BlazorDownloadFileService.DownloadFile(file.Name, file.Data, file.ContentType);
-    }
-
     private async Task ParseExistingOrder(OrderFileDto file)
     {
         try
@@ -153,32 +149,24 @@ public partial class OrderDialog
         OrderDto.Files.Remove(file);
     }
 
+    private async Task DownloadFile(FileUploadDto file)
+    {
+        await FileDownloader.DownloadFromBytesAsync(file.Name, file.Data, file.ContentType);
+    }
+
     private async Task DownloadExistingFile(OrderFileDto dto)
     {
-        try
+        Action<bool> loadingHandler = (isLoading) =>
         {
-            if(dto.Type == FileType.Order)
-            {
-                IsProcessingPdf = true;
-            }
-            else
-            {
-                IsProcessingCmr = true;
-            }
+            if (dto.Type == FileType.Order) IsProcessingPdf = isLoading;
+            else IsProcessingCmr = isLoading;
+            StateHasChanged();
+        };
 
-            var file = await OrderService.DownloadFile(dto.Id);
-            await BlazorDownloadFileService.DownloadFile(file.FileName, file.FileContent, file.ContentType);
-            Snackbar.Add($"Pobrano {file.FileName}", Severity.Info);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Błąd podczas pobierania faktury: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            IsProcessingPdf = false;
-            IsProcessingCmr = false;
-        }
+        await FileDownloader.DownloadFromServerAsync(
+            () => OrderService.DownloadFile(dto.Id),
+            loadingHandler
+        );
     }
 
     private async Task SubmitAsync()
