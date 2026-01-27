@@ -405,6 +405,7 @@ public class InvoiceService(PotodocsDbContext dbContext, IMapper mapper, IEuroRa
         correction.DeliveryMethod = dto.DeliveryMethod;
         correction.SentDate = dto.SentDate;
         correction.HasPaid = dto.HasPaid;
+        correction.InvoiceNumber = dto.InvoiceNumber;
 
         CalculateAndSetDelta(correction, dto.Items);
 
