@@ -4,16 +4,10 @@ using PotoDocs.API.Models;
 
 namespace PotoDocs.API
 {
-    public class DBSeeder
+    public class DBSeeder(PotodocsDbContext dbContext, IPasswordHasher<User> hasher)
     {
-        private readonly PotodocsDbContext _dbContext;
-        private readonly IPasswordHasher<User> _hasher;
-
-        public DBSeeder(PotodocsDbContext dbContext, IPasswordHasher<User> hasher)
-        {
-            _dbContext = dbContext;
-            _hasher = hasher;
-        }
+        private readonly PotodocsDbContext _dbContext = dbContext;
+        private readonly IPasswordHasher<User> _hasher = hasher;
 
         public void Seed()
         {
@@ -52,15 +46,15 @@ namespace PotoDocs.API
         {
             var roles = new List<Role>()
             {
-                new Role()
+                new()
                 {
                     Name = "user",
                 },
-                new Role()
+                new()
                 {
                     Name = "manager"
                 },
-                new Role()
+                new()
                 {
                     Name = "admin"
                 }
