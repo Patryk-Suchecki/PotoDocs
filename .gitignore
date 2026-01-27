@@ -371,3 +371,4 @@ FodyWeavers.xsd
 /PotoDocs.API/appsettings.Production.json
 /PotoDocs.API/PrivateFiles/cmr
 /PotoDocs.API/PrivateFiles/zlecenia
+/docker_builds
