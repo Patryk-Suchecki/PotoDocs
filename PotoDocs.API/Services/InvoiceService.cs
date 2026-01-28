@@ -369,7 +369,7 @@ public class InvoiceService(PotodocsDbContext dbContext, IMapper mapper, IEuroRa
         correction.Type = InvoiceType.Correction;
         correction.OriginalInvoiceId = original.Id;
         correction.OrderId = null;
-        correction.InvoiceNumber = await GetNextInvoiceNumberAsync(DateTime.Now, InvoiceType.Correction);
+        correction.InvoiceNumber = await GetNextInvoiceNumberAsync(dto.IssueDate ?? DateTime.Now, InvoiceType.Correction);
 
         correction.IssueDate = dto.IssueDate ?? DateTime.Now;
         correction.Comments = dto.Comments;
