@@ -316,7 +316,7 @@ public class OrderService : IOrderService
         {
             var attachmentsList = new List<EmailAttachment>();
 
-            var (fakturaPdfBytes, _, fakturaName) = await _invoiceService.GetInvoiceAsync(invoiceToSend.Id);
+            var (fakturaPdfBytes, _, fakturaName) = await _invoiceService.GetInvoiceFileAsync(invoiceToSend.Id);
             attachmentsList.Add(new EmailAttachment(
                 fakturaName,
                 "application/pdf",

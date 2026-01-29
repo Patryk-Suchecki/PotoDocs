@@ -43,13 +43,12 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
             {
                 string folderName = $"zlecenie {invoice.InvoiceNumber}";
 
-                var pdfData = await _invoiceService.GenerateInvoicePdf(invoice);
-                string pdfFileName = $"FAKTURA {invoice.InvoiceNumber}-{invoice.IssueDate:MM-yyyy}.pdf";
+                var pdfData = await _invoiceService.GetInvoiceFileAsync(invoice.Id);
 
-                var pdfZipEntry = archive.CreateEntry($"{folderName}/{pdfFileName}", CompressionLevel.Optimal);
+                var pdfZipEntry = archive.CreateEntry($"{folderName}/{pdfData.OriginalName}", CompressionLevel.Optimal);
                 using (var pdfEntryStream = pdfZipEntry.Open())
                 {
-                    await pdfEntryStream.WriteAsync(pdfData);
+                    await pdfEntryStream.WriteAsync(pdfData.Bytes);
                 }
 
                 if (invoice.Order?.Files != null)
@@ -128,13 +127,12 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
         {
             foreach (var invoice in invoices)
             {
-                var pdfData = await _invoiceService.GenerateInvoicePdf(invoice);
-                string fileName = $"FAKTURA {invoice.InvoiceNumber}-{invoice.IssueDate:MM-yyyy}.pdf";
+                var pdfData = await _invoiceService.GetInvoiceFileAsync(invoice.Id);
 
-                var zipEntry = archive.CreateEntry(fileName, CompressionLevel.Optimal);
+                var zipEntry = archive.CreateEntry(pdfData.OriginalName, CompressionLevel.Optimal);
 
                 using var entryStream = zipEntry.Open();
-                await entryStream.WriteAsync(pdfData);
+                await entryStream.WriteAsync(pdfData.Bytes);
             }
         }
 

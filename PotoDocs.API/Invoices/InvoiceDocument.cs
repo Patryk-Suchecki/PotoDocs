@@ -13,292 +13,271 @@ public class InvoiceDocument(InvoiceViewModel model) : IDocument
 
     public void Compose(IDocumentContainer doc)
     {
-        string[] headers = ["Lp.", "Nazwa", "Ilość", "JM", "Cena Netto", "Wartość netto", "Stawka VAT", "Kwota VAT", "Wartość brutto"];
         doc.Page(page =>
         {
             page.Size(PageSizes.A4);
             page.Margin(30);
-            page.DefaultTextStyle(x => x.FontFamily("Tahoma").FontSize(8));
+            page.DefaultTextStyle(x => InvoiceStyles.Base);
 
-            var colorLight = _model.PrimaryColorLight;
-            var colorDark = _model.PrimaryColorDark;
-            var secondarycolorLight = _model.SecondaryColorLight;
-            var secondarycolorDark = _model.SecondaryColorDark;
-            var labelColor = _model.LabelColor;
+            page.Header().Component(new InvoiceHeaderComponent(_model));
 
-            page.Header().Row(row =>
+            page.Content().Column(col =>
             {
-                row.RelativeItem().Column(column =>
-                {
-                    column.Item().Text(_model.DocumentTitle).SemiBold().FontSize(16).FontColor(colorDark);
-                    column.Item().Text(_model.DocumentNumber).FontColor(colorDark);
-                });
+                col.Item().Component(new InvoiceAddressComponent(_model));
 
-                row.ConstantItem(100).Height(50).AlignRight().AlignTop().Image("wwwroot/images/logo.png");
+                col.Item().PaddingVertical(10).Element(x => x.Height(1).Background(InvoiceStyles.PrimaryColorDark));
+
+                col.Item().Component(new InvoiceDetailsComponent(_model));
+
+                col.Item().Component(new InvoiceTableComponent(_model));
+
+                col.Item().PaddingTop(15).Component(new InvoiceCurrencySummaryComponent(_model));
             });
 
-            page.Content().Column(column =>
+            page.Footer().Component(new InvoiceFooterComponent());
+        });
+    }
+}
+
+public class InvoiceHeaderComponent(InvoiceViewModel model) : IComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(column =>
             {
-                // Sprzedawca i Nabywca
-                column.Item().Row(row =>
-                {
-                    row.ConstantItem(130).AlignRight().PaddingRight(5).Text("Sprzedawca:").SemiBold().FontColor(labelColor);
-                    row.RelativeItem().Text(_model.Seller.Name);
-
-                    row.ConstantItem(130).AlignRight().PaddingRight(5).Text("Nabywca:").SemiBold().FontColor(labelColor);
-                    row.RelativeItem().Text(_model.Buyer.Name);
-                });
-
-                column.Item().Row(row =>
-                {
-                    row.ConstantItem(130).AlignRight().PaddingRight(5).Text("Adres:").SemiBold().FontColor(labelColor);
-                    row.RelativeItem().Text(_model.Seller.Address);
-
-                    row.ConstantItem(130).AlignRight().PaddingRight(5).Text("Adres:").SemiBold().FontColor(labelColor);
-                    row.RelativeItem().Text(_model.Buyer.Address);
-                });
-
-                column.Item().Row(row =>
-                {
-                    row.ConstantItem(130).AlignRight().PaddingRight(5).Text("NIP:").SemiBold().FontColor(labelColor);
-                    row.RelativeItem().Text(_model.Seller.NIP);
-
-                    row.ConstantItem(130).AlignRight().PaddingRight(5).Text("NIP:").SemiBold().FontColor(labelColor);
-                    row.RelativeItem().Text(_model.Buyer.NIP);
-                });
-
-                column.Item().PaddingVertical(10).Element(x => x.Height(1).Background(colorDark));
-
-                // Daty, miejsce, płatności
-                column.Item().Row(row =>
-                {
-                    row.RelativeItem().Column(col =>
-                    {
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Miejsce wystawienia:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.PlaceOfIssue);
-                        });
-
-                        col.Item().PaddingTop(10).Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Data sprzedaży:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.SaleDate.ToString("dd-MM-yyyy"));
-                        });
-
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Data wystawienia:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.IssueDate.ToString("dd-MM-yyyy"));
-                        });
-
-                        col.Item().PaddingTop(10).Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Sposób zapłaty:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.PaymentMethod);
-                        });
-
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Termin zapłaty:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.PaymentDeadline);
-                        });
-
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Przyczyna korekty: ").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.CorrectionReason);
-                        });
-                    });
-
-                    row.RelativeItem().Column(col =>
-                    {
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Bank:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.Bank.BankName);
-                        });
-
-                        col.Item().PaddingTop(10).Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Nr. Konta (PLN):").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.Bank.AccountPLN);
-                        });
-
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Nr. Konta (EUR):").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.Bank.AccountEUR);
-                        });
-
-                        col.Item().PaddingTop(10).Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("Nr IBAN:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.Bank.IBAN);
-                        });
-
-                        col.Item().Row(r =>
-                        {
-                            r.ConstantItem(130).AlignRight().PaddingRight(5).Text("SWIFT/BIC:").SemiBold().FontColor(labelColor);
-                            r.RelativeItem().Text(_model.Bank.SWIFT);
-                        });
-                    });
-                });
-
-                // Uwagi
-                column.Item().PaddingVertical(10).Element(container =>
-                {
-                    container
-                        .Border(1)
-                        .BorderColor(colorDark)
-                        .Padding(5)
-                        .Row(row =>
-                        {
-                            row.RelativeItem().Text(text =>
-                            {
-                                text.Span("Uwagi:").SemiBold().FontColor(labelColor);
-                                text.Span(" " + _model.Comments);
-                            });
-                        });
-                });
-                if (_model.IsCorrection)
-                {
-                    column.Item().PaddingTop(10).Text("Było:").Bold().FontSize(10).FontColor(colorDark);
-                    ComposeTable(column.Item(), _model.OriginalItems, colorLight, colorDark, false);
-                    column.Item().PaddingTop(10).Text("Powinno być:").Bold().FontSize(10).FontColor(colorDark);
-                }
-                ComposeTable(column.Item(), _model.Items, _model.IsCorrection ? secondarycolorLight : colorLight, _model.IsCorrection ? secondarycolorDark : colorDark, !_model.IsCorrection);
-
-                if (_model.IsCorrection)
-                {
-                    column.Item().PaddingTop(10).Text("Podsumowanie:").Bold().FontSize(10).FontColor(colorDark);
-                    ComposeTable(column.Item(), _model.DifferenceItems, colorLight, colorDark, true);
-                }
-
-                // Przeliczenia walutowe i słownie
-                column.Item().PaddingTop(15).Column(col =>
-                {
-                    if (_model.RequiresCurrencyConversion)
-                    {
-                        col.Item().Row(row =>
-                        {
-                            row.ConstantItem(130).AlignRight().PaddingRight(5).Text("Słownie w euro:").FontColor(labelColor).SemiBold();
-                            row.RelativeItem().Text(_model.Summary.InWordsEuro);
-                        });
-
-                        col.Item().Row(row =>
-                        {
-                            row.RelativeItem().AlignCenter().Text("Kwota VAT została przeliczona na złote polskie po kursie średnim NBP dla EUR, Tabela nr");
-                        });
-
-                        col.Item().Row(row =>
-                        {
-                            row.RelativeItem().AlignCenter().Text($"{_model.ExchangeRateInfo.NbpTable} z {_model.ExchangeRateInfo.NbpDate}.");
-                        });
-
-                        col.Item().PaddingTop(10).Row(row =>
-                        {
-                            row.ConstantItem(130).AlignRight().PaddingRight(5).Text("Cena euro:").FontColor(labelColor).SemiBold();
-                            row.RelativeItem().Text(_model.ExchangeRateInfo.ExchangeRate);
-                        });
-                    }
-                    col.Item().PaddingTop(10).Row(row =>
-                    {
-                        row.ConstantItem(130).AlignRight().PaddingRight(5).Text(_model.RequiresCurrencyConversion ? "Kwota VAT w PLN:" : "Kwota VAT:").FontColor(labelColor).SemiBold();
-                        row.RelativeItem().Text(_model.Summary.VatInPLN);
-                    });
-
-                    col.Item().Row(row =>
-                    {
-                        row.ConstantItem(130).AlignRight().PaddingRight(5).Text(_model.RequiresCurrencyConversion ? "Słownie w PLN:" : "Słownie:").FontColor(labelColor).SemiBold();
-                        row.RelativeItem().Text(_model.Summary.VatInPLNWords);
-                    });
-
-                    col.Item().PaddingTop(10).Row(row =>
-                    {
-                        row.ConstantItem(130).AlignRight().PaddingRight(5).Text(_model.RequiresCurrencyConversion ? "Cała kwota w PLN:" : "Cała kwota:").FontColor(labelColor).SemiBold();
-                        row.RelativeItem().Text(_model.Summary.AllInPLN);
-                    });
-
-                    col.Item().Row(row =>
-                    {
-                        row.ConstantItem(130).AlignRight().PaddingRight(5).Text(_model.RequiresCurrencyConversion ? "Słownie w PLN:" : "Słownie:").FontColor(labelColor).SemiBold();
-                        row.RelativeItem().Text(_model.Summary.AllInPLNWords);
-                    });
-                });
-
-                column.Item().PaddingVertical(10).Element(x => x.Height(1).Background(colorDark));
+                column.Item().Text(model.DocumentTitle).Style(InvoiceStyles.Header);
+                column.Item().Text(model.DocumentNumber).FontColor(InvoiceStyles.PrimaryColorDark);
             });
 
-            // Stopka
-            page.Footer().PaddingTop(20).Row(row =>
+            if (!string.IsNullOrEmpty(model.LogoPath) && File.Exists(model.LogoPath))
             {
-                row.RelativeItem().Height(80).Border(1).BorderColor(colorDark).AlignBottom().PaddingBottom(5).AlignCenter()
-                    .Text(t => t.Span("imię, nazwisko i podpis osoby upoważnionej do odebrania dokumentu").FontColor(labelColor).FontSize(7));
+                row.ConstantItem(100).Height(50).AlignRight().AlignTop().Image(model.LogoPath);
+            }
+        });
+    }
+}
 
-                row.ConstantItem(20);
+public class InvoiceAddressComponent(InvoiceViewModel model) : IComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Element(c => AddressBlock(c, "Sprzedawca:", model.Seller));
+            row.RelativeItem().Element(c => AddressBlock(c, "Nabywca:", model.Buyer));
+        });
+    }
 
-                row.RelativeItem().Height(80).Border(1).BorderColor(colorDark).AlignBottom().PaddingBottom(5).AlignCenter()
-                    .Text(t => t.Span("imię, nazwisko i podpis osoby upoważnionej do wystawienia dokumentu").FontColor(labelColor).FontSize(7));
+    private void AddressBlock(IContainer container, string title, PartyInfoViewModel party)
+    {
+        container.Column(col =>
+        {
+            col.Item().LabelValueRow(title, party.Name);
+            col.Item().LabelValueRow("Adres:", party.Address);
+            col.Item().LabelValueRow("NIP:", party.NIP);
+        });
+    }
+}
+
+public class InvoiceDetailsComponent(InvoiceViewModel model) : IComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Row(row =>
+        {
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().LabelValueRow("Miejsce wystawienia:", model.PlaceOfIssue);
+
+                col.Item().PaddingTop(10).LabelValueRow("Data sprzedaży:", model.SaleDate.ToString("dd-MM-yyyy"));
+                col.Item().LabelValueRow("Data wystawienia:", model.IssueDate.ToString("dd-MM-yyyy"));
+
+                col.Item().PaddingTop(10).LabelValueRow("Sposób zapłaty:", model.PaymentMethod);
+                col.Item().LabelValueRow("Termin zapłaty:", model.PaymentDeadline);
+
+                if (!string.IsNullOrEmpty(model.CorrectionReason))
+                {
+                    col.Item().LabelValueRow("Przyczyna korekty:", model.CorrectionReason);
+                }
+            });
+
+            row.RelativeItem().Column(col =>
+            {
+                col.Item().LabelValueRow("Bank:", model.Bank.BankName);
+
+                col.Item().PaddingTop(10).LabelValueRow("Nr. Konta (PLN):", model.Bank.AccountPLN);
+
+                if (!string.IsNullOrEmpty(model.Bank.AccountEUR))
+                {
+                    col.Item().LabelValueRow("Nr. Konta (EUR):", model.Bank.AccountEUR);
+                }
+
+                col.Item().PaddingTop(10).LabelValueRow("Nr IBAN:", model.Bank.IBAN);
+                col.Item().LabelValueRow("SWIFT/BIC:", model.Bank.SWIFT);
             });
         });
     }
-    private void ComposeTable(IContainer container, List<InvoiceItemViewModel> items, string colorLight, string colorDark, bool showSummary)
-    {
-        string[] headers = ["Lp.", "Nazwa", "Ilość", "JM", "Cena Netto", "Wartość netto", "Stawka VAT", "Kwota VAT", "Wartość brutto"];
+}
 
+public class InvoiceTableComponent(InvoiceViewModel model) : IComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Column(col =>
+        {
+            col.Item().PaddingVertical(10).Element(c =>
+            {
+                c.Border(1).BorderColor(InvoiceStyles.PrimaryColorDark).Padding(5)
+                 .Row(row => {
+                     row.RelativeItem().Text(text => {
+                         text.Span("Uwagi:").Style(InvoiceStyles.Label);
+                         text.Span(" " + model.Comments);
+                     });
+                 });
+            });
+
+            if (model.IsCorrection)
+            {
+                col.Item().PaddingTop(10).Text("Było:").Bold().FontSize(10).FontColor(InvoiceStyles.PrimaryColorDark);
+                DrawTable(col.Item(), model.OriginalItems, InvoiceStyles.PrimaryColorLight, InvoiceStyles.PrimaryColorDark, false);
+
+                col.Item().PaddingTop(10).Text("Powinno być:").Bold().FontSize(10).FontColor(InvoiceStyles.PrimaryColorDark);
+            }
+
+            var bg = model.IsCorrection ? InvoiceStyles.SecondaryColorLight : InvoiceStyles.PrimaryColorLight;
+            var border = model.IsCorrection ? InvoiceStyles.SecondaryColorDark : InvoiceStyles.PrimaryColorDark;
+
+            DrawTable(col.Item(), model.Items, bg, border, !model.IsCorrection);
+
+            if (model.IsCorrection)
+            {
+                col.Item().PaddingTop(10).Text("Podsumowanie:").Bold().FontSize(10).FontColor(InvoiceStyles.PrimaryColorDark);
+                DrawTable(col.Item(), model.DifferenceItems, InvoiceStyles.PrimaryColorLight, InvoiceStyles.PrimaryColorDark, true);
+            }
+        });
+    }
+
+    private void DrawTable(IContainer container, List<InvoiceItemViewModel> items, string colorLight, string colorDark, bool showSummary)
+    {
         container.Table(table =>
         {
             table.ColumnsDefinition(columns =>
             {
-                columns.RelativeColumn(1);
-                columns.RelativeColumn(3);
-                columns.RelativeColumn(1);
-                columns.RelativeColumn(1);
-                columns.RelativeColumn(2);
-                columns.RelativeColumn(2);
-                columns.RelativeColumn(1);
-                columns.RelativeColumn(2);
-                columns.RelativeColumn(2);
+                columns.RelativeColumn(1); // Lp
+                columns.RelativeColumn(3); // Nazwa
+                columns.RelativeColumn(1); // Ilość
+                columns.RelativeColumn(1); // JM
+                columns.RelativeColumn(2); // Netto
+                columns.RelativeColumn(2); // Wartość
+                columns.RelativeColumn(1); // VAT
+                columns.RelativeColumn(2); // Kwota VAT
+                columns.RelativeColumn(2); // Brutto
             });
 
-            // Nagłówki
-            foreach (var header in headers)
+            string[] headers = ["Lp.", "Nazwa", "Ilość", "JM", "Cena Netto", "Wartość netto", "Stawka VAT", "Kwota VAT", "Wartość brutto"];
+            table.Header(header =>
             {
-                table.Cell().Element(cell =>
-                    cell.Background(colorLight).Border(1).BorderColor(colorDark).Padding(5).MinHeight(25).AlignMiddle().AlignCenter()
-                ).Text(header).SemiBold();
-            }
+                foreach (var text in headers)
+                {
+                    header.Cell().Background(colorLight)
+                          .Border(1).BorderColor(colorDark)
+                          .Padding(5).MinHeight(25).AlignMiddle().AlignCenter()
+                          .Text(text).Style(InvoiceStyles.TableHeader);
+                }
+            });
 
-            // Wiersze
             foreach (var item in items)
             {
-                table.Cell().Element(CellStyle).Text(item.Number);
-                table.Cell().Element(CellStyle).Text(item.Name);
-                table.Cell().Element(CellStyle).Text(item.Quantity);
-                table.Cell().Element(CellStyle).Text(item.Unit);
-                table.Cell().Element(CellStyle).Text(item.NetPrice);
-                table.Cell().Element(CellStyle).Text(item.NetValue);
-                table.Cell().Element(CellStyle).Text(item.VatRate);
-                table.Cell().Element(CellStyle).Text(item.VatAmount);
-                table.Cell().Element(CellStyle).Text(item.GrossValue);
+                IContainer CellStyle(IContainer c) => c.Border(1).BorderColor(colorLight).Padding(5).AlignMiddle();
+                IContainer Center(IContainer c) => CellStyle(c).AlignCenter();
+                IContainer Left(IContainer c) => CellStyle(c).AlignLeft();
+                IContainer Right(IContainer c) => CellStyle(c).AlignRight();
+
+                table.Cell().Element(Center).Text(item.Number.ToString());
+                table.Cell().Element(Left).Text(item.Name);
+                table.Cell().Element(Center).Text($"{item.Quantity:G29}");
+                table.Cell().Element(Center).Text(item.Unit);
+                table.Cell().Element(Right).MoneyText(item.NetPrice, model.CurrencySymbol);
+                table.Cell().Element(Right).MoneyText(item.NetValue, model.CurrencySymbol);
+
+                var vatText = item.VatRate == 0 ? "NP" : $"{item.VatRate:P0}";
+                table.Cell().Element(Center).Text(vatText);
+                table.Cell().Element(Right).MoneyText(item.VatAmount, model.CurrencySymbol);
+                table.Cell().Element(Right).MoneyText(item.GrossValue, model.CurrencySymbol);
             }
+
             if (showSummary)
             {
-                table.Cell().ColumnSpan(2).Element(SummaryHeader).Text("RAZEM DO ZAPŁATY:").Bold().FontColor(Colors.White);
-                table.Cell().ColumnSpan(2).Element(SummaryValue).Text(_model.Summary.TotalToPay).Bold().FontColor(Colors.White);
+                IContainer SummaryHeader(IContainer c) => c.Background(colorDark).Border(1).BorderColor(colorDark).Padding(5).AlignMiddle();
+                IContainer SummaryValue(IContainer c) => c.Background(colorDark).Border(1).BorderColor(colorDark).PaddingRight(5).AlignMiddle().AlignRight();
+                IContainer SummaryCell(IContainer c) => c.Background(colorLight).Border(1).BorderColor(colorLight).Padding(5).AlignMiddle();
 
-                table.Cell().Element(SummaryCell).Text("RAZEM:").Bold().FontColor(colorDark);
-                table.Cell().Element(SummaryCell).Text(_model.Summary.TotalNet).Bold().FontColor(colorDark);
+                table.Cell().ColumnSpan(2).Element(SummaryHeader).Text("RAZEM DO ZAPŁATY:").Bold().FontColor(Colors.White);
+
+                table.Cell().ColumnSpan(2).Element(SummaryValue)
+                     .MoneyText(model.Summary.TotalToPay, model.CurrencySymbol)
+                     .Bold().FontColor(Colors.White);
+
+                table.Cell().Element(SummaryCell).AlignCenter().Text("RAZEM:").Bold().FontColor(colorDark);
+                table.Cell().Element(SummaryCell).AlignRight().MoneyText(model.Summary.TotalNet, model.CurrencySymbol).Bold().FontColor(colorDark);
                 table.Cell().Element(SummaryCell);
-                table.Cell().Element(SummaryCell).Text(_model.Summary.TotalVat).Bold().FontColor(colorDark);
-                table.Cell().Element(SummaryCell).Text(_model.Summary.TotalGross).Bold().FontColor(colorDark);
+                table.Cell().Element(SummaryCell).AlignRight().MoneyText(model.Summary.TotalVat, model.CurrencySymbol).Bold().FontColor(colorDark);
+                table.Cell().Element(SummaryCell).AlignRight().MoneyText(model.Summary.TotalGross, model.CurrencySymbol).Bold().FontColor(colorDark);
+            }
+        });
+    }
+}
+
+public class InvoiceCurrencySummaryComponent(InvoiceViewModel model) : IComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.Column(col =>
+        {
+            if (model.RequiresCurrencyConversion)
+            {
+                col.Item().LabelValueRow("Słownie w euro:", model.Summary.InWordsEuro);
+
+                col.Item().Row(row => {
+                    row.RelativeItem().AlignCenter().Text("Kwota VAT została przeliczona na złote polskie po kursie średnim NBP dla EUR, Tabela nr");
+                });
+
+                col.Item().Row(row => {
+                    row.RelativeItem().AlignCenter().Text($"{model.ExchangeRateInfo.NbpTable} z {model.ExchangeRateInfo.NbpDate}.");
+                });
+
+                col.Item().PaddingTop(10).LabelValueRow("Cena euro:", $"{model.ExchangeRateInfo.ExchangeRate:F4} zł");
             }
 
-            IContainer CellStyle(IContainer c) => c.Border(1).BorderColor(colorLight).Padding(5).AlignMiddle().AlignCenter();
-            IContainer SummaryHeader(IContainer c) => c.Background(colorDark).Border(1).BorderColor(colorDark).Padding(5).AlignMiddle();
-            IContainer SummaryValue(IContainer c) => c.Background(colorDark).Border(1).BorderColor(colorDark).PaddingRight(5).AlignMiddle().AlignRight();
-            IContainer SummaryCell(IContainer c) => c.Background(colorLight).Border(1).BorderColor(colorLight).Padding(5).AlignCenter().AlignMiddle();
+            var suffix = model.RequiresCurrencyConversion ? " w PLN" : "";
+
+            col.Item().PaddingTop(10).LabelValueRow($"Kwota VAT{suffix}:", $"{model.Summary.VatInPLN:N2} zł");
+            col.Item().LabelValueRow($"Słownie{suffix}:", model.Summary.VatInPLNWords);
+
+            col.Item().PaddingTop(10).LabelValueRow($"Cała kwota{suffix}:", $"{model.Summary.AllInPLN:N2} zł");
+            col.Item().LabelValueRow($"Słownie{suffix}:", model.Summary.AllInPLNWords);
+        });
+    }
+}
+
+public class InvoiceFooterComponent() : IComponent
+{
+    public void Compose(IContainer container)
+    {
+        container.PaddingTop(20).Row(row =>
+        {
+            var borderColor = InvoiceStyles.PrimaryColorDark;
+            var labelColor = InvoiceStyles.LabelColor;
+
+            row.RelativeItem().Height(80).Border(1).BorderColor(borderColor).AlignBottom().PaddingBottom(5).AlignCenter()
+                    .Text(t => t.Span("imię, nazwisko i podpis osoby upoważnionej do odebrania dokumentu").FontColor(labelColor).FontSize(7));
+
+            row.ConstantItem(20);
+
+            row.RelativeItem().Height(80).Border(1).BorderColor(borderColor).AlignBottom().PaddingBottom(5).AlignCenter()
+                    .Text(t => t.Span("imię, nazwisko i podpis osoby upoważnionej do wystawienia dokumentu").FontColor(labelColor).FontSize(7));
         });
     }
 }

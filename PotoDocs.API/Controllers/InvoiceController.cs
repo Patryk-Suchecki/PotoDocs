@@ -67,7 +67,7 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     [HttpGet("{id}/pdf")]
     public async Task<IActionResult> DownloadInvoice(Guid id)
     {
-        var (bytes, mimeType, originalName) = await _invoiceService.GetInvoiceAsync(id);
+        var (bytes, mimeType, originalName) = await _invoiceService.GetInvoiceFileAsync(id);
         return File(bytes, mimeType, originalName);
     }
 

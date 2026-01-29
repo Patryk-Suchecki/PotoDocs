@@ -88,12 +88,14 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IDownloadService, DownloadService>();
+builder.Services.AddScoped<IInvoicePdfGenerator, InvoicePdfGenerator>();
 
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 builder.Services.AddHttpClient<IEuroRateService, NbpEuroRateService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);
 });
+
 
 var app = builder.Build();
 
