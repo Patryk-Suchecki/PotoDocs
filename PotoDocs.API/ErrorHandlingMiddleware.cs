@@ -21,17 +21,17 @@ public class ErrorHandlingMiddleware(ILogger<ErrorHandlingMiddleware> logger) : 
 
             var problemDetails = ex switch
             {
+                ValidationException validationEx =>
+                        CreateProblemDetails("Błąd walidacji", string.Join("; ", validationEx.Errors.Select(e => e.ErrorMessage)), 400),
+
                 InvalidOperationException or BadRequestException =>
                     CreateProblemDetails("Niepoprawne żądanie", ex.Message, 400),
 
-                KeyNotFoundException notFound =>
-                    CreateProblemDetails("Nie znaleziono zasobu", notFound.Message, 404),
+                KeyNotFoundException =>
+                    CreateProblemDetails("Nie znaleziono zasobu", ex.Message, 404),
 
-                UnauthorizedAccessException unauthorized =>
-                    CreateProblemDetails("Błąd uwierzytelnienia", unauthorized.Message, 401),
-
-                InvalidOperationException or BadRequestException or ValidationException =>
-                    CreateProblemDetails("Niepoprawne żądanie", ex.Message, 400),
+                UnauthorizedAccessException =>
+                    CreateProblemDetails("Błąd uwierzytelnienia", ex.Message, 401),
 
                 _ =>
                     CreateProblemDetails("Wewnętrzny błąd serwera", "Wystąpił nieoczekiwany błąd. Skontaktuj się z administratorem.", 500)

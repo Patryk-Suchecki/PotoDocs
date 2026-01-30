@@ -21,18 +21,4 @@ public static class InvoiceExtensions
     {
         return container.Text($"{value:N2} {symbol}");
     }
-
-    public static (decimal Net, decimal Vat, decimal Gross) CalculateCorrectionDelta(this Invoice correction)
-    {
-        if (correction.Type != InvoiceType.Correction || correction.OriginalInvoice == null)
-        {
-            return (correction.TotalNetAmount, correction.TotalVatAmount, correction.TotalGrossAmount);
-        }
-
-        return (
-            correction.TotalNetAmount - correction.OriginalInvoice.TotalNetAmount,
-            correction.TotalVatAmount - correction.OriginalInvoice.TotalVatAmount,
-            correction.TotalGrossAmount - correction.OriginalInvoice.TotalGrossAmount
-        );
-    }
 }

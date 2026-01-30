@@ -10,6 +10,7 @@ public class PotodocsDbContext(DbContextOptions<PotodocsDbContext> options) : Db
     public DbSet<Role> Roles { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceSequence> InvoiceSequences { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,6 +42,9 @@ public class PotodocsDbContext(DbContextOptions<PotodocsDbContext> options) : Db
                     .HasMany(i => i.Items)
                     .WithOne(it => it.Invoice)
                     .HasForeignKey(it => it.InvoiceId);
+
+        modelBuilder.Entity<InvoiceSequence>()
+        .HasKey(s => new { s.Year, s.Month, s.Type });
 
         var decimalProperties = modelBuilder.Model
         .GetEntityTypes()
