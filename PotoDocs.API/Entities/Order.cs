@@ -20,4 +20,14 @@ public class Order
     public required Guid CompanyId { get; set; }
     public virtual Company Company { get; set; } = null!;
     public virtual Invoice? Invoice { get; set; }
+
+    public void CalculateUnloadingDate()
+    {
+        var firstUnloading = Stops
+            .Where(s => s.Type == StopType.Unloading)
+            .OrderBy(s => s.Date)
+            .FirstOrDefault();
+
+        UnloadingDate = firstUnloading?.Date ?? DateTime.Now;
+    }
 }

@@ -90,6 +90,8 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
 builder.Services.AddScoped<IDownloadService, DownloadService>();
 builder.Services.AddScoped<IInvoicePdfGenerator, InvoicePdfGenerator>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<IOrderDocumentSender, OrderDocumentSender>();
 
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 builder.Services.AddHttpClient<IEuroRateService, NbpEuroRateService>(client =>
