@@ -11,7 +11,6 @@ public interface IAccountService
     Task<LoginResponseDto> LoginAsync(LoginDto dto);
 }
 
-
 public class AccountService(PotodocsDbContext context, IPasswordHasher<User> hasher, ITokenService tokenService) : IAccountService
 {
     private readonly PotodocsDbContext _context = context;
@@ -20,13 +19,23 @@ public class AccountService(PotodocsDbContext context, IPasswordHasher<User> has
 
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
     {
+        const string invalidCredentialsMsg = "Nieprawidłowe hasło lub adres E-mail";
+
         var user = await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Email == dto.Email) ?? throw new UnauthorizedAccessException("Nieprawidłowe hasło lub adres E-mail");
+            .FirstOrDefaultAsync(u => u.Email == dto.Email) ?? throw new UnauthorizedAccessException(invalidCredentialsMsg);
+        var verificationResult = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
-        var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-        if (result == PasswordVerificationResult.Failed)
-            throw new UnauthorizedAccessException("Nieprawidłowe hasło lub adres E-mail");
+        if (verificationResult == PasswordVerificationResult.Failed)
+        {
+            throw new UnauthorizedAccessException(invalidCredentialsMsg);
+        }
+
+        if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            user.PasswordHash = _hasher.HashPassword(user, dto.Password);
+            await _context.SaveChangesAsync();
+        }
 
         var jwt = _tokenService.GenerateJWT(user);
 

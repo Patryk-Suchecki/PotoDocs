@@ -5,6 +5,7 @@ using PotoDocs.API.Entities;
 using PotoDocs.API.Exceptions;
 using PotoDocs.Shared.Models;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace PotoDocs.API.Services;
 
@@ -17,17 +18,16 @@ public interface IUserService
     Task<List<UserDto>> GetAllAsync();
     Task<UserDto> GetByIdAsync(Guid id);
     Task DeleteAsync(string email);
+
 }
 
-
-
-public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher, IMapper mapper, IEmailService emailService, IWebHostEnvironment env) : IUserService
+public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher, IMapper mapper, IEmailService emailService, IFileStorageService fileStorage) : IUserService
 {
     private readonly PotodocsDbContext _context = context;
     private readonly IEmailService _emailService = emailService;
     private readonly IPasswordHasher<User> _hasher = hasher;
     private readonly IMapper _mapper = mapper;
-    private readonly IWebHostEnvironment _env = env;
+    private readonly IFileStorageService _fileStorage = fileStorage;
 
     public async Task RegisterAsync(UserDto dto)
     {
@@ -35,25 +35,14 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
             ?? throw new BadRequestException($"Rola '{dto.Role}' nie istnieje.");
 
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        string? generatedPasswordToSend = null;
 
         if (user == null)
         {
             user = _mapper.Map<User>(dto);
-            string randomPassword = GenerateRandomPassword(12);
+            generatedPasswordToSend = GenerateRandomPassword(12);
+            user.PasswordHash = _hasher.HashPassword(user, generatedPasswordToSend);
 
-            var placeholders = new Dictionary<string, string>
-            {
-                { "email", dto.Email },
-                { "password", randomPassword },
-                { "name", dto.FirstName },
-                { "lastname", dto.LastName }
-            };
-
-            string emailBody = LoadEmailTemplate("welcome.html", placeholders);
-
-            await _emailService.SendEmailAsync(dto.Email, "Witaj w PotoDocs 🚚", emailBody, "Twoje dane do logowania");
-
-            user.PasswordHash = _hasher.HashPassword(user, randomPassword);
             await _context.Users.AddAsync(user);
         }
         else
@@ -62,20 +51,39 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
         }
 
         user.Role = role;
+
         await _context.SaveChangesAsync();
+
+        if (!string.IsNullOrEmpty(generatedPasswordToSend))
+        {
+            var placeholders = new Dictionary<string, string>
+            {
+                { "email", dto.Email },
+                { "password", generatedPasswordToSend },
+                { "name", dto.FirstName },
+                { "lastname", dto.LastName }
+            };
+
+            string emailBody = await LoadEmailTemplateAsync("welcome.html", placeholders);
+            await _emailService.SendEmailAsync(dto.Email, "Witaj w PotoDocs 🚚", emailBody, "Twoje dane do logowania");
+        }
     }
+
     public async Task UpdateAsync(UserDto dto)
     {
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role)
             ?? throw new BadRequestException($"Rola '{dto.Role}' nie istnieje.");
 
         var user = await _context.Users
-            .SingleOrDefaultAsync(o => o.Id == dto.Id) ?? throw new KeyNotFoundException("Nie znaleziono użytkownika do aktualizacji.");
-        _mapper.Map(dto, user);
+            .SingleOrDefaultAsync(o => o.Id == dto.Id)
+            ?? throw new KeyNotFoundException("Nie znaleziono użytkownika do aktualizacji.");
 
+        _mapper.Map(dto, user);
         user.Role = role;
+
         await _context.SaveChangesAsync();
     }
+
     public async Task ChangePasswordAsync(ChangePasswordDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email)
@@ -98,6 +106,8 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
         string randomPassword = GenerateRandomPassword(12);
         user.PasswordHash = _hasher.HashPassword(user, randomPassword);
 
+        await _context.SaveChangesAsync();
+
         var placeholders = new Dictionary<string, string>
         {
             { "email", user.Email },
@@ -106,16 +116,17 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
             { "lastname", user.LastName }
         };
 
-        string emailBody = LoadEmailTemplate("reset-password.html", placeholders);
-
-        await _emailService.SendEmailAsync(user.Email, "Resetowanie hasła", emailBody, "Twoje nowe hasło");
-
-        await _context.SaveChangesAsync();
+        string emailBody = await LoadEmailTemplateAsync("reset-password.html", placeholders);
+        await _emailService.SendEmailAsync(user.Email, "Resetowanie hasła", emailBody, $"Twoje nowe hasło: {randomPassword}");
     }
 
     public async Task<List<UserDto>> GetAllAsync()
     {
-        var users = await _context.Users.Include(u => u.Role).ToListAsync();
+        var users = await _context.Users
+            .Include(u => u.Role)
+            .AsNoTracking()
+            .ToListAsync();
+
         return _mapper.Map<List<UserDto>>(users);
     }
 
@@ -123,8 +134,9 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
     {
         var user = await _context.Users
             .Include(u => u.Role)
+            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id)
-            ?? throw new UnauthorizedAccessException("Nie znaleziono użytkownika");
+            ?? throw new KeyNotFoundException("Nie znaleziono użytkownika");
 
         return _mapper.Map<UserDto>(user);
     }
@@ -138,40 +150,29 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
         await _context.SaveChangesAsync();
     }
 
-    private string GenerateRandomPassword(int length)
+    private async Task<string> LoadEmailTemplateAsync(string templateName, Dictionary<string, string> placeholders)
     {
-        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-        var chars = new char[length];
+        var (bytes, _) = await _fileStorage.GetFileAsync(FileType.EmailTemplate, templateName);
+        string content = Encoding.UTF8.GetString(bytes);
 
-        using (var rng = RandomNumberGenerator.Create())
+        foreach (var kv in placeholders)
         {
-            byte[] data = new byte[length];
-            rng.GetBytes(data);
-
-            for (int i = 0; i < length; i++)
-            {
-
-                chars[i] = validChars[data[i] % validChars.Length];
-            }
+            content = content.Replace($"{{{kv.Key}}}", kv.Value);
         }
 
-        return new string(chars);
+        return content;
     }
 
-    private string LoadEmailTemplate(string templateName, Dictionary<string, string> placeholders)
+    private static string GenerateRandomPassword(int length)
+    {
+        const string validChars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*";
+
+        return string.Create(length, validChars, (span, chars) =>
         {
-            string filePath = Path.Combine(_env.WebRootPath, "emails", templateName);
-
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException($"Nie znaleziono szablonu e-maila: {filePath}");
-
-            string content = File.ReadAllText(filePath);
-
-            foreach (var kv in placeholders)
+            for (int i = 0; i < span.Length; i++)
             {
-                content = content.Replace($"{{{kv.Key}}}", kv.Value);
+                span[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
             }
-
-            return content;
-        }
+        });
     }
+}

@@ -2,6 +2,7 @@
 using PotoDocs.API.Entities;
 using PotoDocs.API.Services;
 using PotoDocs.Shared.Models;
+using System.Text;
 
 namespace PotoDocs.API.Services;
 
@@ -10,8 +11,12 @@ public interface IOrderDocumentSender
     Task SendDocumentsViaEmailAsync(Invoice invoiceWithDetails);
 }
 
-public class OrderDocumentSender(IEmailService emailService, IInvoiceService invoiceService, IFileStorageService fileStorage, IWebHostEnvironment env) : IOrderDocumentSender
+public class OrderDocumentSender(IEmailService emailService, IInvoiceService invoiceService, IFileStorageService fileStorage) : IOrderDocumentSender
 {
+    private readonly IEmailService _emailService = emailService;
+    private readonly IInvoiceService _invoiceService = invoiceService;
+    private readonly IFileStorageService _fileStorage = fileStorage;
+
     public async Task SendDocumentsViaEmailAsync(Invoice invoice)
     {
         var order = invoice.Order
@@ -26,14 +31,14 @@ public class OrderDocumentSender(IEmailService emailService, IInvoiceService inv
 
         var attachments = new List<EmailAttachment>();
 
-        var (pdfBytes, mimeType, pdfName) = await invoiceService.GetInvoiceFileAsync(documentToSend.Id);
+        var (pdfBytes, mimeType, pdfName) = await _invoiceService.GetInvoiceFileAsync(documentToSend.Id);
         attachments.Add(new EmailAttachment(pdfName, mimeType, new BinaryData(pdfBytes)));
 
         var cmrFiles = order.Files.Where(f => f.Type == FileType.Cmr).ToList();
         foreach (var cmr in cmrFiles)
         {
             var fileNameOnDisk = $"{cmr.Id}{cmr.Extension}";
-            var (bytes, mime) = await fileStorage.GetFileAsync(cmr.Path, fileNameOnDisk);
+            var (bytes, mime) = await _fileStorage.GetFileAsync(FileType.Cmr, fileNameOnDisk);
 
             attachments.Add(new EmailAttachment($"{cmr.Name}{cmr.Extension}", mime, new BinaryData(bytes)));
         }
@@ -41,15 +46,13 @@ public class OrderDocumentSender(IEmailService emailService, IInvoiceService inv
         string htmlBody = await LoadEmailTemplate(documentToSend, order, cmrFiles.Count > 0);
         string subject = $"Dokumenty do zlecenia: {order.OrderNumber ?? documentToSend.InvoiceNumber.ToString()}";
 
-        await emailService.SendEmailAsync(order.Company.EmailAddress, subject, htmlBody, "Dokumenty w załączniku.", attachments);
+        await _emailService.SendEmailAsync(order.Company.EmailAddress, subject, htmlBody, "Dokumenty w załączniku.", attachments);
     }
 
     private async Task<string> LoadEmailTemplate(Invoice invoice, Order order, bool hasCmr)
     {
-        var path = Path.Combine(env.WebRootPath, "emails", "invoice-documents.html");
-        if (!File.Exists(path)) throw new FileNotFoundException("Brak szablonu email.");
-
-        var template = await File.ReadAllTextAsync(path);
+        var (bytes, _) = await _fileStorage.GetFileAsync(FileType.EmailTemplate, "invoice-documents.html");
+        var template = Encoding.UTF8.GetString(bytes);
 
         string cmrHtml = hasCmr ? "<li style=\"padding: 5px 0;\">✔️ CMR / Proof of Delivery</li>" : "";
         string invoiceNo = $"{invoice.InvoiceNumber}/{invoice.IssueDate:MM'/'yyyy}";

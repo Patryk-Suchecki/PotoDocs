@@ -1,5 +1,7 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using PotoDocs.API.Entities;
+using PotoDocs.API.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -8,62 +10,69 @@ namespace PotoDocs.API.Services;
 
 public interface ITokenService
 {
-    string GenerateJWT(IEnumerable<Claim>? additionalClaims = null);
     string GenerateJWT(User user, IEnumerable<Claim>? additionalClaims = null);
 }
 
-public sealed class TokenService(IConfiguration configuration) : ITokenService
+public sealed class TokenService : ITokenService
 {
-    private readonly IConfiguration _configuration = configuration;
+    private readonly AuthenticationSettings _settings;
+    private readonly SymmetricSecurityKey _key;
 
-    public static TokenValidationParameters GetTokenValidationParameters(IConfiguration configuration) =>
-        new()
+    public TokenService(IOptions<AuthenticationSettings> options)
+    {
+        _settings = options.Value;
+
+        if (string.IsNullOrWhiteSpace(_settings.JwtKey))
+            throw new ArgumentNullException(nameof(_settings.JwtKey), "JWT Key nie jest skonfigurowany.");
+
+        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.JwtKey));
+    }
+
+    public static TokenValidationParameters GetTokenValidationParameters(IConfiguration configuration)
+    {
+        var jwtKey = configuration["Authentication:JwtKey"]
+                     ?? throw new InvalidOperationException("JwtKey is missing in config");
+        var jwtIssuer = configuration["Authentication:JwtIssuer"];
+
+        return new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = configuration["Jwt:Issuer"],
-            IssuerSigningKey = GetSecurityKey(configuration)
+            ValidIssuer = jwtIssuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.Zero
         };
-
-    public string GenerateJWT(IEnumerable<Claim>? additionalClaims = null)
-    {
-        var securityKey = GetSecurityKey(_configuration);
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        var expireInMinutes = Convert.ToInt32(_configuration["Jwt:ExpireIMinutes"] ?? "60");
-
-        var claims = new List<Claim> {
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-        if (additionalClaims?.Any() == true)
-            claims.AddRange(additionalClaims!);
-
-        var token = new JwtSecurityToken(issuer: _configuration["Jwt:Issuer"],
-            audience: "*",
-          claims: claims,
-          expires: DateTime.UtcNow.AddMinutes(expireInMinutes),
-          signingCredentials: credentials);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public string GenerateJWT(User user, IEnumerable<Claim>? additionalClaims = null)
     {
         var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.FirstName + user.LastName),
-                new(ClaimTypes.Role, user.Role.Name),
-                new(ClaimTypes.Email, user.Email),
-            };
-        if (additionalClaims?.Any() == true)
-            claims.AddRange(additionalClaims!);
+        {
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+            new(ClaimTypes.Role, user.Role.Name),
+            new(ClaimTypes.Email, user.Email)
+        };
 
-        return GenerateJWT(claims);
+        if (additionalClaims != null)
+        {
+            claims.AddRange(additionalClaims);
+        }
+
+        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _settings.JwtIssuer,
+            audience: null,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_settings.JwtExpireInMinutes),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-    private static SymmetricSecurityKey GetSecurityKey(IConfiguration _configuration) =>
-        new(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-
 }

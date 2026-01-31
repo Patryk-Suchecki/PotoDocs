@@ -51,9 +51,9 @@ public class InvoiceHeaderComponent(InvoiceViewModel model) : IComponent
                 column.Item().Text(model.DocumentNumber).FontColor(InvoiceStyles.PrimaryColorDark);
             });
 
-            if (!string.IsNullOrEmpty(model.LogoPath) && File.Exists(model.LogoPath))
+            if (model.LogoImage != null)
             {
-                row.ConstantItem(100).Height(50).AlignRight().AlignTop().Image(model.LogoPath);
+                row.ConstantItem(100).Image(model.LogoImage);
             }
         });
     }

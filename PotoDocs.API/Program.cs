@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Options;
 using PotoDocs.API;
 using PotoDocs.API.Entities;
 using PotoDocs.API.Models.Validators;
@@ -25,6 +26,7 @@ FontManager.RegisterFontWithCustomName("Tahoma-Bold", tahomaBold);
 builder.Services.Configure<EmailServiceOptions>(builder.Configuration.GetSection("EmailService"));
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.Configure<OrganizationSettings>(builder.Configuration.GetSection("OrganizationSettings"));
+builder.Services.Configure<AuthenticationSettings>(builder.Configuration.GetSection("Authentication"));
 builder.Services.AddAzureClients(clientBuilder =>
 {
     var emailConfig = builder.Configuration.GetSection("EmailService");
@@ -57,6 +59,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
@@ -93,7 +96,14 @@ builder.Services.AddScoped<IInvoicePdfGenerator, InvoicePdfGenerator>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<IOrderDocumentSender, OrderDocumentSender>();
 
-builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
+builder.Services.AddHttpClient<IOpenAIService, OpenAIService>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<OpenAIOptions>>().Value;
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", options.APIKey);
+});
 builder.Services.AddHttpClient<IEuroRateService, NbpEuroRateService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);
@@ -114,6 +124,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseCors("AllowBlazorClient");
 app.UseMiddleware<ErrorHandlingMiddleware>();

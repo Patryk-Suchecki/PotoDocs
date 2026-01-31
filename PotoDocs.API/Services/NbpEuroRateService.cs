@@ -1,5 +1,7 @@
-﻿using PotoDocs.Shared.Models;
-using System.Text.Json;
+﻿using Microsoft.Extensions.Caching.Memory;
+using PotoDocs.Shared.Models;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace PotoDocs.API.Services;
 
@@ -8,32 +10,42 @@ public interface IEuroRateService
     Task<EuroRateDto> GetEuroRateAsync(DateTime requestedDate);
 }
 
-public class NbpEuroRateService(HttpClient httpClient, IConfiguration configuration) : IEuroRateService
+public class NbpEuroRateService(HttpClient httpClient, IConfiguration configuration, IMemoryCache cache) : IEuroRateService
 {
     private readonly HttpClient _httpClient = httpClient;
-    private readonly string _apiUrl = configuration["EuroRateUrlTemplate"] ?? throw new InvalidOperationException("Nie skonfigurowano 'EuroRateUrlTemplate' w appsettings.json.");
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private readonly IMemoryCache _cache = cache;
+
+    private readonly string _apiUrl = configuration["EuroRateUrlTemplate"]
+        ?? "http://api.nbp.pl/api/exchangerates/rates/a/eur/{0}/?format=json";
 
     public async Task<EuroRateDto> GetEuroRateAsync(DateTime requestedDate)
     {
+        string cacheKey = $"NBP_EUR_{requestedDate:yyyyMMdd}";
 
-        for (int i = 1; i <= 5; i++)
+        return await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            string formattedDate = requestedDate.AddDays(-i).ToString("yyyy-MM-dd");
-            string url = string.Format(_apiUrl, formattedDate);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24);
+
+            return await FetchRateFromNbpAsync(requestedDate);
+        }) ?? throw new InvalidOperationException("Nie udało się pobrać kursu walut.");
+    }
+
+    private async Task<EuroRateDto> FetchRateFromNbpAsync(DateTime requestedDate)
+    {
+        for (int i = 1; i <= 10; i++)
+        {
+            var dateToCheck = requestedDate.AddDays(-i);
+            var formattedDate = dateToCheck.ToString("yyyy-MM-dd");
+            var url = string.Format(_apiUrl, formattedDate);
 
             var response = await _httpClient.GetAsync(url);
+
             if (response.IsSuccessStatusCode)
             {
-                var jsonContent = await response.Content.ReadAsStringAsync();
-                var exchangeRateData = JsonSerializer.Deserialize<ExchangeRatesSeries>(jsonContent, _jsonOptions);
+                var data = await response.Content.ReadFromJsonAsync<NbpTableDto>();
 
-                if (exchangeRateData?.Rates?.Length > 0)
+                if (data?.Rates is [var rate, ..])
                 {
-                    var rate = exchangeRateData.Rates[0];
                     return new EuroRateDto
                     {
                         Rate = rate.Mid,
@@ -44,21 +56,16 @@ public class NbpEuroRateService(HttpClient httpClient, IConfiguration configurat
             }
         }
 
-        throw new Exception("Nie udało się pobrać kursu EUR z ostatnich 5 dni.");
+        throw new InvalidOperationException($"Nie udało się znaleźć tabeli kursowej NBP dla daty {requestedDate:yyyy-MM-dd} (sprawdzono 10 dni wstecz).");
     }
 
-    private class ExchangeRatesSeries
-    {
-        public string Table { get; set; } = string.Empty;
-        public string Currency { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
-        public Rate[] Rates { get; set; } = [];
-    }
+    private record NbpTableDto(
+        [property: JsonPropertyName("rates")] NbpRateDto[] Rates
+    );
 
-    private class Rate
-    {
-        public string No { get; set; } = string.Empty;
-        public DateTime EffectiveDate { get; set; }
-        public decimal Mid { get; set; }
-    }
+    private record NbpRateDto(
+        [property: JsonPropertyName("no")] string No,
+        [property: JsonPropertyName("effectiveDate")] DateTime EffectiveDate,
+        [property: JsonPropertyName("mid")] decimal Mid
+    );
 }

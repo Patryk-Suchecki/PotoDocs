@@ -1,36 +1,30 @@
-﻿using PotoDocs.API.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using PotoDocs.API.Entities;
 using PotoDocs.API.Exceptions;
-using PotoDocs.API.Models;
-using PotoDocs.Shared.Models;
-
 
 namespace PotoDocs.API.Services;
 
 public interface IRoleService
 {
-    List<string> GetRoles();
+    Task<List<string>> GetRolesAsync();
 }
 
-
-public class RoleService : IRoleService
+public class RoleService(PotodocsDbContext context) : IRoleService
 {
-    private readonly PotodocsDbContext _context;
+    private readonly PotodocsDbContext _context = context;
 
-    public RoleService(PotodocsDbContext context)
+    public async Task<List<string>> GetRolesAsync()
     {
-        _context = context;
-    }
-
-    public List<string> GetRoles()
-    {
-        var roleNames = _context.Roles
+        var roleNames = await _context.Roles
+            .AsNoTracking()
             .Select(role => role.Name)
-            .ToList();
+            .ToListAsync();
 
-        if (roleNames == null || roleNames.Count == 0)
+        if (roleNames.Count == 0)
+        {
             throw new BadRequestException("Brak zdefiniowanych ról w systemie.");
+        }
 
         return roleNames;
     }
 }
-

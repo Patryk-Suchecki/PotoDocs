@@ -11,29 +11,22 @@ public interface IDownloadService
     Task<FileStream> GetInvoicesArchiveAsync(List<Guid> invoiceIds);
 }
 
-public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoiceService) : IDownloadService
+public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoiceService, IFileStorageService fileStorage) : IDownloadService
 {
     private readonly PotodocsDbContext _dbContext = dbContext;
     private readonly IInvoiceService _invoiceService = invoiceService;
-
-    private static FileStream CreateTempFileStream()
-    {
-        var tempFilePath = Path.GetTempFileName();
-        return new FileStream(tempFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-    }
+    private readonly IFileStorageService _fileStorage = fileStorage;
 
     public async Task<FileStream> GetDocumentsArchiveAsync(List<Guid> orderIds)
     {
         var invoices = await _dbContext.Invoices
                 .Where(i => i.OrderId.HasValue && orderIds.Contains(i.OrderId.Value))
-                .Include(i => i.Items)
-                .Include(i => i.Order)
-                .Include(i => i.Order!.Files)
+                .Include(i => i.Order).ThenInclude(o => o!.Files)
                 .AsNoTracking()
                 .ToListAsync();
 
-        if (invoices == null || invoices.Count == 0)
-            throw new KeyNotFoundException("Brak plików dla zleceń wybranego miesiąca.");
+        if (invoices.Count == 0)
+            throw new KeyNotFoundException("Brak dokumentów dla wybranych zleceń.");
 
         var fileStream = CreateTempFileStream();
 
@@ -44,27 +37,16 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
                 string folderName = $"zlecenie {invoice.InvoiceNumber}";
 
                 var pdfData = await _invoiceService.GetInvoiceFileAsync(invoice.Id);
-
-                var pdfZipEntry = archive.CreateEntry($"{folderName}/{pdfData.OriginalName}", CompressionLevel.Optimal);
-                using (var pdfEntryStream = pdfZipEntry.Open())
-                {
-                    await pdfEntryStream.WriteAsync(pdfData.Bytes);
-                }
+                await AddBytesToArchiveAsync(archive, $"{folderName}/{pdfData.OriginalName}", pdfData.Bytes);
 
                 if (invoice.Order?.Files != null)
                 {
                     foreach (var file in invoice.Order.Files)
                     {
-                        var fullDiskPath = Path.Combine(file.Path, $"{file.Id}.{file.Extension}");
+                        var fileNameInZip = $"{folderName}/{file.Name}.{file.Extension}";
+                        var fileNameOnDisk = $"{file.Id}.{file.Extension}";
 
-                        if (!File.Exists(fullDiskPath)) continue;
-
-                        string fileInZipName = $"{file.Name}.{file.Extension}";
-                        var fileZipEntry = archive.CreateEntry($"{folderName}/{fileInZipName}", CompressionLevel.Optimal);
-
-                        using var fileEntryStream = fileZipEntry.Open();
-                        using var sourceFileStream = File.OpenRead(fullDiskPath);
-                        await sourceFileStream.CopyToAsync(fileEntryStream);
+                        await TryAddStorageFileToArchiveAsync(archive, fileNameInZip, file.Path, fileNameOnDisk);
                     }
                 }
             }
@@ -79,10 +61,11 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
         var orders = await _dbContext.Orders
             .Where(o => orderIds.Contains(o.Id))
             .Include(o => o.Files)
+            .AsNoTracking()
             .ToListAsync();
 
-        if (orders == null || orders.Count == 0)
-            throw new KeyNotFoundException("Brak plików dla zleceń wybranego miesiąca.");
+        if (orders.Count == 0)
+            throw new KeyNotFoundException("Brak plików dla wybranych zleceń.");
 
         var fileStream = CreateTempFileStream();
 
@@ -92,15 +75,10 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
             {
                 foreach (var file in order.Files)
                 {
-                    var fullDiskPath = Path.Combine(file.Path, $"{file.Id}.{file.Extension}");
+                    var entryPath = $"{order.UnloadingDate:MM-yyyy}/{file.Name}.{file.Extension}";
+                    var fileNameOnDisk = $"{file.Id}.{file.Extension}";
 
-                    if (!File.Exists(fullDiskPath)) continue;
-
-                    var zipEntry = archive.CreateEntry($"{order.UnloadingDate:MM-yyyy}/{file.Name}.{file.Extension}", CompressionLevel.Optimal);
-
-                    using var entryStream = zipEntry.Open();
-                    using var sourceFileStream = File.OpenRead(fullDiskPath);
-                    await sourceFileStream.CopyToAsync(entryStream);
+                    await TryAddStorageFileToArchiveAsync(archive, entryPath, file.Path, fileNameOnDisk);
                 }
             }
         }
@@ -113,13 +91,11 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
     {
         var invoices = await _dbContext.Invoices
             .Where(i => invoiceIds.Contains(i.Id))
-            .Include(i => i.Items)
-            .Include(i => i.Order)
             .AsNoTracking()
             .ToListAsync();
 
-        if (invoices == null || invoices.Count == 0)
-            throw new KeyNotFoundException("Brak faktur dla wybranego miesiąca.");
+        if (invoices.Count == 0)
+            throw new KeyNotFoundException("Brak faktur dla wybranego zakresu.");
 
         var fileStream = CreateTempFileStream();
 
@@ -128,15 +104,31 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
             foreach (var invoice in invoices)
             {
                 var pdfData = await _invoiceService.GetInvoiceFileAsync(invoice.Id);
-
-                var zipEntry = archive.CreateEntry(pdfData.OriginalName, CompressionLevel.Optimal);
-
-                using var entryStream = zipEntry.Open();
-                await entryStream.WriteAsync(pdfData.Bytes);
+                await AddBytesToArchiveAsync(archive, pdfData.OriginalName, pdfData.Bytes);
             }
         }
 
         fileStream.Position = 0;
         return fileStream;
+    }
+
+    private static FileStream CreateTempFileStream()
+    {
+        var tempFilePath = Path.GetTempFileName();
+        return new FileStream(tempFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+    }
+
+    private static async Task AddBytesToArchiveAsync(ZipArchive archive, string entryName, byte[] data)
+    {
+        var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+        using var entryStream = entry.Open();
+        await entryStream.WriteAsync(data);
+    }
+
+    private async Task TryAddStorageFileToArchiveAsync(ZipArchive archive, string entryName, string folderPath, string fileNameOnDisk)
+    {
+        var (bytes, _) = await _fileStorage.GetFileAsync(folderPath, fileNameOnDisk);
+
+        await AddBytesToArchiveAsync(archive, entryName, bytes);
     }
 }

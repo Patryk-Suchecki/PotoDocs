@@ -3,7 +3,9 @@
 public enum FileType
 {
     Order,
-    Cmr
+    Cmr,
+    Images,
+    EmailTemplate
 }
 public class OrderFileDto
 {

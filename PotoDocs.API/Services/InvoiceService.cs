@@ -95,7 +95,7 @@ public class InvoiceService(PotodocsDbContext dbContext, IMapper mapper, IInvoic
             euroRate = await _euroRateService.GetEuroRateAsync(invoice.SaleDate);
         }
 
-        var pdfBytes = _pdfGenerator.Generate(invoice, euroRate);
+        var pdfBytes = await _pdfGenerator.GenerateAsync(invoice, euroRate);
         var fileName = $"FAKTURA_{invoice.InvoiceNumber}-{invoice.IssueDate:MM'-'yyyy}.pdf";
 
         return (pdfBytes, "application/pdf", fileName);

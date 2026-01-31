@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using PotoDocs.API.Entities;
-using PotoDocs.API.Invoices;
+using PotoDocs.API.Invoices; // Tu jest Twój InvoiceDocument (QuestPDF)
 using PotoDocs.API.Options;
 using PotoDocs.Shared.Models;
 using PotoDocs.Shared.Utils;
@@ -10,24 +10,27 @@ namespace PotoDocs.API.Services;
 
 public interface IInvoicePdfGenerator
 {
-    byte[] Generate(Invoice invoice, EuroRateDto? euroRate);
+    Task<byte[]> GenerateAsync(Invoice invoice, EuroRateDto? euroRate);
 }
 
-public class InvoicePdfGenerator(IOptions<OrganizationSettings> options, IWebHostEnvironment env) : IInvoicePdfGenerator
+public class InvoicePdfGenerator(IOptions<OrganizationSettings> options, IFileStorageService fileStorage) : IInvoicePdfGenerator
 {
     private readonly OrganizationSettings _orgSettings = options.Value;
-    private readonly IWebHostEnvironment _env = env;
+    private readonly IFileStorageService _fileStorage = fileStorage;
 
-    public byte[] Generate(Invoice invoice, EuroRateDto? euroRate)
+    public async Task<byte[]> GenerateAsync(Invoice invoice, EuroRateDto? euroRate)
     {
-        var model = CreateViewModel(invoice, euroRate);
+        var model = await CreateViewModelAsync(invoice, euroRate);
         var document = new InvoiceDocument(model);
         return document.GeneratePdf();
     }
 
-    private InvoiceViewModel CreateViewModel(Invoice src, EuroRateDto? euroRate)
+    private async Task<InvoiceViewModel> CreateViewModelAsync(Invoice src, EuroRateDto? euroRate)
     {
         var model = InitializeBaseModel(src);
+
+        var (bytes, _) = await _fileStorage.GetFileAsync(FileType.Images, "logo.png");
+        model.LogoImage = bytes;
 
         ProcessItems(model, src);
 
@@ -46,7 +49,6 @@ public class InvoicePdfGenerator(IOptions<OrganizationSettings> options, IWebHos
         {
             IsCorrection = src.Type == InvoiceType.Correction,
             Currency = src.Currency,
-            LogoPath = Path.Combine(_env.WebRootPath, "images", "logo.png"),
 
             DocumentTitle = src.Type == InvoiceType.Correction ? "FAKTURA VAT KORYGUJĄCA" : "FAKTURA VAT",
             DocumentNumber = $"Nr {src.InvoiceNumber}/{src.IssueDate:MM}/{src.IssueDate:yyyy}" + (src.Type == InvoiceType.Correction ? "K" : ""),

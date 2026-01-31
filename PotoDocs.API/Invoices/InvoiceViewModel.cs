@@ -2,7 +2,7 @@
 
 public class InvoiceViewModel
 {
-    public string LogoPath { get; set; } = string.Empty;
+    public byte[]? LogoImage { get; set; }
     public bool IsCorrection { get; set; }
     public string CorrectionReason { get; set; } = string.Empty;
     public CurrencyType Currency { get; set; } = CurrencyType.PLN;

@@ -13,9 +13,9 @@ public class RoleController(IRoleService roleService) : ControllerBase
     [HttpGet("all")]
     [Authorize]
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<string>> GetRoles()
+    public async Task<IActionResult> GetRoles()
     {
-        var roles = _roleService.GetRoles();
+        var roles = await _roleService.GetRolesAsync();
         return Ok(roles);
     }
 }
