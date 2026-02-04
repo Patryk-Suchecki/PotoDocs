@@ -110,7 +110,7 @@ public partial class UsersPage
         {
             try
             {
-                await UserService.Delete(user.Email);
+                await UserService.Delete(user.Id);
                 Snackbar.Add("Pomyślnie usunięto użytkownika", Severity.Success);
                 await table.ReloadServerData();
             }
@@ -149,11 +149,11 @@ public partial class UsersPage
         }
     }
 
-    private async Task GeneratePassword(string email)
+    private async Task GeneratePassword(Guid id)
     {
         try
         {
-            await UserService.GeneratePassword(email);
+            await UserService.GeneratePassword(id);
             Snackbar.Add("Wygenerowano nowe hasło.", Severity.Success);
         }
         catch (Exception ex)

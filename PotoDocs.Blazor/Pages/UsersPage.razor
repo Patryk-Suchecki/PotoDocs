@@ -23,7 +23,7 @@
         <MudTd DataLabel="Rola">@context.Role</MudTd>
         <MudTd DataLabel="Akcje" Style="text-align:right">
             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                <MudMenuItem Label="Generuj hasło" Icon="@Icons.Material.Filled.LockReset" @onclick="() => GeneratePassword(context.Email)" />
+                <MudMenuItem Label="Generuj hasło" Icon="@Icons.Material.Filled.LockReset" @onclick="() => GeneratePassword(context.Id)" />
                 <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
                 <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
                 <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />

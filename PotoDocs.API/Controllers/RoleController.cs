@@ -6,14 +6,15 @@ namespace PotoDocs.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class RoleController(IRoleService roleService) : ControllerBase
 {
     private readonly IRoleService _roleService = roleService;
 
     [HttpGet("all")]
-    [Authorize]
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetRoles()
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IEnumerable<string>>> GetRoles()
     {
         var roles = await _roleService.GetRolesAsync();
         return Ok(roles);

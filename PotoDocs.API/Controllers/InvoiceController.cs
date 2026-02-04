@@ -13,14 +13,19 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     private readonly IInvoiceService _invoiceService = invoiceService;
 
     [HttpPost]
-    [ProducesResponseType(typeof(InvoiceDto), 201)]
+    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<InvoiceDto>> Create([FromBody] InvoiceDto dto)
     {
-        var order = await _invoiceService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
+        var invoice = await _invoiceService.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, invoice);
     }
+
     [HttpPost("correction")]
-    [ProducesResponseType(typeof(InvoiceDto), 201)]
+    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<InvoiceDto>> CreateCorrection([FromBody] InvoiceCorrectionDto dto)
     {
         var correction = await _invoiceService.CreateCorrectionAsync(dto);
@@ -28,22 +33,28 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     }
 
     [HttpGet("all")]
-    [ProducesResponseType(typeof(IEnumerable<InvoiceDto>), 200)]
+    [ProducesResponseType(typeof(IEnumerable<InvoiceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IEnumerable<InvoiceDto>>> GetAll()
     {
-        var orders = await _invoiceService.GetAllAsync();
-        return Ok(orders);
+        var invoices = await _invoiceService.GetAllAsync();
+        return Ok(invoices);
     }
 
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(InvoiceDto), 200)]
+    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<InvoiceDto>> GetById([FromRoute] Guid id)
     {
-        var order = await _invoiceService.GetByIdAsync(id);
-        return Ok(order);
+        var invoice = await _invoiceService.GetByIdAsync(id);
+        return Ok(invoice);
     }
 
     [HttpPut]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> Update([FromBody] InvoiceDto dto)
     {
         await _invoiceService.UpdateAsync(dto);
@@ -51,6 +62,9 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     }
 
     [HttpPut("correction")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> UpdateCorrection([FromBody] InvoiceCorrectionDto dto)
     {
         await _invoiceService.UpdateCorrectionAsync(dto);
@@ -58,6 +72,9 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> Delete([FromRoute] Guid id)
     {
         await _invoiceService.DeleteAsync(id);
@@ -65,6 +82,9 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     }
 
     [HttpGet("{id}/pdf")]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DownloadInvoice(Guid id)
     {
         var (bytes, mimeType, originalName) = await _invoiceService.GetInvoiceFileAsync(id);
@@ -72,6 +92,9 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     }
 
     [HttpPost("from-order/{id}")]
+    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<InvoiceDto>> CreateInvoiceFromOrder(Guid id)
     {
         var newInvoice = await _invoiceService.CreateFromOrderAsync(id);

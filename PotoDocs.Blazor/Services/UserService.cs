@@ -9,10 +9,10 @@ public interface IUserService
     Task RegisterAsync(UserDto dto);
     Task Update(UserDto dto);
     Task<IEnumerable<UserDto>> GetAll();
-    Task GeneratePassword(string email);
+    Task GeneratePassword(Guid id);
     Task<UserDto> GetCurrentUser();
     Task<string> ChangePassword(ChangePasswordDto dto);
-    Task Delete(string email);
+    Task Delete(Guid id);
 }
 
 public class UserService(IAuthService authService) : BaseService(authService), IUserService
@@ -33,9 +33,9 @@ public class UserService(IAuthService authService) : BaseService(authService), I
         await PutAsync("api/user", dto);
     }
 
-    public async Task GeneratePassword(string email)
+    public async Task GeneratePassword(Guid id)
     {
-        await PostAsync("api/user/generate-password", email);
+        await PostAsync("api/user/generate-password", id);
     }
 
     public async Task<IEnumerable<UserDto>> GetAll()
@@ -68,8 +68,8 @@ public class UserService(IAuthService authService) : BaseService(authService), I
         }
     }
 
-    public async Task Delete(string email)
+    public async Task Delete(Guid id)
     {
-        await DeleteAsync($"api/user/{email}");
+        await DeleteAsync($"api/user/{id}");
     }
 }

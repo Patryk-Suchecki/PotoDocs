@@ -14,10 +14,10 @@ public interface IUserService
     Task RegisterAsync(UserDto dto);
     Task UpdateAsync(UserDto dto);
     Task ChangePasswordAsync(ChangePasswordDto dto);
-    Task GeneratePasswordAsync(string email);
+    Task GeneratePasswordAsync(Guid id);
     Task<List<UserDto>> GetAllAsync();
     Task<UserDto> GetByIdAsync(Guid id);
-    Task DeleteAsync(string email);
+    Task DeleteAsync(Guid id);
 
 }
 
@@ -98,9 +98,9 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
         await _context.SaveChangesAsync();
     }
 
-    public async Task GeneratePasswordAsync(string email)
+    public async Task GeneratePasswordAsync(Guid id)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email)
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id)
             ?? throw new BadRequestException("Nie znaleziono użytkownika");
 
         string randomPassword = GenerateRandomPassword(12);
@@ -141,9 +141,9 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task DeleteAsync(string email)
+    public async Task DeleteAsync(Guid id)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return;
 
         _context.Users.Remove(user);
