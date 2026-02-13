@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using System.Text.Json.Serialization;
 
 namespace PotoDocs.Shared.Models;
 
@@ -12,6 +13,7 @@ public class OrderDto
     public CompanyDto Company { get; set; } = new CompanyDto();
 
     public decimal Price { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public CurrencyType Currency { get; set; } = CurrencyType.EUR;
     public int? PaymentDeadline { get; set; }
 

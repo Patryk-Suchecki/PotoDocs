@@ -24,13 +24,33 @@ else
         <MudTextField @bind-Value="ChangePasswordDto.OldPassword"
                       Label="Stare hasło"
                       Variant="Variant.Outlined"
+                      InputType="@_passwordInputType"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@_passwordInputIcon"
+                      OnAdornmentClick="TogglePasswordVisibility"
+                      AdornmentAriaLabel="Pokaż hasło"
                       For="@(() => ChangePasswordDto.OldPassword)"
-                      InputType="InputType.Password" />
+                      Immediate="true" />
         <MudTextField @bind-Value="ChangePasswordDto.NewPassword"
                       Label="Nowe hasło"
                       Variant="Variant.Outlined"
+                      InputType="@_passwordInputType"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@_passwordInputIcon"
+                      OnAdornmentClick="TogglePasswordVisibility"
+                      AdornmentAriaLabel="Pokaż hasło"
                       For="@(() => ChangePasswordDto.NewPassword)"
-                      InputType="InputType.Password" />
+                      Immediate="true" />
+        <MudTextField @bind-Value="_confirmPassword"
+                      Label="Powtórz nowe hasło"
+                      Variant="Variant.Outlined"
+                      InputType="@_passwordInputType"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@_passwordInputIcon"
+                      OnAdornmentClick="TogglePasswordVisibility"
+                      AdornmentAriaLabel="Pokaż hasło"
+                      Validation="@(new Func<string, IEnumerable<string>>(ValidateConfirmPassword))"
+                      Immediate="true" />
 
         <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Button" OnClick="SubmitAsync" Color="Color.Primary" Disabled="@IsLoading">Zmień hasło</MudButton>
     </MudForm>

@@ -33,6 +33,14 @@
         </MudTh>
 
         <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.TotalNetAmount)"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="InvoiceDto">
+                Kwota
+            </MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
             <MudTableSortLabel SortBy="@_sorter.Sort(x => x.IssueDate)"
                                SortDirectionChanged="OnSortDirectionChanged"
                                T="InvoiceDto">
@@ -63,6 +71,7 @@
     <RowTemplate>
         <MudTd DataLabel="Nr">@context.Name</MudTd>
         <MudTd DataLabel="Nabywca">@context.BuyerName</MudTd>
+        <MudTd DataLabel="Kwota">@context.TotalNetAmount</MudTd>
         <MudTd DataLabel="Data wystawienia">@context.IssueDate?.ToString("dd.MM.yyyy")</MudTd>
         <MudTd DataLabel="Płatność">
             <MudChip T="string" Color="@context.GetStatusColor()" Size="Size.Small" Variant="Variant.Text">@context.GetStatusText()</MudChip>

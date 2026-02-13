@@ -11,18 +11,12 @@ public interface IUserService
     Task<IEnumerable<UserDto>> GetAll();
     Task GeneratePassword(Guid id);
     Task<UserDto> GetCurrentUser();
-    Task<string> ChangePassword(ChangePasswordDto dto);
+    Task ChangePassword(ChangePasswordDto dto);
     Task Delete(Guid id);
 }
 
 public class UserService(IAuthService authService) : BaseService(authService), IUserService
 {
-    private readonly IAuthService _authService = authService;
-
-    private static readonly JsonSerializerOptions _json = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
 
     public async Task RegisterAsync(UserDto dto)
     {
@@ -48,24 +42,9 @@ public class UserService(IAuthService authService) : BaseService(authService), I
         return await GetAsync<UserDto>("api/user/me");
     }
 
-    public async Task<string> ChangePassword(ChangePasswordDto dto)
+    public async Task ChangePassword(ChangePasswordDto dto)
     {
-        var http = await _authService.GetAuthenticatedHttpClientAsync();
-        var resp = await http.PostAsJsonAsync("api/user/change-password", dto);
-
-        var raw = await resp.Content.ReadAsStringAsync();
-        try
-        {
-            var pd = JsonSerializer.Deserialize<ProblemDetailsDto>(raw, _json);
-
-            var msg = pd?.Detail ?? pd?.Title ?? $"Błąd zmiany hasła: {(int)resp.StatusCode}";
-
-            return msg;
-        }
-        catch (JsonException)
-        {
-            return $"Błąd zmiany hasła: {(int)resp.StatusCode} - {raw}";
-        }
+        await PostAsync("api/user/change-password", dto);
     }
 
     public async Task Delete(Guid id)

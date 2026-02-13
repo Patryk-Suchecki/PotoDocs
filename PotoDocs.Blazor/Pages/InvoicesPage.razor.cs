@@ -74,6 +74,8 @@ public partial class InvoicesPage
             return true;
         if (invoice.IssueDate?.ToString("dd.MM.yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             return true;
+        if (invoice.TotalNetAmount.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
         return false;
     }
 

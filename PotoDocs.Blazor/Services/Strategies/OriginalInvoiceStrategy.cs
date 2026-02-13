@@ -15,7 +15,7 @@ public class OriginalInvoiceStrategy(IDialogService dialogService, IInvoiceServi
 
     public InvoiceType Type => InvoiceType.Original;
 
-    public bool CanEdit(InvoiceDto invoice) => invoice.SentDate == null;
+    public bool CanEdit(InvoiceDto invoice) => true; //invoice.SentDate == null;
     public bool CanDelete(InvoiceDto invoice) => invoice.SentDate == null;
     public bool CanCorrect(InvoiceDto invoice) => invoice.Corrections.Count == 0;
 

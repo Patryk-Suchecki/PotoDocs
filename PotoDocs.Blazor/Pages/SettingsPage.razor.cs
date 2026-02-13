@@ -18,7 +18,10 @@ public partial class SettingsPage
 
     private MudForm form = default!;
     private readonly ChangePasswordDtoValidator passwordValidator = new();
-
+    private bool _isPasswordVisible;
+    private InputType _passwordInputType = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private string _confirmPassword = "";
     protected override async Task OnInitializedAsync()
     {
         await LoadUser();
@@ -54,17 +57,10 @@ public partial class SettingsPage
         try
         {
             IsLoading = true;
-            var result = await UserService.ChangePassword(ChangePasswordDto);
+            await UserService.ChangePassword(ChangePasswordDto);
 
-            if (string.IsNullOrEmpty(result))
-            {
-                Snackbar.Add($"Hasło zostało zmienione, zaloguj się ponownie", Severity.Success);
-                Navigation.NavigateTo("/logowanie");
-            }
-            else
-            {
-                Snackbar.Add(result, Severity.Error);
-            }
+            Snackbar.Add($"Hasło zostało zmienione, zaloguj się ponownie", Severity.Success);
+            Navigation.NavigateTo("/logowanie");
         }
         catch (Exception ex)
         {
@@ -73,6 +69,33 @@ public partial class SettingsPage
         finally
         {
             IsLoading = false;
+        }
+    }
+    private void TogglePasswordVisibility()
+    {
+        if (_isPasswordVisible)
+        {
+            _isPasswordVisible = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInputType = InputType.Password;
+        }
+        else
+        {
+            _isPasswordVisible = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInputType = InputType.Text;
+        }
+    }
+    private IEnumerable<string> ValidateConfirmPassword(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            yield return "Potwierdzenie hasła jest wymagane.";
+        }
+
+        if (value != ChangePasswordDto.NewPassword)
+        {
+            yield return "Hasła muszą być identyczne.";
         }
     }
 }
