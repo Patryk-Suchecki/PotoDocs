@@ -66,7 +66,7 @@
             <MudTable Items="@InvoiceDto.Items"
                       RowEditCommit="OnItemCommit"
                       RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
-                      ApplyButtonPosition="TableApplyButtonPosition.End" EditButtonPosition="TableEditButtonPosition.End" EditTrigger="TableEditTrigger.RowClick">
+                      ApplyButtonPosition="TableApplyButtonPosition.End" EditButtonPosition="TableEditButtonPosition.End" EditTrigger="TableEditTrigger.RowClick" RowEditableFunc="@(item => !IsDisabled)">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Pozycje</MudText>
                     @if (!IsDisabled)
@@ -116,7 +116,7 @@
                     </MudTd>
 
                     <MudTd DataLabel="VAT">
-                        <MudNumericField @bind-Value="context.VatRate" Required Min="0" Format="F2" Label="Stawka"/>
+                        <MudNumericField @bind-Value="context.VatRate" Required Min="0" Format="F2" Label="Stawka" />
                     </MudTd>
 
                 </RowEditingTemplate>
@@ -127,7 +127,10 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
+        @if (Type != InvoiceFormType.Details)
+        {
+            <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
+        }
         <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">@ButtonLabel</MudButton>
     </DialogActions>
 </MudDialog>

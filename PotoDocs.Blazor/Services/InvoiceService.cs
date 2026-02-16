@@ -15,7 +15,7 @@ public interface IInvoiceService
     Task UpdateCorrection(InvoiceCorrectionDto dto);
 }
 
-public class InvoiceService(IAuthService authService) : BaseService(authService), IInvoiceService
+public class InvoiceService(HttpClient http) : BaseService(http), IInvoiceService
 {
     public async Task<IEnumerable<InvoiceDto>> GetAll()
     {

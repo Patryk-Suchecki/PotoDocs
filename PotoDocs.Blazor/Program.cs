@@ -20,37 +20,11 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 🔹 **Dodanie autoryzacji**
-builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<JwtAuthenticationStateProvider>());
-
-// 🔹 **Zewnętrzne usługi Blazored**
-builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddBlazorDownloadFile();
-builder.Services.AddBlazoredModal();
-builder.Services.AddMudServices(config =>
-{
-    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
-    config.SnackbarConfiguration.PreventDuplicates = false;
-    config.SnackbarConfiguration.NewestOnTop = false;
-    config.SnackbarConfiguration.ShowCloseIcon = true;
-    config.SnackbarConfiguration.VisibleStateDuration = 10000;
-    config.SnackbarConfiguration.HideTransitionDuration = 500;
-    config.SnackbarConfiguration.ShowTransitionDuration = 500;
-    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
-});
-
-using var httpClient = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-
-// 1️⃣ Pobranie ustawień konfiguracyjnych
+// --- KONFIGURACJA (bez zmian) ---
+using var httpClientConfig = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
 var env = builder.HostEnvironment.Environment;
 var configFile = env == "Development" ? "appsettings.Development.json" : "appsettings.json";
-
-// Pobranie konfiguracji z odpowiedniego pliku
-var configResponse = await httpClient.GetFromJsonAsync<Dictionary<string, object>>(configFile);
-
-// 2️⃣ Pobranie sekcji "ApiSettings" i deserializacja
+var configResponse = await httpClientConfig.GetFromJsonAsync<Dictionary<string, object>>(configFile);
 var apiSettings = JsonSerializer.Deserialize<ApiSettings>(configResponse?["ApiSettings"].ToString() ?? "{}");
 
 if (apiSettings is null || string.IsNullOrEmpty(apiSettings.BaseAddress))
@@ -58,10 +32,45 @@ if (apiSettings is null || string.IsNullOrEmpty(apiSettings.BaseAddress))
     throw new Exception("Brak wartości `BaseAddress` w `appsettings.json`");
 }
 
+// 🔹 **1. Autoryzacja i Interceptor**
+builder.Services.AddAuthorizationCore();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<JwtAuthenticationStateProvider>());
+builder.Services.AddTransient<HttpInterceptorService>(); // Musi być Transient
 
-// 🔹 **Serwisy aplikacyjne**
+// 🔹 **2. Rejestracja HTTP Clientów**
+
+// A. Klient PUBLICZNY (do logowania) - Bez interceptora
+builder.Services.AddHttpClient("PotoDocs.Public", client =>
+{
+    client.BaseAddress = new Uri(apiSettings.BaseAddress);
+});
+
+// B. Klient PRYWATNY (do API) - Z interceptorem
+// Interceptor automatycznie doda Token i obsłuży 401
+builder.Services.AddHttpClient("PotoDocs.API", client =>
+{
+    client.BaseAddress = new Uri(apiSettings.BaseAddress);
+})
+.AddHttpMessageHandler<HttpInterceptorService>();
+
+// C. Domyślny HttpClient dla serwisów (OrderService, InvoiceService itp.)
+// Wstrzykując HttpClient w serwisach, dostaniesz ten "PotoDocs.API" z interceptorem
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("PotoDocs.API"));
+
+
+// 🔹 **3. Pozostałe Serwisy**
+builder.Services.AddBlazorDownloadFile();
+builder.Services.AddBlazoredModal();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+    // ... twoja konfiguracja snackbara ...
+});
+
 builder.Services.AddScoped<IFileDownloadHelper, FileDownloadHelper>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>(); // Teraz używa Factory
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -74,8 +83,4 @@ builder.Services.AddScoped<IInvoiceActionStrategy, OriginalInvoiceStrategy>();
 builder.Services.AddScoped<IInvoiceActionStrategy, CorrectionStrategy>();
 builder.Services.AddScoped<InvoiceStrategyFactory>();
 
-// 🔹 **HttpClient z poprawnym adresem API**
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiSettings.BaseAddress) });
-
-// 🔹 **Uruchomienie aplikacji**
 await builder.Build().RunAsync();

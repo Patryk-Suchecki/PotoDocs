@@ -18,19 +18,33 @@ public partial class LoginPage
     private InputType _passwordInputType = InputType.Password;
     private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
 
+    private bool _isLoading = false;
+
     private async Task SubmitAsync()
     {
+        if (_isLoading) return;
+
+        _isLoading = true;
         _errorMessage = null;
 
-        var result = await AuthService.LoginAsync(_loginModel);
+        try
+        {
+            var result = await AuthService.LoginAsync(_loginModel);
 
-        if (result.IsSuccess)
-        {
-            Navigation.NavigateTo("/", true);
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/", true);
+            }
+            else
+            {
+                _errorMessage = result.ErrorMessage;
+                _isLoading = false;
+            }
         }
-        else
+        catch (Exception)
         {
-            _errorMessage = result.ErrorMessage;
+            _errorMessage = "Wystąpił błąd połączenia.";
+            _isLoading = false;
         }
     }
 

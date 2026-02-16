@@ -127,8 +127,20 @@ public class DownloadService(PotodocsDbContext dbContext, IInvoiceService invoic
 
     private async Task TryAddStorageFileToArchiveAsync(ZipArchive archive, string entryName, string folderPath, string fileNameOnDisk)
     {
-        var (bytes, _) = await _fileStorage.GetFileAsync(folderPath, fileNameOnDisk);
+        try
+        {
+            var (bytes, _) = await _fileStorage.GetFileAsync(folderPath, fileNameOnDisk);
 
-        await AddBytesToArchiveAsync(archive, entryName, bytes);
+            await AddBytesToArchiveAsync(archive, entryName, bytes);
+        }
+        catch (FileNotFoundException)
+        {
+            await AddBytesToArchiveAsync(archive, $"{entryName}.ERROR.txt",
+                System.Text.Encoding.UTF8.GetBytes("Plik nie został odnaleziony na serwerze."));
+        }
+        catch (Exception ex)
+        {
+            // _logger.LogError(ex, "Błąd dodawania pliku do archiwum");
+        }
     }
 }
