@@ -50,6 +50,31 @@ builder.Services.AddAuthentication(x =>
     {
         options.TokenValidationParameters =
             TokenService.GetTokenValidationParameters(builder.Configuration);
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var dbContext = context.HttpContext.RequestServices.GetRequiredService<PotodocsDbContext>();
+                var userIdClaim = context.Principal?.FindFirst("sub")
+                               ?? context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+                if (userIdClaim == null)
+                {
+                    context.Fail("Brak ID w tokenie");
+                    return;
+                }
+
+                if (Guid.TryParse(userIdClaim.Value, out var userId))
+                {
+                    var userExists = await dbContext.Users.AnyAsync(u => u.Id == userId);
+
+                    if (!userExists)
+                    {
+                        context.Fail("U¿ytkownik zosta³ usuniêty.");
+                    }
+                }
+            }
+        };
     });
 builder.Services.AddTransient<ITokenService, TokenService>()
                 .AddTransient<IAccountService, AccountService>();

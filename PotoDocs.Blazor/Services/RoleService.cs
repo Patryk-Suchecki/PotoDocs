@@ -6,7 +6,7 @@ public interface IRoleService
     Task<IEnumerable<string>> GetRoles();
 }
 
-public class RoleService(IAuthService authService) : BaseService(authService), IRoleService
+public class RoleService(HttpClient http) : BaseService(http), IRoleService
 {
     public async Task<IEnumerable<string>> GetRoles()
     {

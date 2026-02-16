@@ -64,7 +64,13 @@
             </MudTableSortLabel>
         </MudTh>
 
-        <MudTh>Status</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="@_sorter.Sort(x => x.GetStatusText())"
+                               SortDirectionChanged="OnSortDirectionChanged"
+                               T="OrderDto">
+                Status
+            </MudTableSortLabel>
+        </MudTh>
 
         <MudTh>
             <MudTableSortLabel SortBy="@_sorter.Sort(x => x.Price)"
@@ -103,7 +109,7 @@
                 @context.GetStatusText()
             </MudChip>
         </MudTd>
-        <MudTd DataLabel="Cena">@context.Price.FormatMoney(context.Currency)</MudTd>
+        <MudTd DataLabel="Kwota">@context.Price.FormatMoney(context.Currency)</MudTd>
         <MudTd DataLabel="Akcje" Style="text-align:right">
             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
                 <AuthorizeView Roles="admin" Context="authContext">

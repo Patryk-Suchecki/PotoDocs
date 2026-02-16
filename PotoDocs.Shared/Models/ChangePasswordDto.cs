@@ -15,8 +15,7 @@ public class ChangePasswordDtoValidator : AbstractValidator<ChangePasswordDto>
             .NotEmpty().WithMessage("Email jest wymagany.");
 
         RuleFor(x => x.OldPassword)
-            .NotEmpty().WithMessage("Stare hasło jest wymagane.")
-            .Length(8, 50).WithMessage("Stare hasło musi mieć od 8 do 50 znaków.");
+            .NotEmpty().WithMessage("Stare hasło jest wymagane.");
 
         RuleFor(x => x.NewPassword)
             .NotEmpty().WithMessage("Nowe hasło jest wymagane.")

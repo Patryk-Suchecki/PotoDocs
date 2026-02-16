@@ -15,7 +15,7 @@ public interface IUserService
     Task Delete(Guid id);
 }
 
-public class UserService(IAuthService authService) : BaseService(authService), IUserService
+public class UserService(HttpClient http) : BaseService(http), IUserService
 {
 
     public async Task RegisterAsync(UserDto dto)

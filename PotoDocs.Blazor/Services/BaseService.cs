@@ -1,12 +1,12 @@
-﻿using PotoDocs.Blazor.Helpers;
+﻿using System.Net.Http.Json;
+using PotoDocs.Blazor.Helpers;
 using PotoDocs.Shared.Models;
-using System.Net.Http.Json;
 
 namespace PotoDocs.Blazor.Services;
 
-public abstract class BaseService(IAuthService authService)
+public abstract class BaseService(HttpClient httpClient)
 {
-    private readonly IAuthService _authService = authService;
+    protected readonly HttpClient _httpClient = httpClient;
 
     private static string ExtractFileNameFromResponse(HttpResponseMessage response)
     {
@@ -25,22 +25,24 @@ public abstract class BaseService(IAuthService authService)
         return $"pobrany_plik_{DateTime.Now:yyyyMMdd_HHmm}.bin";
     }
 
-
     protected async Task<T> GetAsync<T>(string url)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.GetAsync(url);
+        var response = await _httpClient.GetAsync(url);
 
         await response.ThrowIfNotSuccessWithProblemDetails();
 
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            return default!;
+        }
+
         var result = await response.Content.ReadFromJsonAsync<T>();
-        return result ?? throw new InvalidOperationException("API zwróciło pustą odpowiedź (null), a oczekiwano danych.");
+        return result!;
     }
 
     protected async Task<FileDownloadResult> GetFileAsync(string url)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.GetAsync(url);
+        var response = await _httpClient.GetAsync(url);
 
         await response.ThrowIfNotSuccessWithProblemDetails();
 
@@ -54,15 +56,13 @@ public abstract class BaseService(IAuthService authService)
 
     protected async Task PostAsync(string url, object? payload)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PostAsJsonAsync(url, payload);
+        var response = await _httpClient.PostAsJsonAsync(url, payload);
         await response.ThrowIfNotSuccessWithProblemDetails();
     }
 
     protected async Task<T> PostAsync<T>(string url, object? payload)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PostAsJsonAsync(url, payload);
+        var response = await _httpClient.PostAsJsonAsync(url, payload);
 
         await response.ThrowIfNotSuccessWithProblemDetails();
 
@@ -72,8 +72,7 @@ public abstract class BaseService(IAuthService authService)
 
     protected async Task<FileDownloadResult> PostAndDownloadFileAsync(string url, object payload)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PostAsJsonAsync(url, payload);
+        var response = await _httpClient.PostAsJsonAsync(url, payload);
 
         await response.ThrowIfNotSuccessWithProblemDetails();
 
@@ -87,8 +86,7 @@ public abstract class BaseService(IAuthService authService)
 
     protected async Task<T> PostMultipartAsync<T>(string url, MultipartFormDataContent content)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PostAsync(url, content);
+        var response = await _httpClient.PostAsync(url, content);
 
         await response.ThrowIfNotSuccessWithProblemDetails();
 
@@ -98,15 +96,13 @@ public abstract class BaseService(IAuthService authService)
 
     protected async Task PutAsync(string url, object? payload)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PutAsJsonAsync(url, payload);
+        var response = await _httpClient.PutAsJsonAsync(url, payload);
         await response.ThrowIfNotSuccessWithProblemDetails();
     }
 
     protected async Task<T> PutAsync<T>(string url, object? payload)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PutAsJsonAsync(url, payload);
+        var response = await _httpClient.PutAsJsonAsync(url, payload);
 
         await response.ThrowIfNotSuccessWithProblemDetails();
 
@@ -116,15 +112,13 @@ public abstract class BaseService(IAuthService authService)
 
     protected async Task PutMultipartAsync(string url, MultipartFormDataContent content)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.PutAsync(url, content);
+        var response = await _httpClient.PutAsync(url, content);
         await response.ThrowIfNotSuccessWithProblemDetails();
     }
 
     protected async Task DeleteAsync(string url)
     {
-        var client = await _authService.GetAuthenticatedHttpClientAsync();
-        var response = await client.DeleteAsync(url);
+        var response = await _httpClient.DeleteAsync(url);
         await response.ThrowIfNotSuccessWithProblemDetails();
     }
 }

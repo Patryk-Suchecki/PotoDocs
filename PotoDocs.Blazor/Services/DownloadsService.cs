@@ -9,7 +9,7 @@ public interface IDownloadsService
     Task<FileDownloadResult> DownloadOrders(List<Guid> orderIds);
 }
 
-public class DownloadsService(IAuthService authService) : BaseService(authService), IDownloadsService
+public class DownloadsService(HttpClient http) : BaseService(http), IDownloadsService
 {
     public async Task<FileDownloadResult> DownloadInvoices(List<Guid> invoiceIds)
     {

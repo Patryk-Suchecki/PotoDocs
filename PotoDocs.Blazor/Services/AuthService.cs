@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using PotoDocs.Shared.Models;
 
@@ -10,12 +9,11 @@ public interface IAuthService
 {
     Task<LoginResult> LoginAsync(LoginDto dto);
     Task Logout();
-    Task<HttpClient> GetAuthenticatedHttpClientAsync();
 }
 
-public class AuthService(HttpClient httpClient, JwtAuthenticationStateProvider authProvider) : IAuthService
+public class AuthService(IHttpClientFactory httpClientFactory, JwtAuthenticationStateProvider authProvider) : IAuthService
 {
-    private readonly HttpClient _httpClient = httpClient;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly JwtAuthenticationStateProvider _authProvider = authProvider;
 
     private static readonly JsonSerializerOptions _json = new()
@@ -27,7 +25,11 @@ public class AuthService(HttpClient httpClient, JwtAuthenticationStateProvider a
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/account/login", dto);
+            // Pobieramy klienta PUBLICZNEGO (bez interceptora), 
+            // żeby błąd logowania (np. złe hasło -> 401) nie wywołał wylogowania
+            var client = _httpClientFactory.CreateClient("PotoDocs.Public");
+
+            var response = await client.PostAsJsonAsync("api/account/login", dto);
 
             if (response.IsSuccessStatusCode)
             {
@@ -41,7 +43,6 @@ public class AuthService(HttpClient httpClient, JwtAuthenticationStateProvider a
             }
 
             var raw = await response.Content.ReadAsStringAsync();
-
             try
             {
                 var pd = JsonSerializer.Deserialize<ProblemDetailsDto>(raw, _json);
@@ -50,7 +51,7 @@ public class AuthService(HttpClient httpClient, JwtAuthenticationStateProvider a
             }
             catch (JsonException)
             {
-                return new LoginResult(false, $"Błąd logowania: {response.ReasonPhrase} ({(int)response.StatusCode})");
+                return new LoginResult(false, $"Błąd logowania: {response.ReasonPhrase}");
             }
         }
         catch (Exception)
@@ -62,19 +63,5 @@ public class AuthService(HttpClient httpClient, JwtAuthenticationStateProvider a
     public async Task Logout()
     {
         await _authProvider.Logout();
-    }
-
-    public async Task<HttpClient> GetAuthenticatedHttpClientAsync()
-    {
-        var authState = await _authProvider.GetAuthenticationStateAsync();
-
-        if (authState.User.Identity?.IsAuthenticated == true)
-        {
-            var token = await _authProvider.GetToken();
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-        }
-
-        return _httpClient;
     }
 }

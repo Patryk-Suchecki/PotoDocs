@@ -20,7 +20,7 @@ public interface IOrderService
     Task MarkOrdersAsSentAsync(List<Guid> orderIds, DateTime dateSent);
 }
 
-public class OrderService(IAuthService authService) : BaseService(authService), IOrderService
+public class OrderService(HttpClient http) : BaseService(http), IOrderService
 {
     public async Task<IEnumerable<OrderDto>> GetAll()
     {

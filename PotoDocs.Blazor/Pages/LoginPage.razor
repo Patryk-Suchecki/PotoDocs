@@ -13,7 +13,8 @@
                       Label="Adres e-mail"
                       Variant="Variant.Outlined"
                       For="@(() => _loginModel.Email)"
-                      Immediate="true" />
+                      Immediate="true"
+                      Disabled="@_isLoading" />
 
         <MudTextField @bind-Value="_loginModel.Password"
                       Label="Hasło"
@@ -24,7 +25,8 @@
                       OnAdornmentClick="TogglePasswordVisibility"
                       AdornmentAriaLabel="Pokaż hasło"
                       For="@(() => _loginModel.Password)"
-                      Immediate="true" />
+                      Immediate="true" 
+                      Disabled="@_isLoading" />
 
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
@@ -35,7 +37,8 @@
                    Variant="Variant.Filled"
                    Color="Color.Primary"
                    FullWidth="true"
-                   Class="mt-4">
+                   Class="mt-4"
+                   Disabled="@_isLoading" >
             Logowanie
         </MudButton>
 
