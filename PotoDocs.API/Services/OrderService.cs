@@ -17,9 +17,8 @@ public interface IOrderService
     Task<OrderDto> CreateAsync(OrderDto dto, IEnumerable<IFormFile> orderfiles, IEnumerable<IFormFile> cmrfiles);
     Task<OrderDto> ParseOrderAsync(IFormFile file);
     Task<OrderDto> ParseExistingOrderAsync(Guid id);
-
+    Task<FileDownloadResult> GetFileStreamAsync(Guid fileId);
     Task<OrderFile> SaveFileAsync(IFormFile file, Guid orderId, FileType fileType);
-    Task<(byte[] Bytes, string MimeType, string OriginalName)> GetFileAsync(Guid fileId);
     Task DeleteFileAsync(Guid fileId);
     Task SendDocumentsAsync(Guid orderId);
     Task MarkOrdersAsSentAsync(List<Guid> orderIds, DateTime sentDate);
@@ -180,13 +179,15 @@ public class OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAISe
 
     public async Task<OrderDto> ParseExistingOrderAsync(Guid id)
     {
-        var (bytes, mime, name) = await GetFileAsync(id);
+        var result = await GetFileStreamAsync(id);
+        using var memoryStream = new MemoryStream();
+        await result.FileStream.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
 
-        using var memoryStream = new MemoryStream(bytes);
-        var formFile = new FormFile(memoryStream, 0, bytes.Length, "file", name)
+        var formFile = new FormFile(memoryStream, 0, memoryStream.Length, "file", result.FileName)
         {
             Headers = new HeaderDictionary(),
-            ContentType = mime
+            ContentType = result.ContentType
         };
 
         return await ParseOrderAsync(formFile);
@@ -213,15 +214,19 @@ public class OrderService(PotodocsDbContext dbContext, IMapper mapper, IOpenAISe
         return fileEntity;
     }
 
-    public async Task<(byte[] Bytes, string MimeType, string OriginalName)> GetFileAsync(Guid fileId)
+    public async Task<FileDownloadResult> GetFileStreamAsync(Guid fileId)
     {
         var fileEntity = await _dbContext.OrderFiles
             .FirstOrThrowAsync(f => f.Id == fileId, "Nie znaleziono pliku.");
 
         var fileNameOnDisk = $"{fileEntity.Id}{fileEntity.Extension}";
-        var (bytes, mime) = await _fileStorage.GetFileAsync(fileEntity.Path, fileNameOnDisk);
+        var (stream, contentType) = await _fileStorage.GetFileStreamAsync(fileEntity.Path, fileNameOnDisk);
 
-        return (bytes, fileEntity.MimeType ?? mime, $"{fileEntity.Name}{fileEntity.Extension}");
+        var downloadName = $"{fileEntity.Name}{fileEntity.Extension}";
+
+        var finalContentType = !string.IsNullOrEmpty(fileEntity.MimeType) ? fileEntity.MimeType : contentType;
+
+        return new FileDownloadResult(stream, downloadName, finalContentType);
     }
 
     public async Task DeleteFileAsync(Guid fileId)

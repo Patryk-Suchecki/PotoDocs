@@ -13,7 +13,7 @@ public interface IOrderService
     Task Delete(Guid id);
     Task<OrderDto> Create(OrderDto order, IEnumerable<FileUploadDto> orderfiles, IEnumerable<FileUploadDto> cmrfiles);
     Task Update(OrderDto order, IEnumerable<FileUploadDto> newOrderFiles, IEnumerable<FileUploadDto> newCmrFiles, IEnumerable<Guid> fileIdsToDelete);
-    Task<FileDownloadResult> DownloadFile(Guid id);
+    Task<HttpResponseMessage> DownloadFileResponseAsync(Guid id);
     Task<OrderDto> ParseOrder(FileUploadDto file);
     Task<OrderDto> ParseExistingOrder(Guid id);
     Task SendDocuments(Guid id);
@@ -106,9 +106,9 @@ public class OrderService(HttpClient http) : BaseService(http), IOrderService
         await PutMultipartAsync($"api/orders/{order.Id}", multipartFormContent);
     }
 
-    public async Task<FileDownloadResult> DownloadFile(Guid id)
+    public async Task<HttpResponseMessage> DownloadFileResponseAsync(Guid id)
     {
-        return await GetFileAsync($"api/orders/files/{id}");
+        return await GetFileResponseAsync($"api/orders/files/{id}");
     }
 
     public async Task SendDocuments(Guid id)

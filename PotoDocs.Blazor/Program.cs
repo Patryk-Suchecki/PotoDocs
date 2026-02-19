@@ -20,7 +20,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// --- KONFIGURACJA (bez zmian) ---
 using var httpClientConfig = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
 var env = builder.HostEnvironment.Environment;
 var configFile = env == "Development" ? "appsettings.Development.json" : "appsettings.json";
@@ -32,45 +31,38 @@ if (apiSettings is null || string.IsNullOrEmpty(apiSettings.BaseAddress))
     throw new Exception("Brak wartości `BaseAddress` w `appsettings.json`");
 }
 
-// 🔹 **1. Autoryzacja i Interceptor**
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<JwtAuthenticationStateProvider>());
-builder.Services.AddTransient<HttpInterceptorService>(); // Musi być Transient
+builder.Services.AddTransient<HttpInterceptorService>();
 
-// 🔹 **2. Rejestracja HTTP Clientów**
-
-// A. Klient PUBLICZNY (do logowania) - Bez interceptora
 builder.Services.AddHttpClient("PotoDocs.Public", client =>
 {
     client.BaseAddress = new Uri(apiSettings.BaseAddress);
 });
 
-// B. Klient PRYWATNY (do API) - Z interceptorem
-// Interceptor automatycznie doda Token i obsłuży 401
+
 builder.Services.AddHttpClient("PotoDocs.API", client =>
 {
     client.BaseAddress = new Uri(apiSettings.BaseAddress);
 })
 .AddHttpMessageHandler<HttpInterceptorService>();
 
-// C. Domyślny HttpClient dla serwisów (OrderService, InvoiceService itp.)
-// Wstrzykując HttpClient w serwisach, dostaniesz ten "PotoDocs.API" z interceptorem
+
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("PotoDocs.API"));
 
 
-// 🔹 **3. Pozostałe Serwisy**
+
 builder.Services.AddBlazorDownloadFile();
 builder.Services.AddBlazoredModal();
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
-    // ... twoja konfiguracja snackbara ...
 });
 
 builder.Services.AddScoped<IFileDownloadHelper, FileDownloadHelper>();
-builder.Services.AddScoped<IAuthService, AuthService>(); // Teraz używa Factory
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();

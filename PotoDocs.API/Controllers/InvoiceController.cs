@@ -87,8 +87,8 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DownloadInvoice(Guid id)
     {
-        var (bytes, mimeType, originalName) = await _invoiceService.GetInvoiceFileAsync(id);
-        return File(bytes, mimeType, originalName);
+        var result = await _invoiceService.GetInvoiceStreamAsync(id);
+        return File(result.FileStream, result.ContentType, result.FileName);
     }
 
     [HttpPost("from-order/{id}")]

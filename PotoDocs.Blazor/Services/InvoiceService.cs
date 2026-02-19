@@ -10,7 +10,7 @@ public interface IInvoiceService
     Task Create(InvoiceDto dto);
     Task<InvoiceDto> CreateFromOrder(Guid id);
     Task Update(InvoiceDto dto);
-    Task<FileDownloadResult> Download(Guid id);
+    Task<HttpResponseMessage> Download(Guid id);
     Task CreateCorrection(InvoiceCorrectionDto dto);
     Task UpdateCorrection(InvoiceCorrectionDto dto);
 }
@@ -45,9 +45,9 @@ public class InvoiceService(HttpClient http) : BaseService(http), IInvoiceServic
     {
         await PutAsync("api/invoice", dto);
     }
-    public async Task<FileDownloadResult> Download(Guid id)
+    public async Task<HttpResponseMessage> Download(Guid id)
     {
-        return await GetFileAsync($"api/invoice/{id}/pdf");
+        return await GetFileResponseAsync($"api/invoice/{id}/pdf");
     }
     public async Task CreateCorrection(InvoiceCorrectionDto dto)
     {

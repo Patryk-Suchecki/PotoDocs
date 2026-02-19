@@ -1,12 +1,11 @@
 ﻿using BlazorDownloadFile;
 using MudBlazor;
-using PotoDocs.Shared.Models;
 
 namespace PotoDocs.Blazor.Helpers;
 
 public interface IFileDownloadHelper
 {
-    Task DownloadFromServerAsync(Func<Task<FileDownloadResult>> apiCall, Action<bool>? loadingStateChanged = null);
+    Task DownloadFromResponseAsync(HttpResponseMessage response);
     Task DownloadFromBytesAsync(string fileName, byte[] data, string contentType);
 }
 
@@ -15,30 +14,23 @@ public class FileDownloadHelper(IBlazorDownloadFileService downloadService, ISna
     private readonly IBlazorDownloadFileService _downloadService = downloadService;
     private readonly ISnackbar _snackbar = snackbar;
 
-    public async Task DownloadFromServerAsync(Func<Task<FileDownloadResult>> apiCall, Action<bool>? loadingStateChanged = null)
+    public async Task DownloadFromResponseAsync(HttpResponseMessage response)
     {
         try
         {
-            loadingStateChanged?.Invoke(true);
-
-            var file = await apiCall();
-
-            if (file?.FileContent is null || file.FileContent.Length == 0)
+            if (!response.IsSuccessStatusCode)
             {
-                _snackbar.Add("Nie znaleziono pliku lub jest on pusty.", Severity.Info);
+                _snackbar.Add($"Błąd: {response.StatusCode}", Severity.Error);
                 return;
             }
-
-            await _downloadService.DownloadFile(file.FileName, file.FileContent, file.ContentType);
-            _snackbar.Add($"Pobrano {file.FileName}", Severity.Success);
+            var fileName = GetFileNameFromHeaders(response);
+            using var stream = await response.Content.ReadAsStreamAsync();
+            await _downloadService.DownloadFile(fileName, stream, "application/octet-stream");
+            _snackbar.Add($"Pobrano: {fileName}", Severity.Success);
         }
         catch (Exception ex)
         {
-            _snackbar.Add($"Błąd pobierania: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            loadingStateChanged?.Invoke(false);
+            _snackbar.Add($"Błąd: {ex.Message}", Severity.Error);
         }
     }
 
@@ -51,12 +43,19 @@ public class FileDownloadHelper(IBlazorDownloadFileService downloadService, ISna
                 _snackbar.Add("Plik jest pusty.", Severity.Warning);
                 return;
             }
-
             await _downloadService.DownloadFile(fileName, data, contentType);
         }
         catch (Exception ex)
         {
-            _snackbar.Add($"Błąd zapisu pliku: {ex.Message}", Severity.Error);
+            _snackbar.Add($"Błąd zapisu: {ex.Message}", Severity.Error);
         }
+    }
+
+    private string GetFileNameFromHeaders(HttpResponseMessage response)
+    {
+        var headers = response.Content.Headers;
+        return headers.ContentDisposition?.FileNameStar?.Trim('"')
+            ?? headers.ContentDisposition?.FileName?.Trim('"')
+            ?? "plik.bin";
     }
 }

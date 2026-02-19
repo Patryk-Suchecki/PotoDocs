@@ -13,7 +13,7 @@ public interface IInvoiceService
     Task DeleteAsync(Guid id);
     Task UpdateAsync(InvoiceDto dto);
     Task<InvoiceDto> CreateAsync(InvoiceDto dto);
-    Task<(byte[] Bytes, string MimeType, string OriginalName)> GetInvoiceFileAsync(Guid id);
+    Task<FileDownloadResult> GetInvoiceStreamAsync(Guid id);
     Task<InvoiceDto> CreateFromOrderAsync(Guid orderId);
     Task<InvoiceDto> CreateCorrectionAsync(InvoiceCorrectionDto dto);
     Task UpdateCorrectionAsync(InvoiceCorrectionDto dto);
@@ -83,7 +83,7 @@ public class InvoiceService(PotodocsDbContext dbContext, IMapper mapper, IInvoic
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<(byte[] Bytes, string MimeType, string OriginalName)> GetInvoiceFileAsync(Guid id)
+    public async Task<FileDownloadResult> GetInvoiceStreamAsync(Guid id)
     {
         var invoice = await _dbContext.Invoices
                 .IncludeFullDetails()
@@ -96,9 +96,12 @@ public class InvoiceService(PotodocsDbContext dbContext, IMapper mapper, IInvoic
         }
 
         var pdfBytes = await _pdfGenerator.GenerateAsync(invoice, euroRate);
-        var fileName = $"FAKTURA_{invoice.InvoiceNumber}-{invoice.IssueDate:MM'-'yyyy}.pdf";
+        var stream = new MemoryStream(pdfBytes);
+        var fileName = invoice.Type == InvoiceType.Correction
+            ? $"KOREKTA_{invoice.SafeFileName}.pdf"
+            : $"FAKTURA_{invoice.SafeFileName}.pdf";
 
-        return (pdfBytes, "application/pdf", fileName);
+        return new FileDownloadResult(stream, fileName, "application/pdf");
     }
 
     public async Task<InvoiceDto> CreateFromOrderAsync(Guid orderId)

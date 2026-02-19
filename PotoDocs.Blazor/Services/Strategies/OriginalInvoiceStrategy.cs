@@ -88,6 +88,7 @@ public class OriginalInvoiceStrategy(IDialogService dialogService, IInvoiceServi
 
     public async Task DownloadAsync(InvoiceDto invoice)
     {
-        await _fileDownloader.DownloadFromServerAsync(() => _invoiceService.Download(invoice.Id));
+        var response = await _invoiceService.Download(invoice.Id);
+        await _fileDownloader.DownloadFromResponseAsync(response);
     }
 }

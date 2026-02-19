@@ -24,6 +24,9 @@ public class Invoice
     public int PaymentDeadlineDays { get; set; } = 60;
     public string Comments { get; set; } = string.Empty;
 
+    public string Name => $"{InvoiceNumber}/{IssueDate:MM}/{IssueDate:yyyy}{(Type == InvoiceType.Correction ? "K" : "")}";
+    public string SafeFileName => Name.Replace("/", "-");
+
 
     public virtual ICollection<InvoiceItem> Items { get; set; } = [];
     public Guid? OrderId { get; set; }

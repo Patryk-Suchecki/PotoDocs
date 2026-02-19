@@ -7,6 +7,7 @@ namespace PotoDocs.Shared.Models
     {
         public Guid Id { get; set; }
         public int InvoiceNumber { get; set; }
+        public string Name { get; set; } = string.Empty;
         public InvoiceType Type { get; set; }
         public DateTime? IssueDate { get; set; } = DateTime.UtcNow;
         public DateTime? SaleDate { get; set; }
@@ -32,7 +33,6 @@ namespace PotoDocs.Shared.Models
         public ICollection<InvoiceItemDto> Items { get; set; } = [];
         public virtual ICollection<InvoiceDto> Corrections { get; set; } = [];
 
-        public string Name => $"{InvoiceNumber}/{IssueDate:MM}/{IssueDate:yyyy}{(Type == InvoiceType.Correction ? "K" : "")}";
         public int DaysUntilDue => SentDate.HasValue ? (SentDate.Value.AddDays(PaymentDeadlineDays) - DateTime.UtcNow).Days : 0;
     }
 }

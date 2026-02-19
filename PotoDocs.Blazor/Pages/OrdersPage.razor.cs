@@ -94,6 +94,8 @@ public partial class OrdersPage
             return true;
         if (order.UnloadingDate?.ToString("dd.MM.yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             return true;
+        if (order.Price.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
         return false;
     }
 
@@ -289,12 +291,24 @@ public partial class OrdersPage
             return;
         }
 
-        var ids = selectedOrders.Select(o => o.Id).ToList();
+        IsLoading = true;
+        StateHasChanged();
 
-        await FileDownloader.DownloadFromServerAsync(
-            () => DownloadsService.DownloadOrders(ids),
-            isLoading => IsLoading = isLoading
-        );
+        try
+        {
+            var ids = selectedOrders.Select(o => o.Id).ToList();
+            var response = await DownloadsService.DownloadOrders(ids);
+            await FileDownloader.DownloadFromResponseAsync(response);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task DownloadDocuments()
@@ -305,12 +319,25 @@ public partial class OrdersPage
             return;
         }
 
-        var ids = selectedOrders.Select(o => o.Id).ToList();
+        IsLoading = true;
+        StateHasChanged();
 
-        await FileDownloader.DownloadFromServerAsync(
-            () => DownloadsService.DownloadDocuments(ids),
-            isLoading => IsLoading = isLoading
-        );
+        try
+        {
+            var ids = selectedOrders.Select(o => o.Id).ToList();
+            var response = await DownloadsService.DownloadDocuments(ids);
+
+            await FileDownloader.DownloadFromResponseAsync(response);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
     }
     private void GoToInvoice(string invoiceName)
     {
