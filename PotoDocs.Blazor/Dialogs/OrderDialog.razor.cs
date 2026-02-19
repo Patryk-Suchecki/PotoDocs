@@ -1,5 +1,4 @@
-﻿using BlazorDownloadFile;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 using PotoDocs.Blazor.Helpers;
@@ -156,17 +155,26 @@ public partial class OrderDialog
 
     private async Task DownloadExistingFile(OrderFileDto dto)
     {
-        Action<bool> loadingHandler = (isLoading) =>
-        {
-            if (dto.Type == FileType.Order) IsProcessingPdf = isLoading;
-            else IsProcessingCmr = isLoading;
-            StateHasChanged();
-        };
+        if (dto.Type == FileType.Order) IsProcessingPdf = true;
+        else IsProcessingCmr = true;
+        StateHasChanged();
 
-        await FileDownloader.DownloadFromServerAsync(
-            () => OrderService.DownloadFile(dto.Id),
-            loadingHandler
-        );
+        try
+        {
+            var response = await OrderService.DownloadFileResponseAsync(dto.Id);
+            await FileDownloader.DownloadFromResponseAsync(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd krytyczny pobierania: {ex.Message}");
+        }
+        finally
+        {
+            if (dto.Type == FileType.Order) IsProcessingPdf = false;
+            else IsProcessingCmr = false;
+
+            StateHasChanged();
+        }
     }
 
     private async Task SubmitAsync()

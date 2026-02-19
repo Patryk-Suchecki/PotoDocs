@@ -1,26 +1,34 @@
 ﻿using PotoDocs.Shared.Models;
+using System.Net.Http.Json;
 
 namespace PotoDocs.Blazor.Services;
 
 public interface IDownloadsService
 {
-    Task<FileDownloadResult> DownloadInvoices(List<Guid> invoiceIds);
-    Task<FileDownloadResult> DownloadDocuments(List<Guid> orderIds);
-    Task<FileDownloadResult> DownloadOrders(List<Guid> orderIds);
+    Task<HttpResponseMessage> DownloadInvoices(List<Guid> invoiceIds);
+    Task<HttpResponseMessage> DownloadDocuments(List<Guid> orderIds);
+    Task<HttpResponseMessage> DownloadOrders(List<Guid> orderIds);
 }
 
-public class DownloadsService(HttpClient http) : BaseService(http), IDownloadsService
+public class DownloadsService(HttpClient http) : IDownloadsService
 {
-    public async Task<FileDownloadResult> DownloadInvoices(List<Guid> invoiceIds)
+    private readonly HttpClient _http = http;
+
+    public async Task<HttpResponseMessage> DownloadInvoices(List<Guid> invoiceIds)
     {
-        return await PostAndDownloadFileAsync($"api/downloads/invoices/", invoiceIds);
+        var request = new DownloadRequest { Ids = invoiceIds };
+        return await _http.PostAsJsonAsync("api/downloads/invoices", request);
     }
-    public async Task<FileDownloadResult> DownloadDocuments(List<Guid> orderIds)
+
+    public async Task<HttpResponseMessage> DownloadDocuments(List<Guid> orderIds)
     {
-        return await PostAndDownloadFileAsync($"api/downloads/documents/", orderIds);
+        var request = new DownloadRequest { Ids = orderIds };
+        return await _http.PostAsJsonAsync("api/downloads/documents", request);
     }
-    public async Task<FileDownloadResult> DownloadOrders(List<Guid> orderIds)
+
+    public async Task<HttpResponseMessage> DownloadOrders(List<Guid> orderIds)
     {
-        return await PostAndDownloadFileAsync($"api/downloads/orders/", orderIds);
+        var request = new DownloadRequest { Ids = orderIds };
+        return await _http.PostAsJsonAsync("api/downloads/orders", request);
     }
 }

@@ -152,9 +152,20 @@ public class UserService(PotodocsDbContext context, IPasswordHasher<User> hasher
 
     private async Task<string> LoadEmailTemplateAsync(string templateName, Dictionary<string, string> placeholders)
     {
-        var (bytes, _) = await _fileStorage.GetFileAsync(FileType.EmailTemplate, templateName);
-        string content = Encoding.UTF8.GetString(bytes);
+        // 1. Pobieramy strumień (zamiast byte[])
+        var (fileStream, _) = await _fileStorage.GetFileStreamAsync(FileType.EmailTemplate, templateName);
 
+        string content;
+
+        // 2. Czytamy tekst bezpośrednio ze strumienia
+        // StreamReader jest zoptymalizowany do tego zadania
+        using (fileStream)
+        using (var reader = new StreamReader(fileStream, Encoding.UTF8))
+        {
+            content = await reader.ReadToEndAsync();
+        }
+
+        // 3. Podmieniamy placeholdery (logika bez zmian)
         foreach (var kv in placeholders)
         {
             content = content.Replace($"{{{kv.Key}}}", kv.Value);

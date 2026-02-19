@@ -121,8 +121,25 @@ public partial class InvoicesPage
 
         var ids = selectedInvoices.Select(i => i.Id).ToList();
 
-        await FileDownloader.DownloadFromServerAsync(() => DownloadsService.DownloadInvoices(ids), isLoading => IsLoading = isLoading);
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await DownloadsService.DownloadInvoices(ids);
+            await FileDownloader.DownloadFromResponseAsync(response);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Wystąpił błąd: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
     }
+
     private async Task HandleAction(Func<Task> action)
     {
         try

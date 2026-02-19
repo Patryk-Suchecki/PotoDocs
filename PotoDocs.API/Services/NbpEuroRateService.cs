@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using PotoDocs.Shared.Models;
-using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
 namespace PotoDocs.API.Services;

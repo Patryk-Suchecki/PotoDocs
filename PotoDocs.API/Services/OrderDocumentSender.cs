@@ -31,16 +31,25 @@ public class OrderDocumentSender(IEmailService emailService, IInvoiceService inv
 
         var attachments = new List<EmailAttachment>();
 
-        var (pdfBytes, mimeType, pdfName) = await _invoiceService.GetInvoiceFileAsync(documentToSend.Id);
-        attachments.Add(new EmailAttachment(pdfName, mimeType, new BinaryData(pdfBytes)));
+        var invoiceResult = await _invoiceService.GetInvoiceStreamAsync(documentToSend.Id);
+
+        using (var pdfStream = invoiceResult.FileStream)
+        {
+            var pdfContent = await BinaryData.FromStreamAsync(pdfStream);
+            attachments.Add(new EmailAttachment(invoiceResult.FileName, invoiceResult.ContentType, pdfContent));
+        }
 
         var cmrFiles = order.Files.Where(f => f.Type == FileType.Cmr).ToList();
         foreach (var cmr in cmrFiles)
         {
             var fileNameOnDisk = $"{cmr.Id}{cmr.Extension}";
-            var (bytes, mime) = await _fileStorage.GetFileAsync(FileType.Cmr, fileNameOnDisk);
+            var (cmrStream, mime) = await _fileStorage.GetFileStreamAsync(cmr.Path, fileNameOnDisk);
 
-            attachments.Add(new EmailAttachment($"{cmr.Name}{cmr.Extension}", mime, new BinaryData(bytes)));
+            using (cmrStream)
+            {
+                var cmrContent = await BinaryData.FromStreamAsync(cmrStream);
+                attachments.Add(new EmailAttachment($"{cmr.Name}{cmr.Extension}", mime, cmrContent));
+            }
         }
 
         string htmlBody = await LoadEmailTemplate(documentToSend, order, cmrFiles.Count > 0);
@@ -51,11 +60,17 @@ public class OrderDocumentSender(IEmailService emailService, IInvoiceService inv
 
     private async Task<string> LoadEmailTemplate(Invoice invoice, Order order, bool hasCmr)
     {
-        var (bytes, _) = await _fileStorage.GetFileAsync(FileType.EmailTemplate, "invoice-documents.html");
-        var template = Encoding.UTF8.GetString(bytes);
+        var (fileStream, _) = await _fileStorage.GetFileStreamAsync(FileType.EmailTemplate, "invoice-documents.html");
 
+        string template;
+        using (fileStream)
+        using (var reader = new StreamReader(fileStream, Encoding.UTF8))
+        {
+            template = await reader.ReadToEndAsync();
+        }
         string cmrHtml = hasCmr ? "<li style=\"padding: 5px 0;\">✔️ CMR / Proof of Delivery</li>" : "";
-        string invoiceNo = $"{invoice.InvoiceNumber}/{invoice.IssueDate:MM'/'yyyy}";
+
+        string invoiceNo = $"{invoice.Name}";
 
         return template
             .Replace("{clientName}", order.Company.Name)

@@ -6,8 +6,8 @@ namespace PotoDocs.API.Services;
 public interface IFileStorageService
 {
     Task<string> SaveFileAsync(IFormFile file, FileType type, Guid fileId);
-    Task<(byte[] Bytes, string MimeType)> GetFileAsync(string folderPath, string fileNameWithExt);
-    Task<(byte[] Bytes, string MimeType)> GetFileAsync(FileType type, string fileNameWithExt);
+    Task<(Stream Stream, string ContentType)> GetFileStreamAsync(string folderPath, string fileNameWithExt);
+    Task<(Stream Stream, string ContentType)> GetFileStreamAsync(FileType type, string fileNameWithExt);
     void DeleteFile(string folderPath, string fileNameWithExt);
 }
 
@@ -56,7 +56,29 @@ public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageServ
             File.Delete(fullPath);
         }
     }
+    public Task<(Stream Stream, string ContentType)> GetFileStreamAsync(string folderPath, string fileNameWithExt)
+    {
+        var fullPath = Path.Combine(folderPath, fileNameWithExt);
 
+        if (!File.Exists(fullPath))
+        {
+            throw new FileNotFoundException($"Plik fizyczny nie istnieje: {fullPath}");
+        }
+
+        var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        if (!_contentTypeProvider.TryGetContentType(fileNameWithExt, out var contentType))
+        {
+            contentType = "application/octet-stream";
+        }
+
+        return Task.FromResult((Stream: (Stream)stream, ContentType: contentType));
+    }
+    public Task<(Stream Stream, string ContentType)> GetFileStreamAsync(FileType type, string fileNameWithExt)
+    {
+        var folderPath = GetFolderPath(type);
+        return GetFileStreamAsync(folderPath, fileNameWithExt);
+    }
     private async Task<(byte[] Bytes, string MimeType)> ReadFileInternalAsync(string fullPath, string fileName)
     {
         if (!File.Exists(fullPath))

@@ -1,7 +1,8 @@
 ﻿namespace PotoDocs.Shared.Models;
-public class FileDownloadResult
+
+public class FileDownloadResult(Stream stream, string fileName, string contentType)
 {
-    public byte[] FileContent { get; set; } = [];
-    public string FileName { get; set; } = "pobrany_plik.zip";
-    public string ContentType { get; set; } = "application/octet-stream";
+    public Stream FileStream { get; set; } = stream;
+    public string FileName { get; set; } = fileName;
+    public string ContentType { get; set; } = contentType;
 }

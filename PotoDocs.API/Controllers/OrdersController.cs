@@ -115,18 +115,8 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DownloadFile(Guid fileId)
     {
-        var (bytes, mimeType, originalName) = await _orderService.GetFileAsync(fileId);
-        return File(bytes, mimeType, originalName);
-    }
-
-    [HttpDelete("files/{fileId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> DeleteFile(Guid fileId)
-    {
-        await _orderService.DeleteFileAsync(fileId);
-        return NoContent();
+        var result = await _orderService.GetFileStreamAsync(fileId);
+        return File(result.FileStream, result.ContentType, result.FileName);
     }
 
     [HttpPost("{id}/send-documents")]

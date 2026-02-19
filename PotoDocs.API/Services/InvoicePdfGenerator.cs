@@ -29,8 +29,20 @@ public class InvoicePdfGenerator(IOptions<OrganizationSettings> options, IFileSt
     {
         var model = InitializeBaseModel(src);
 
-        var (bytes, _) = await _fileStorage.GetFileAsync(FileType.Images, "logo.png");
-        model.LogoImage = bytes;
+        try
+        {
+            var (logoStream, _) = await _fileStorage.GetFileStreamAsync(FileType.Images, "logo.png");
+            using (logoStream)
+            using (var ms = new MemoryStream())
+            {
+                await logoStream.CopyToAsync(ms);
+                model.LogoImage = ms.ToArray();
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            model.LogoImage = [];
+        }
 
         ProcessItems(model, src);
 
@@ -51,7 +63,7 @@ public class InvoicePdfGenerator(IOptions<OrganizationSettings> options, IFileSt
             Currency = src.Currency,
 
             DocumentTitle = src.Type == InvoiceType.Correction ? "FAKTURA VAT KORYGUJĄCA" : "FAKTURA VAT",
-            DocumentNumber = $"Nr {src.InvoiceNumber}/{src.IssueDate:MM}/{src.IssueDate:yyyy}" + (src.Type == InvoiceType.Correction ? "K" : ""),
+            DocumentNumber = $"Nr {src.Name}",
 
             PlaceOfIssue = _orgSettings.LegalInfo.PlaceOfIssue,
             SaleDate = src.SaleDate,
@@ -105,7 +117,7 @@ public class InvoicePdfGenerator(IOptions<OrganizationSettings> options, IFileSt
         if (model.IsCorrection && src.OriginalInvoice != null)
         {
             model.CorrectionReason = src.Comments;
-            model.Comments = $"Dotyczy faktury nr {src.OriginalInvoice.InvoiceNumber}/{src.OriginalInvoice.IssueDate:MM}/{src.OriginalInvoice.IssueDate:yyyy}.";
+            model.Comments = $"Dotyczy faktury nr {src.OriginalInvoice.Name}";
 
             int lpOrig = 0;
             foreach (var item in src.OriginalInvoice.Items)
