@@ -15,14 +15,16 @@ public partial class UsersPage
     [Inject] private IRoleService RoleService { get; set; } = default!;
     private MudTable<UserDto> table = default!;
     private readonly List<BreadcrumbItem> _items = [new("Strona główna", href: "#"), new("Użytkownicy", href: null, disabled: true)];
-    private readonly DialogOptions DialogOptions = new()
-    {
-        CloseButton = true,
-        FullWidth = true,
-        MaxWidth = MaxWidth.Small
-    };
+    private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small };
     private List<string> Roles { get; set; } = [];
+    private bool _isDetailsOpen = false;
+    private UserDto _selectedUser;
 
+    private void OpenDetails(UserDto user)
+    {
+        _selectedUser = user;
+        _isDetailsOpen = true;
+    }
     private async Task<TableData<UserDto>> ServerReload(TableState state, CancellationToken token)
     {
         try
@@ -38,12 +40,15 @@ public partial class UsersPage
             return new TableData<UserDto>() { Items = [] };
         }
     }
+    private void OnRowClicked(TableRowClickEventArgs<UserDto> args)
+    {
+        OpenDetails(args.Item);
+    }
     private async Task Create()
     {
         var parameters = new DialogParameters
         {
             { nameof(UserDialog.Roles), Roles },
-            { nameof(UserDialog.Type), UserFormType.Create }
         };
 
         var dialog = await DialogService.ShowAsync<UserDialog>("Dodawanie użytkownika", parameters, DialogOptions);
@@ -71,7 +76,6 @@ public partial class UsersPage
     {
         { nameof(UserDialog.UserDto), JsonSerializer.Deserialize<UserDto>(JsonSerializer.Serialize(user)) },
         { nameof(UserDialog.Roles), Roles },
-        { nameof(UserDialog.Type), UserFormType.Update }
     };
 
         var dialog = await DialogService.ShowAsync<UserDialog>($"Edytuj użytkownika", parameters, DialogOptions);
@@ -96,22 +100,19 @@ public partial class UsersPage
 
     private async Task Delete(UserDto user)
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(UserDialog.UserDto), user },
-            { nameof(UserDialog.Roles), Roles },
-            { nameof(UserDialog.Type), UserFormType.Delete }
-        };
+        bool? result = await DialogService.ShowMessageBox(
+            "Potwierdzenie usunięcia",
+            $"Czy na pewno chcesz usunąć użytkownika {user.FirstAndLastName}? Tej operacji nie można cofnąć.",
+            yesText: "Usuń",
+            cancelText: "Anuluj");
 
-        var dialog = await DialogService.ShowAsync<UserDialog>($"Usuń użytkownika", parameters, DialogOptions);
-        var result = await dialog.Result;
-
-        if (result != null && !result.Canceled)
+        if (result == true)
         {
             try
             {
                 await UserService.Delete(user.Id);
                 Snackbar.Add("Pomyślnie usunięto użytkownika", Severity.Success);
+
                 await table.ReloadServerData();
             }
             catch (Exception ex)
@@ -119,17 +120,6 @@ public partial class UsersPage
                 Snackbar.Add(ex.Message, Severity.Error);
             }
         }
-    }
-
-    private async Task Details(UserDto user)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(UserDialog.UserDto), user },
-            { nameof(UserDialog.Type), UserFormType.Details }
-        };
-
-        await DialogService.ShowAsync<UserDialog>($"Szczegóły użytkownika", parameters, DialogOptions);
     }
 
     protected override async Task OnInitializedAsync()

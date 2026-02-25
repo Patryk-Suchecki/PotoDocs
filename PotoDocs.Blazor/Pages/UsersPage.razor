@@ -1,11 +1,11 @@
 ﻿@attribute [Authorize]
-@page "/kierowcy"
+@page "/uzytkownicy"
 
 <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 <PageTitle>Użytkownicy</PageTitle>
 <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Użytkownicy</MudText>
 
-<MudTable T="UserDto" ServerData="@ServerReload" LoadingContentBody="@LoadingContent" @ref="table" LoadingProgressColor="Color.Primary">
+<MudTable T="UserDto" ServerData="@ServerReload" LoadingContentBody="@LoadingContent" @ref="table" LoadingProgressColor="Color.Primary" OnRowClick="OnRowClicked" Hover="true">
     <ToolBarContent>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="Create" Class="mr-2" />
@@ -24,13 +24,14 @@
         <MudTd DataLabel="Akcje" Style="text-align:right">
             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
                 <MudMenuItem Label="Generuj hasło" Icon="@Icons.Material.Filled.LockReset" @onclick="() => GeneratePassword(context.Id)" />
-                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
                 <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
                 <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
             </MudMenu>
         </MudTd>
     </RowTemplate>
 </MudTable>
+<UserDetailsDrawer @bind-IsOpen="_isDetailsOpen" User="_selectedUser" />
+
 @code{
     private readonly RenderFragment LoadingContent = @<text>
     @for (var i = 0; i< 5; i++)

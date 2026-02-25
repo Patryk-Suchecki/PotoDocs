@@ -5,7 +5,7 @@
 <PageTitle>Faktury</PageTitle>
 <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Faktury</MudText>
 
-<MudTable T="InvoiceDto" Items="@invoices" Filter="new Func<InvoiceDto, bool>(FilterFunc1)" GroupBy="@_sorter.GroupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedInvoices" Striped="true" Hover="true">
+<MudTable T="InvoiceDto" Items="@invoices" Filter="new Func<InvoiceDto, bool>(FilterFunc1)" GroupBy="@_sorter.GroupDefinition" Loading="@IsLoading" LoadingProgressColor="Color.Primary" MultiSelection="true" @bind-SelectedItems="selectedInvoices" Striped="true" Hover="true" OnRowClick="OnRowClicked" SelectOnRowClick="false">
     <ToolBarContent>
         <MudTextField @bind-Value="searchString" Placeholder="Szukaj" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
@@ -88,7 +88,6 @@
             }
             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
                 <MudMenuItem Label="Pobierz" Icon="@Icons.Material.Filled.Download" @onclick="async () => await strategy.DownloadAsync(context)" />
-                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="async () => await strategy.DetailsAsync(context)" />
 
                 @if (strategy.CanEdit(context))
                 {
@@ -106,3 +105,5 @@
         </MudTd>
     </RowTemplate>
 </MudTable>
+
+<InvoiceDetailsDrawer @bind-IsOpen="_isDetailsOpen" Invoice="_selectedInvoice" />

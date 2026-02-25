@@ -16,11 +16,9 @@ public partial class OrderDialog
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public OrderDto OrderDto { get; set; } = new OrderDto();
     [Parameter] public List<UserDto> Users { get; set; } = [];
-    [Parameter] public OrderFormType Type { get; set; } = OrderFormType.Update;
 
     private bool IsProcessingPdf = false;
     private bool IsProcessingCmr = false;
-    private bool IsDisabled => Type == OrderFormType.Delete || Type == OrderFormType.Details;
     private IList<FileUploadDto> OrderFiles = [];
     private IList<FileUploadDto> CmrFiles = [];
     private IList<Guid> FileIdsToDelete = [];
@@ -29,14 +27,6 @@ public partial class OrderDialog
     private MudForm form = default!;
     private OrderDtoValidator orderValidator = new();
     private OrderStopDto stopBeforeEdit = new();
-
-    private string ButtonLabel => Type switch
-    {
-        OrderFormType.Update => "Zapisz",
-        OrderFormType.Delete => "Usuń",
-        OrderFormType.Details => "Zamknij",
-        _ => "Zapisz"
-    };
 
     private static string TranslateType(StopType t) => t switch
     {
@@ -179,18 +169,6 @@ public partial class OrderDialog
 
     private async Task SubmitAsync()
     {
-        if (Type == OrderFormType.Details)
-        {
-            MudDialog.Cancel();
-            return;
-        }
-
-        if (Type == OrderFormType.Delete)
-        {
-            CloseDialogWithResult();
-            return;
-        }
-
         await form.Validate();
         if (form.IsValid)
         {
@@ -238,7 +216,6 @@ public partial class OrderDialog
         ((OrderStopDto)item).Address = stopBeforeEdit.Address;
     }
 }
-public enum OrderFormType { Create, Details, Update, Delete }
 public class OrderDialogResult
 {
     public OrderDto Order { get; set; } = new OrderDto();

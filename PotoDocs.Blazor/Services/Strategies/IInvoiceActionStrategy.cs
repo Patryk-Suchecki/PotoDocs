@@ -11,7 +11,6 @@ public interface IInvoiceActionStrategy
 
     Task EditAsync(InvoiceDto invoice);
     Task DeleteAsync(InvoiceDto invoice);
-    Task DetailsAsync(InvoiceDto invoice);
     Task DownloadAsync(InvoiceDto invoice);
     Task CorrectAsync(InvoiceDto invoice);
 }

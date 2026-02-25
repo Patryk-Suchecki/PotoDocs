@@ -6,14 +6,11 @@
                 <MudItem xs="12" lg="6">
                     <MudPaper Class="pa-2 mud-theme-primary d-flex align-center justify-space-between mud-width-full mt-4" Style="background: var(--gradient-color);">
                         <MudText Typo="Typo.h6">PDF</MudText>
-                        @if (!IsDisabled)
-                        {
-                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="(IReadOnlyList<IBrowserFile> files) => HandleFilesChanged(files, FileType.Order)">
-                                <ActivatorContent>
-                                    <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" />
-                                </ActivatorContent>
-                            </MudFileUpload>
-                        }
+                        <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="(IReadOnlyList<IBrowserFile> files) => HandleFilesChanged(files, FileType.Order)">
+                            <ActivatorContent>
+                                <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" />
+                            </ActivatorContent>
+                        </MudFileUpload>
                     </MudPaper>
                     @if (IsProcessingPdf)
                     {
@@ -30,9 +27,9 @@
                                         @file.Name <code>@((file.Data.Length / (1024.0 * 1024.0)).ToString("F2")) MB</code>
                                     </span>
                                     <MudSpacer />
-                                    <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome" OnClick="() => ParseOrder(file)" Disabled="@(IsDisabled)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadFile(file)" Disabled="@(IsDisabled)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFile(file)" Disabled="@(IsDisabled)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome" OnClick="() => ParseOrder(file)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadFile(file)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFile(file)" />
                                 </MudStack>
                             </MudListItem>
                         }
@@ -47,9 +44,9 @@
                                             @file.Name <code>@((file.Size / (1024.0 * 1024.0)).ToString("F2")) MB</code>
                                         </span>
                                         <MudSpacer />
-                                        <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome" OnClick="() => ParseExistingOrder(file)" Disabled="@(IsDisabled)" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadExistingFile(file)" Disabled="@(IsDisabled)" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveExistingFile(file)" Disabled="@(IsDisabled)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome" OnClick="() => ParseExistingOrder(file)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadExistingFile(file)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveExistingFile(file)" />
                                     </MudStack>
                                 </MudListItem>
                             }
@@ -60,14 +57,11 @@
                 <MudItem xs="12" lg="6">
                     <MudPaper Class="pa-2 mud-theme-primary d-flex align-center justify-space-between mud-width-full mt-4" Style="background: var(--gradient-color);">
                         <MudText Typo="Typo.h6">CMR</MudText>
-                        @if (!IsDisabled)
-                        {
-                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="(IReadOnlyList<IBrowserFile> files) => HandleFilesChanged(files, FileType.Cmr)">
-                                <ActivatorContent>
-                                    <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" />
-                                </ActivatorContent>
-                            </MudFileUpload>
-                        }
+                        <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="(IReadOnlyList<IBrowserFile> files) => HandleFilesChanged(files, FileType.Cmr)">
+                            <ActivatorContent>
+                                <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" />
+                            </ActivatorContent>
+                        </MudFileUpload>
                     </MudPaper>
                     @if (IsProcessingCmr)
                     {
@@ -83,8 +77,8 @@
                                         @file.Name <code>@((file.Data.Length / (1024.0 * 1024.0)).ToString("F2")) MB</code>
                                     </span>
                                     <MudSpacer />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadFile(file)" Disabled="@(IsDisabled)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFile(file)" Disabled="@(IsDisabled)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadFile(file)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFile(file)" />
                                 </MudStack>
                             </MudListItem>
                         }
@@ -99,8 +93,8 @@
                                             @file.Name <code>@((file.Size / (1024.0 * 1024.0)).ToString("F2")) MB</code>
                                         </span>
                                         <MudSpacer />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadExistingFile(file)" Disabled="@(IsDisabled)" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveExistingFile(file)" Disabled="@(IsDisabled)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="() => DownloadExistingFile(file)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveExistingFile(file)" />
                                     </MudStack>
                                 </MudListItem>
                             }
@@ -112,39 +106,39 @@
             <MudText Typo="Typo.h6">Zleceniodawca</MudText>
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="3">
-                    <MudTextField @bind-Value="OrderDto.Company.NIP" Label="NIP" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.Company.NIP)" />
+                    <MudTextField @bind-Value="OrderDto.Company.NIP" Label="NIP" Variant="Variant.Outlined" For="@(() => OrderDto.Company.NIP)" />
                 </MudItem>
 
                 <MudItem xs="12" sm="3">
-                    <MudTextField @bind-Value="OrderDto.Company.Name" Label="Nazwa" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.Company.Name)" />
+                    <MudTextField @bind-Value="OrderDto.Company.Name" Label="Nazwa" Variant="Variant.Outlined" For="@(() => OrderDto.Company.Name)" />
                 </MudItem>
 
                 <MudItem xs="12" sm="3">
-                    <MudTextField @bind-Value="OrderDto.Company.Address" Label="Adres" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.Company.Address)" />
+                    <MudTextField @bind-Value="OrderDto.Company.Address" Label="Adres" Variant="Variant.Outlined" For="@(() => OrderDto.Company.Address)" />
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudTextField @bind-Value="OrderDto.Company.CorrespondenceAddress" Label="Adres korespondencyjny" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.Company.CorrespondenceAddress)" />
+                    <MudTextField @bind-Value="OrderDto.Company.CorrespondenceAddress" Label="Adres korespondencyjny" Variant="Variant.Outlined" For="@(() => OrderDto.Company.CorrespondenceAddress)" />
                 </MudItem>
             </MudGrid>
 
             <MudStack Row="true" Spacing="2">
-                <MudTextField @bind-Value="OrderDto.Company.EmailAddress" Label="E-mail" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.Company.EmailAddress)" Class="flex-grow-1" />
+                <MudTextField @bind-Value="OrderDto.Company.EmailAddress" Label="E-mail" Variant="Variant.Outlined" For="@(() => OrderDto.Company.EmailAddress)" Class="flex-grow-1" />
 
-                <MudCheckBox T="bool" @bind-Value="OrderDto.Company.AcceptsEInvoices" Label="E‑faktura" Color="Color.Primary" Disabled="@(IsDisabled)" For="@(() => OrderDto.Company.AcceptsEInvoices)" />
+                <MudCheckBox T="bool" @bind-Value="OrderDto.Company.AcceptsEInvoices" Label="E‑faktura" Color="Color.Primary" For="@(() => OrderDto.Company.AcceptsEInvoices)" />
             </MudStack>
 
             <MudText Typo="Typo.h6">Zlecenie</MudText>
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="OrderDto.OrderNumber" Label="Numer" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.OrderNumber)" />
+                    <MudTextField @bind-Value="OrderDto.OrderNumber" Label="Numer" Variant="Variant.Outlined" For="@(() => OrderDto.OrderNumber)" />
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
-                    <MudDatePicker Label="Data rozładunku" Editable="true" @bind-Date="OrderDto.UnloadingDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.UnloadingDate)" />
+                    <MudDatePicker Label="Data rozładunku" Editable="true" @bind-Date="OrderDto.UnloadingDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" For="@(() => OrderDto.UnloadingDate)" />
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
-                    <MudSelect @bind-Value="OrderDto.Driver" Label="Kierowca" Variant="Variant.Outlined" Clearable Disabled="@(IsDisabled)" For="@(() => OrderDto.Driver)">
+                    <MudSelect @bind-Value="OrderDto.Driver" Label="Kierowca" Variant="Variant.Outlined" Clearable For="@(() => OrderDto.Driver)">
                         @foreach (var user in Users)
                         {
                             <MudSelectItem Value="@user">@user.FirstAndLastName.ToString()</MudSelectItem>
@@ -156,10 +150,10 @@
             <MudText Typo="Typo.h6">Płatność</MudText>
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="4">
-                    <MudNumericField HideSpinButtons="true" @bind-Value="OrderDto.Price" Label="Kwota" Format="F2" Variant="Variant.Outlined" Min="0" Disabled="@(IsDisabled)" For="@(() => OrderDto.Price)" />
+                    <MudNumericField HideSpinButtons="true" @bind-Value="OrderDto.Price" Label="Kwota" Format="F2" Variant="Variant.Outlined" Min="0" For="@(() => OrderDto.Price)" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudSelect @bind-Value="OrderDto.Currency" Label="Waluta" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => OrderDto.Currency)">
+                    <MudSelect @bind-Value="OrderDto.Currency" Label="Waluta" Variant="Variant.Outlined" For="@(() => OrderDto.Currency)">
                         @foreach (var currency in Enum.GetValues<CurrencyType>())
                         {
                             <MudSelectItem Value="@currency">@currency.ToString()</MudSelectItem>
@@ -167,7 +161,7 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudNumericField @bind-Value="OrderDto.PaymentDeadline" Label="Dni do płatności" Variant="Variant.Outlined" Min="0" Disabled="@(IsDisabled)" For="@(() => OrderDto.PaymentDeadline)" />
+                    <MudNumericField @bind-Value="OrderDto.PaymentDeadline" Label="Dni do płatności" Variant="Variant.Outlined" Min="0" For="@(() => OrderDto.PaymentDeadline)" />
                 </MudItem>
             </MudGrid>
 
@@ -176,15 +170,12 @@
                       RowEditCancel="ResetStopToOriginalValues"
                       ApplyButtonPosition="TableApplyButtonPosition.End"
                       EditButtonPosition="TableEditButtonPosition.End"
-                      EditTrigger="TableEditTrigger.RowClick" RowEditableFunc="@(item => !IsDisabled)">
+                      EditTrigger="TableEditTrigger.RowClick">
 
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Przystanki</MudText>
-                    @if (!IsDisabled)
-                    {
-                        <MudSpacer />
-                        <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" OnClick="AddStop" />
-                    }
+                    <MudSpacer />
+                    <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" OnClick="AddStop" />
                 </ToolBarContent>
 
                 <HeaderContent>
@@ -200,13 +191,7 @@
                     <MudTd DataLabel="Adres">@context.Address</MudTd>
 
                     <MudTd>
-                        @if (!IsDisabled)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           OnClick="@(() => RemoveStop(context))" />
-                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveStop(context))" />
                     </MudTd>
                 </RowTemplate>
 
@@ -233,17 +218,14 @@
                 </RowEditingTemplate>
 
                 <EditButtonContent Context="button">
-                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
                 </EditButtonContent>
 
             </MudTable>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        @if (Type != OrderFormType.Details)
-        {
-            <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
-        }
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">@ButtonLabel</MudButton>
+        <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>

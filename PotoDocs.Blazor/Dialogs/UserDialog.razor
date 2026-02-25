@@ -1,10 +1,10 @@
 ﻿<MudDialog>
     <DialogContent>
         <MudForm @ref="form" Model="@UserDto" Validation="@(userValidator.ValidateValue)" ValidationDelay="0">
-            <MudTextField @bind-Value="UserDto.FirstName" Label="Imię" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => UserDto.FirstName)" />
-            <MudTextField @bind-Value="UserDto.LastName" Label="Nazwisko" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => UserDto.LastName)" />
-            <MudTextField @bind-Value="UserDto.Email" Label="Adres e-mail" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => UserDto.Email)" />
-            <MudSelect @bind-Value="UserDto.Role" Label="Rola" Variant="Variant.Outlined" Disabled="@(IsDisabled)" For="@(() => UserDto.Role)">
+            <MudTextField @bind-Value="UserDto.FirstName" Label="Imię" Variant="Variant.Outlined" For="@(() => UserDto.FirstName)" />
+            <MudTextField @bind-Value="UserDto.LastName" Label="Nazwisko" Variant="Variant.Outlined" For="@(() => UserDto.LastName)" />
+            <MudTextField @bind-Value="UserDto.Email" Label="Adres e-mail" Variant="Variant.Outlined" For="@(() => UserDto.Email)" />
+            <MudSelect @bind-Value="UserDto.Role" Label="Rola" Variant="Variant.Outlined" For="@(() => UserDto.Role)">
                 @foreach (string role in Roles)
                 {
                     <MudSelectItem Value="@role">@role</MudSelectItem>
@@ -13,10 +13,7 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        @if (Type != UserFormType.Details)
-        {
-            <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
-        }
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">@ButtonLabel</MudButton>
+        <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>

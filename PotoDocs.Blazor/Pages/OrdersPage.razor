@@ -14,7 +14,9 @@
           MultiSelection="true"
           @bind-SelectedItems="selectedOrders"
           Striped="true"
-          Hover="true">
+          Hover="true"
+          OnRowClick="OnRowClicked"
+          SelectOnRowClick="false">
     <ToolBarContent>
         <MudTextField @bind-Value="searchString" Placeholder="Szukaj" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
@@ -130,7 +132,6 @@
                     </Authorized>
                 </AuthorizeView>
 
-                <MudMenuItem Label="Szczegóły" Icon="@Icons.Material.Filled.Visibility" @onclick="() => Details(context)" />
                 <MudMenuItem Label="Edytuj" Icon="@Icons.Material.Filled.Edit" @onclick="() => Edit(context)" />
                 <MudMenuItem Label="Usuń" Icon="@Icons.Material.Filled.Delete" @onclick="() => Delete(context)" />
 
@@ -138,3 +139,5 @@
         </MudTd>
     </RowTemplate>
 </MudTable>
+
+<OrderDetailsDrawer @bind-IsOpen="_isDetailsOpen" Order="_selectedOrder" />

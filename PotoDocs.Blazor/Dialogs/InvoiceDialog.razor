@@ -3,26 +3,23 @@
         <MudForm @ref="form" Model="@InvoiceDto" Validation="@(invoiceValidator.ValidateValue)" ValidationDelay="0">
             <MudText Typo="Typo.h6" Class="mt-4">Faktura</MudText>
             <MudGrid Spacing="2">
-                @if (Type != InvoiceFormType.Create)
-                {
-                    <MudItem xs="12" sm="4">
-                        <MudNumericField @bind-Value="InvoiceDto.InvoiceNumber" Label="Numer faktury" Variant="Variant.Outlined" Min="0" Disabled="@IsDisabled" For="@(() => InvoiceDto.InvoiceNumber)" />
-                    </MudItem>
-                }
+                <MudItem xs="12" sm="4">
+                    <MudNumericField @bind-Value="InvoiceDto.InvoiceNumber" Label="Numer faktury" Variant="Variant.Outlined" Min="0" For="@(() => InvoiceDto.InvoiceNumber)" />
+                </MudItem>
 
                 <MudItem xs="12" sm="4">
-                    <MudDatePicker Label="Data wystawienia" Editable="true" @bind-Date="InvoiceDto.IssueDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.IssueDate)" />
+                    <MudDatePicker Label="Data wystawienia" Editable="true" @bind-Date="InvoiceDto.IssueDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" For="@(() => InvoiceDto.IssueDate)" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudDatePicker Label="Data sprzedaży" Editable="true" @bind-Date="InvoiceDto.SaleDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.SaleDate)" />
+                    <MudDatePicker Label="Data sprzedaży" Editable="true" @bind-Date="InvoiceDto.SaleDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" For="@(() => InvoiceDto.SaleDate)" />
                 </MudItem>
             </MudGrid>
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="6">
-                    <MudDatePicker Label="Data wysłania" Editable="true" @bind-Date="InvoiceDto.SentDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.SentDate)" />
+                    <MudDatePicker Label="Data wysłania" Editable="true" @bind-Date="InvoiceDto.SentDate" Mask="@(new DateMask("00-00-0000"))" DateFormat="dd-MM-yyyy" Variant="Variant.Outlined" For="@(() => InvoiceDto.SentDate)" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="DeliveryMethodType?" @bind-Value="InvoiceDto.DeliveryMethod" Label="Metoda dostarczenia" Variant="Variant.Outlined" Disabled="@IsDisabled" Clearable="true" For="@(() => InvoiceDto.DeliveryMethod)">
+                    <MudSelect T="DeliveryMethodType?" @bind-Value="InvoiceDto.DeliveryMethod" Label="Metoda dostarczenia" Variant="Variant.Outlined" Clearable="true" For="@(() => InvoiceDto.DeliveryMethod)">
                         <MudSelectItem Value="@((DeliveryMethodType?)DeliveryMethodType.Email)">Email</MudSelectItem>
                         <MudSelectItem Value="@((DeliveryMethodType?)DeliveryMethodType.Post)">Poczta tradycyjna</MudSelectItem>
                     </MudSelect>
@@ -31,26 +28,26 @@
             <MudText Typo="Typo.h6" Class="mt-4">Nabywca</MudText>
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="InvoiceDto.BuyerNIP" Label="NIP" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.BuyerNIP)" />
+                    <MudTextField @bind-Value="InvoiceDto.BuyerNIP" Label="NIP" Variant="Variant.Outlined" For="@(() => InvoiceDto.BuyerNIP)" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="InvoiceDto.BuyerName" Label="Nazwa" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.BuyerName)" />
+                    <MudTextField @bind-Value="InvoiceDto.BuyerName" Label="Nazwa" Variant="Variant.Outlined" For="@(() => InvoiceDto.BuyerName)" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="InvoiceDto.BuyerAddress" Label="Adres" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.BuyerAddress)" />
+                    <MudTextField @bind-Value="InvoiceDto.BuyerAddress" Label="Adres" Variant="Variant.Outlined" For="@(() => InvoiceDto.BuyerAddress)" />
                 </MudItem>
             </MudGrid>
 
             <MudText Typo="Typo.h6" Class="mt-4">Warunki Płatności</MudText>
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="InvoiceDto.PaymentMethod" Label="Metoda płatności" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.PaymentMethod)" />
+                    <MudTextField @bind-Value="InvoiceDto.PaymentMethod" Label="Metoda płatności" Variant="Variant.Outlined" For="@(() => InvoiceDto.PaymentMethod)" />
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudNumericField @bind-Value="InvoiceDto.PaymentDeadlineDays" Label="Dni do płatności" Variant="Variant.Outlined" Min="0" Disabled="@IsDisabled" For="@(() => InvoiceDto.PaymentDeadlineDays)" />
+                    <MudNumericField @bind-Value="InvoiceDto.PaymentDeadlineDays" Label="Dni do płatności" Variant="Variant.Outlined" Min="0" For="@(() => InvoiceDto.PaymentDeadlineDays)" />
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudSelect T="CurrencyType" @bind-Value="InvoiceDto.Currency" Label="Waluta" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.Currency)">
+                    <MudSelect T="CurrencyType" @bind-Value="InvoiceDto.Currency" Label="Waluta" Variant="Variant.Outlined" For="@(() => InvoiceDto.Currency)">
                         @foreach (var currency in Enum.GetValues<CurrencyType>())
                         {
                             <MudSelectItem Value="@currency">@currency.ToString()</MudSelectItem>
@@ -58,22 +55,19 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" sm="2">
-                    <MudCheckBox T="bool" @bind-Value="InvoiceDto.HasPaid" Label="Zapłacono" Color="Color.Primary" Disabled="@(IsDisabled)" For="@(() => InvoiceDto.HasPaid)" />
+                    <MudCheckBox T="bool" @bind-Value="InvoiceDto.HasPaid" Label="Zapłacono" Color="Color.Primary" For="@(() => InvoiceDto.HasPaid)" />
                 
                 </MudItem>
             </MudGrid>
-            <MudTextField @bind-Value="InvoiceDto.Comments" Label="Uwagi" Variant="Variant.Outlined" Disabled="@IsDisabled" For="@(() => InvoiceDto.Comments)" />
+            <MudTextField @bind-Value="InvoiceDto.Comments" Label="Uwagi" Variant="Variant.Outlined" For="@(() => InvoiceDto.Comments)" />
             <MudTable Items="@InvoiceDto.Items"
                       RowEditCommit="OnItemCommit"
                       RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
-                      ApplyButtonPosition="TableApplyButtonPosition.End" EditButtonPosition="TableEditButtonPosition.End" EditTrigger="TableEditTrigger.RowClick" RowEditableFunc="@(item => !IsDisabled)">
+                      ApplyButtonPosition="TableApplyButtonPosition.End" EditButtonPosition="TableEditButtonPosition.End" EditTrigger="TableEditTrigger.RowClick" >
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Pozycje</MudText>
-                    @if (!IsDisabled)
-                    {
-                        <MudSpacer />
-                        <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" OnClick="AddNewItem" />
-                    }
+                    <MudSpacer />
+                    <MudFab StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Style="background-color: white; color: black;" OnClick="AddNewItem" />
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh>Nazwa</MudTh>
@@ -92,10 +86,7 @@
                     <MudTd DataLabel="VAT">@context.VatRate.ToString("P0")</MudTd>
                     <MudTd DataLabel="Wartość brutto">@context.GrossValue.FormatMoney(InvoiceDto.Currency)</MudTd>
                     <MudTd>
-                        @if (!IsDisabled)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveItem(context))" />
-                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveItem(context))" />
                     </MudTd>
                 </RowTemplate>
                 <RowEditingTemplate>
@@ -127,10 +118,7 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        @if (Type != InvoiceFormType.Details)
-        {
-            <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
-        }
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">@ButtonLabel</MudButton>
+        <MudButton OnClick="MudDialog.Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync">Zapisz</MudButton>
     </DialogActions>
 </MudDialog>

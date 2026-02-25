@@ -5,6 +5,7 @@ using PotoDocs.Blazor.Helpers;
 using PotoDocs.Blazor.Services;
 using PotoDocs.Shared.Models;
 using System.Text.Json;
+using static MudBlazor.CategoryTypes;
 
 namespace PotoDocs.Blazor.Pages;
 
@@ -28,7 +29,17 @@ public partial class OrdersPage
     private readonly List<BreadcrumbItem> _items = [new("Strona główna", href: "#"), new("Zlecenia", href: null, disabled: true)];
 
     private readonly TableGroupSorter<OrderDto> _sorter = new(x => x.UnloadingDate, "Data rozładunku");
-
+    private bool _isDetailsOpen = false;
+    private OrderDto _selectedOrder;
+    private void OnRowClicked(TableRowClickEventArgs<OrderDto> args)
+    {
+        OpenDetails(args.Item);
+    }
+    private void OpenDetails(OrderDto order)
+    {
+        _selectedOrder = order;
+        _isDetailsOpen = true;
+    }
     private void OnSortDirectionChanged(SortDirection direction)
     {
         if (_sorter.UpdateDirection(direction))
@@ -106,7 +117,6 @@ public partial class OrdersPage
         {
             { nameof(OrderDialog.OrderDto), order },
             { nameof(OrderDialog.Users), users },
-            { nameof(OrderDialog.Type), OrderFormType.Create }
         };
 
         var options = new DialogOptions
@@ -145,7 +155,6 @@ public partial class OrdersPage
         {
             { nameof(OrderDialog.OrderDto), clonedOrder },
             { nameof(OrderDialog.Users), users },
-            { nameof(OrderDialog.Type), OrderFormType.Update }
         };
 
         var options = new DialogOptions
@@ -173,62 +182,6 @@ public partial class OrdersPage
                 Snackbar.Add($"Błąd przy aktualizacji zlecenia: {ex.Message}", Severity.Error);
             }
         }
-    }
-
-    private async Task Delete(OrderDto order)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(OrderDialog.OrderDto), order },
-            { nameof(OrderDialog.Users), users },
-            { nameof(OrderDialog.Type), OrderFormType.Delete }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.ExtraLarge
-        };
-
-        var dialogRef = await DialogService.ShowAsync<OrderDialog>($"Usuń zlecenie nr {order.OrderNumber}", parameters, options);
-        var result = await dialogRef.Result;
-
-        if (result is not null && !result.Canceled)
-        {
-            try
-            {
-                await OrderService.Delete(order.Id);
-
-                Snackbar.Add($"Pomyślnie usunięto zlecenie {order.OrderNumber}", Severity.Success);
-
-                orders?.Remove(order);
-
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
-        }
-    }
-
-    private async Task Details(OrderDto order)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(OrderDialog.OrderDto), order },
-            { nameof(OrderDialog.Type), OrderFormType.Details }
-        };
-
-        var options = new DialogOptions
-        {
-            CloseButton = true,
-            FullWidth = true,
-            MaxWidth = MaxWidth.ExtraLarge
-        };
-
-        await DialogService.ShowAsync<OrderDialog>($"Szczegóły zlecenia nr {order.OrderNumber}", parameters, options);
     }
 
     private async Task SendEmail(OrderDto order)
@@ -346,5 +299,28 @@ public partial class OrdersPage
         var encodedName = Uri.EscapeDataString(invoiceName);
 
         NavigationManager.NavigateTo($"/faktury?search={encodedName}");
+    }
+    private async Task Delete(OrderDto order)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Potwierdzenie usunięcia",
+            $"Czy na pewno chcesz usunąć zlecenie {order.OrderNumber}? Tej operacji nie można cofnąć.",
+            yesText: "Usuń",
+            cancelText: "Anuluj");
+
+        if (result == true)
+        {
+            try
+            {
+                await OrderService.Delete(order.Id);
+                Snackbar.Add($"Pomyślnie usunięto zlecenie {order.OrderNumber}", Severity.Success);
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
     }
 }
