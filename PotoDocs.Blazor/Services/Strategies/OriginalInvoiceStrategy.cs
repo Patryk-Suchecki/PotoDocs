@@ -24,7 +24,6 @@ public class OriginalInvoiceStrategy(IDialogService dialogService, IInvoiceServi
         var parameters = new DialogParameters
         {
             { nameof(InvoiceDialog.InvoiceDto), JsonSerializer.Deserialize<InvoiceDto>(JsonSerializer.Serialize(invoice))! },
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Update }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
@@ -40,16 +39,13 @@ public class OriginalInvoiceStrategy(IDialogService dialogService, IInvoiceServi
 
     public async Task DeleteAsync(InvoiceDto invoice)
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceDialog.InvoiceDto), invoice },
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Delete }
-        };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
-        var dialog = await _dialogService.ShowAsync<InvoiceDialog>($"Usuń fakturę {invoice.Name}", parameters, options);
-        var result = await dialog.Result;
+        bool? result = await _dialogService.ShowMessageBox(
+            "Potwierdzenie usunięcia",
+            $"Czy na pewno chcesz usunąć fakturę {invoice.Name}? Tej operacji nie można cofnąć.",
+            yesText: "Usuń",
+            cancelText: "Anuluj");
 
-        if (result is not null && !result.Canceled)
+        if (result == true)
         {
             await _invoiceService.Delete(invoice.Id);
             _snackbar.Add("Usunięto fakturę.", Severity.Success);
@@ -73,17 +69,6 @@ public class OriginalInvoiceStrategy(IDialogService dialogService, IInvoiceServi
             await _invoiceService.CreateCorrection(correction);
             _snackbar.Add("Stworzono korektę.", Severity.Success);
         }
-    }
-
-    public async Task DetailsAsync(InvoiceDto invoice)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceDialog.InvoiceDto), invoice },
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Details }
-        };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
-        await _dialogService.ShowAsync<InvoiceDialog>($"Szczegóły faktury {invoice.Name}", parameters, options);
     }
 
     public async Task DownloadAsync(InvoiceDto invoice)

@@ -61,12 +61,6 @@ public class InvoiceDtoValidator : AbstractValidator<InvoiceDto>
             .NotEmpty().WithMessage("NIP nabywcy jest wymagany.")
             .MaximumLength(50).WithMessage("NIP nabywcy nie może przekraczać 50 znaków.");
 
-        RuleFor(x => x.TotalNetAmount)
-            .GreaterThan(0).WithMessage("Wartość netto musi być większa od 0.");
-
-        RuleFor(x => x.TotalGrossAmount)
-            .GreaterThan(0).WithMessage("Wartość brutto musi być większa od 0.");
-
         RuleFor(x => x.PaymentMethod)
             .NotEmpty().WithMessage("Metoda płatności jest wymagana.");
 

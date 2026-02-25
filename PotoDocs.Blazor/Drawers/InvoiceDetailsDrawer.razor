@@ -1,0 +1,209 @@
+﻿@using PotoDocs.Shared.Models
+
+<MudDrawer Open="IsOpen" OpenChanged="OnOpenChanged" Anchor="Anchor.End" Elevation="2" Variant="DrawerVariant.Temporary" Width="min(100vw, 700px)">
+    <MudDrawerHeader Class="d-flex align-center justify-space-between pt-4 pb-2">
+        <MudText Typo="Typo.h6">
+            @(IsCorrection ? "Szczegóły korekty" : "Szczegóły faktury")
+        </MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="CloseDrawer" Size="Size.Small" />
+    </MudDrawerHeader>
+
+    @if (Invoice != null)
+    {
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-5" Style="overflow-y: auto;">
+
+            <MudStack Spacing="1" Class="mb-6">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Numer dokumentu</MudText>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudText Typo="Typo.h5"><b>@Invoice.Name</b></MudText>
+                    <MudChip T="string" Color="@(Invoice.HasPaid? Color.Success: Color.Warning)" Size="Size.Small" Variant="Variant.Filled">
+                        @(Invoice.HasPaid ? "Zapłacono" : "Nieopłacona")
+                    </MudChip>
+                    @if (IsCorrection)
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined">KOREKTA</MudChip>
+                    }
+                </MudStack>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Nabywca</MudText>
+            <MudPaper Elevation="0" Outlined="true" Class="pa-4 mb-6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                    <MudIcon Icon="@Icons.Material.Outlined.Business" Color="Color.Surface" Style="color: var(--mud-palette-text-secondary);" />
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.body1"><b>@Invoice.BuyerName</b></MudText>
+                        <MudText Typo="Typo.body2">NIP: @(string.IsNullOrWhiteSpace(Invoice.BuyerNIP) ? "Brak" : Invoice.BuyerNIP)</MudText>
+                        <MudText Typo="Typo.body2" Class="mt-1">@Invoice.BuyerAddress</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Szczegóły dokumentu</MudText>
+            <MudPaper Elevation="0" Outlined="true" Class="pa-4 mb-6">
+                <MudGrid Spacing="2">
+                    <MudItem xs="6" sm="4">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Wystawienie</MudText>
+                        <MudText Typo="Typo.body2">@(Invoice.IssueDate?.ToString("dd-MM-yyyy"))</MudText>
+                    </MudItem>
+                    @if (!IsCorrection)
+                    {
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Sprzedaż</MudText>
+                            <MudText Typo="Typo.body2">@(Invoice.SaleDate?.ToString("dd-MM-yyyy"))</MudText>
+                        </MudItem>
+                    }
+                    <MudItem xs="6" sm="4">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Wysłano</MudText>
+                        <MudText Typo="Typo.body2">
+                            @(Invoice.SentDate?.ToString("dd-MM-yyyy") ?? "Nie wysłano")
+                            @if (Invoice.DeliveryMethod.HasValue)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="ml-1">(@Invoice.DeliveryMethod)</MudText>
+                            }
+                        </MudText>
+                    </MudItem>
+                    @if (!IsCorrection)
+                    {
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Metoda płatności</MudText>
+                            <MudText Typo="Typo.body2">@Invoice.PaymentMethod</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Termin płatności</MudText>
+                            <MudText Typo="Typo.body2">@Invoice.PaymentDeadlineDays dni</MudText>
+                        </MudItem>
+                    }
+                    <MudItem xs="6" sm="4">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Waluta</MudText>
+                        <MudText Typo="Typo.body2"><b>@Invoice.Currency</b></MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            @if (IsCorrection && !string.IsNullOrWhiteSpace(Invoice.Comments))
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Przyczyna korekty</MudText>
+                <MudPaper Elevation="0" Outlined="true" Class="pa-4 mb-6">
+                    <MudText Typo="Typo.body2" Style="white-space: pre-wrap;" Color="Color.Error"><b>@Invoice.Comments</b></MudText>
+                </MudPaper>
+            }
+
+            @if (IsCorrection)
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Przed korektą (Było)</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Pozycje na fakturze</MudText>
+            }
+
+            <MudPaper Elevation="0" Outlined="true" Class="overflow-hidden mb-6">
+                @{
+                    var itemsToDisplayAsOriginal = IsCorrection ? Invoice.OriginalInvoice?.Items : Invoice.Items;
+                    var currencyToUse = IsCorrection ? Invoice.OriginalInvoice?.Currency ?? CurrencyType.PLN : Invoice.Currency;
+                }
+
+                @if (itemsToDisplayAsOriginal != null && itemsToDisplayAsOriginal.Any())
+                {
+                    <MudTable Items="@itemsToDisplayAsOriginal" Dense="true" Striped="true" Hover="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh Style="@(IsCorrection ? "background-color: var(--mud-palette-background-grey);" : "")">Nazwa</MudTh>
+                            <MudTh Style="@(IsCorrection ? "background-color: var(--mud-palette-background-grey);" : "")">Ilość</MudTh>
+                            <MudTh Style="@(IsCorrection ? "background-color: var(--mud-palette-background-grey);" : "")">Netto</MudTh>
+                            <MudTh Style="@(IsCorrection ? "background-color: var(--mud-palette-background-grey);" : "")">VAT</MudTh>
+                            <MudTh Style="@(IsCorrection ? "background-color: var(--mud-palette-background-grey);" : "")">Brutto</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Nazwa">@context.Name</MudTd>
+                            <MudTd DataLabel="Ilość">@context.Quantity @context.Unit</MudTd>
+                            <MudTd DataLabel="Netto">@context.NetPrice.FormatMoney(currencyToUse)</MudTd>
+                            <MudTd DataLabel="VAT">@context.VatRate.ToString("P0")</MudTd>
+                            <MudTd DataLabel="Brutto"><b>@context.GrossValue.FormatMoney(currencyToUse)</b></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="pa-4 text-center" Color="Color.Secondary">Brak pozycji.</MudText>
+                }
+            </MudPaper>
+
+            @if (IsCorrection)
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Po korekcie (Powinno być)</MudText>
+                <MudPaper Elevation="0" Outlined="true" Class="overflow-hidden mb-6">
+                    @if (Invoice.Items != null && Invoice.Items.Any())
+                    {
+                        var curr = Invoice.OriginalInvoice?.Currency ?? CurrencyType.PLN;
+
+                        <MudTable Items="@Invoice.Items" Dense="true" Striped="true" Hover="true" Elevation="0">
+                            <HeaderContent>
+                                <MudTh Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1);">Nazwa</MudTh>
+                                <MudTh Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1);">Ilość</MudTh>
+                                <MudTh Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1);">Netto</MudTh>
+                                <MudTh Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1);">VAT</MudTh>
+                                <MudTh Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1);">Brutto</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Nazwa">@context.Name</MudTd>
+                                <MudTd DataLabel="Ilość">@context.Quantity @context.Unit</MudTd>
+                                <MudTd DataLabel="Netto">@context.NetPrice.FormatMoney(curr)</MudTd>
+                                <MudTd DataLabel="VAT">@context.VatRate.ToString("P0")</MudTd>
+                                <MudTd DataLabel="Brutto">
+                                    <MudText Color="Color.Primary" Typo="Typo.body2" Component="span"><b>@context.GrossValue.FormatMoney(curr)</b></MudText>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Class="pa-4 text-center" Color="Color.Secondary">Brak zdefiniowanych poprawek.</MudText>
+                    }
+                </MudPaper>
+            }
+
+            @if (IsCorrection || (!IsCorrection && !string.IsNullOrWhiteSpace(Invoice.Comments)))
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2 pl-1">Uwagi</MudText>
+                <MudPaper Elevation="0" Outlined="true" Class="pa-4 mb-4">
+                    @if (IsCorrection)
+                    {
+                        <MudText Typo="Typo.body2">
+                            Dotyczy faktury nr <b>@(Invoice.OriginalInvoice?.Name.ToString() ?? "Brak")</b>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Style="white-space: pre-wrap;">@Invoice.Comments</MudText>
+                    }
+                </MudPaper>
+            }
+
+        </MudContainer>
+    }
+</MudDrawer>
+
+@code {
+    [Parameter]
+    public InvoiceDto Invoice { get; set; }
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    private bool IsCorrection => Invoice?.Type == InvoiceType.Correction;
+
+    private async Task CloseDrawer()
+    {
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+
+    private async Task OnOpenChanged(bool newValue)
+    {
+        IsOpen = newValue;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+}

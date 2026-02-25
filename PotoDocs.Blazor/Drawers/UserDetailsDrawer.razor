@@ -1,0 +1,73 @@
+﻿<MudDrawer Open="IsOpen" OpenChanged="OnOpenChanged" Anchor="Anchor.End" Elevation="2" Variant="DrawerVariant.Temporary" Width="min(100vw, 400px)">
+    <MudDrawerHeader Class="d-flex align-center justify-space-between pt-4 pb-2">
+        <MudText Typo="Typo.h6">Szczegóły</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="CloseDrawer" Size="Size.Small" />
+    </MudDrawerHeader>
+
+    @if (User != null)
+    {
+        <MudStack Spacing="6" Class="pa-5">
+            <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                <MudAvatar Color="Color.Primary" Style="height: 75px; width: 75px; font-size: 2.2rem; font-weight: 500;">
+                    @(User.FirstAndLastName?.FirstOrDefault() ?? 'U')
+                </MudAvatar>
+
+                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h5"><b>@User.FirstAndLastName</b></MudText>
+                    <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Variant="Variant.Text">@User.Role</MudChip>
+                </MudStack>
+            </MudStack>
+
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.subtitle2" Class="pl-1">Informacje o profilu</MudText>
+
+                <MudPaper Elevation="0" Outlined="true" Class="pa-4">
+                    <MudStack Spacing="3">
+
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                            <MudIcon Icon="@Icons.Material.Outlined.Email" Color="Color.Surface" Style="color: var(--mud-palette-text-secondary);" />
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Adres e-mail</MudText>
+                                <MudLink Href="@($"mailto:{User.Email}")" Underline="Underline.Hover" Typo="Typo.body2">@User.Email</MudLink>
+                            </MudStack>
+                        </MudStack>
+
+                        <MudDivider />
+
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                            <MudIcon Icon="@Icons.Material.Outlined.Shield" Color="Color.Surface" Style="color: var(--mud-palette-text-secondary);" />
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Poziom uprawnień</MudText>
+                                <MudText Typo="Typo.body2" Class="text-capitalize">@User.Role</MudText>
+                            </MudStack>
+                        </MudStack>
+
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
+        </MudStack>
+    }
+</MudDrawer>
+
+@code {
+    [Parameter]
+    public UserDto User { get; set; }
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    private async Task CloseDrawer()
+    {
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+
+    private async Task OnOpenChanged(bool newValue)
+    {
+        IsOpen = newValue;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+}

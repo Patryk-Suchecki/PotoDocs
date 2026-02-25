@@ -40,31 +40,17 @@ public class CorrectionStrategy(IDialogService dialogService, IInvoiceService in
 
     public async Task DeleteAsync(InvoiceDto invoice)
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceCorrectionDialog.InvoiceCorrectionDto), invoice.ToCorrectionDto() },
-            { nameof(InvoiceCorrectionDialog.Type), InvoiceCorrectionFormType.Delete }
-        };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
-        var dialog = await _dialogService.ShowAsync<InvoiceCorrectionDialog>($"Usuń korektę {invoice.Name}", parameters, options);
-        var result = await dialog.Result;
+        bool? result = await _dialogService.ShowMessageBox(
+            "Potwierdzenie usunięcia",
+            $"Czy na pewno chcesz usunąć korektę {invoice.Name}? Tej operacji nie można cofnąć.",
+            yesText: "Usuń",
+            cancelText: "Anuluj");
 
-        if (result is not null && !result.Canceled)
+        if (result == true)
         {
             await _invoiceService.Delete(invoice.Id);
             _snackbar.Add("Usunięto korektę.", Severity.Success);
         }
-    }
-
-    public async Task DetailsAsync(InvoiceDto invoice)
-    {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceCorrectionDialog.InvoiceCorrectionDto), invoice.ToCorrectionDto() },
-            { nameof(InvoiceCorrectionDialog.Type), InvoiceCorrectionFormType.Details }
-        };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
-        await _dialogService.ShowAsync<InvoiceCorrectionDialog>($"Szczegóły korekty {invoice.Name}", parameters, options);
     }
 
     public async Task DownloadAsync(InvoiceDto invoice)

@@ -10,22 +10,11 @@ public partial class InvoiceDialog
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public InvoiceDto InvoiceDto { get; set; } = new InvoiceDto();
-    [Parameter] public InvoiceFormType Type { get; set; } = InvoiceFormType.Update;
-
-    private bool IsDisabled => Type == InvoiceFormType.Delete || Type == InvoiceFormType.Details;
 
     private InvoiceItemDto elementBeforeEdit = new();
 
     private MudForm form = default!;
     private readonly InvoiceDtoValidator invoiceValidator = new();
-
-    private string ButtonLabel => Type switch
-    {
-        InvoiceFormType.Update => "Zapisz",
-        InvoiceFormType.Delete => "Usuń",
-        InvoiceFormType.Details => "Zamknij",
-        _ => "Zapisz"
-    };
 
     protected override void OnParametersSet()
     {
@@ -39,18 +28,6 @@ public partial class InvoiceDialog
 
     private async Task SubmitAsync()
     {
-        if (Type == InvoiceFormType.Details)
-        {
-            MudDialog.Cancel();
-            return;
-        }
-
-        if (Type == InvoiceFormType.Delete)
-        {
-            CloseDialogWithResult();
-            return;
-        }
-
         await form.Validate();
         if (form.IsValid)
         {
@@ -99,4 +76,3 @@ public partial class InvoiceDialog
         InvoiceDto.Items.Remove(item);
     }
 }
-public enum InvoiceFormType { Create, Details, Update, Delete }

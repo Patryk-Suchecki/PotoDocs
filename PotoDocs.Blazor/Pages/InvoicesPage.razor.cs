@@ -28,7 +28,17 @@ public partial class InvoicesPage
     private List<InvoiceDto> invoices = [];
     private HashSet<InvoiceDto> selectedInvoices = [];
     private bool IsLoading = true;
-
+    private bool _isDetailsOpen = false;
+    private InvoiceDto _selectedInvoice;
+    private void OnRowClicked(TableRowClickEventArgs<InvoiceDto> args)
+    {
+        OpenDetails(args.Item);
+    }
+    private void OpenDetails(InvoiceDto invoice)
+    {
+        _selectedInvoice = invoice;
+        _isDetailsOpen = true;
+    }
     private void OnSortDirectionChanged(SortDirection direction)
     {
         if (_sorter.UpdateDirection(direction))
@@ -81,11 +91,6 @@ public partial class InvoicesPage
 
     private async Task Create()
     {
-        var parameters = new DialogParameters
-        {
-            { nameof(InvoiceDialog.Type), InvoiceFormType.Create }
-        };
-
         var options = new DialogOptions
         {
             CloseButton = true,
@@ -93,7 +98,7 @@ public partial class InvoicesPage
             MaxWidth = MaxWidth.ExtraLarge
         };
 
-        var dialogRef = await DialogService.ShowAsync<InvoiceDialog>("Dodawanie faktury", parameters, options);
+        var dialogRef = await DialogService.ShowAsync<InvoiceDialog>("Dodawanie faktury", options);
         var result = await dialogRef.Result;
 
         if (result is not null && !result.Canceled && result.Data is InvoiceDto invoice)
