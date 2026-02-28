@@ -92,8 +92,9 @@ builder.Services.AddScoped<ErrorHandlingMiddleware>();
 var provider = builder.Configuration.GetValue<string>("DatabaseProvider");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+
 builder.Services.AddDbContext<PotodocsDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<DBSeeder>();
 builder.Services.AddCors(options =>
