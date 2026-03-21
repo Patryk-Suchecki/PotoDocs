@@ -6,7 +6,7 @@ namespace PotoDocs.Shared.Models
     public class InvoiceCorrectionDto
     {
         public Guid Id { get; set; }
-        public int InvoiceNumber { get; set; }
+        public int InvoiceNumber { get; set; } = 1;
         public DateTime? IssueDate { get; set; } = DateTime.UtcNow;
         public DateTime? SentDate { get; set; }
         public DeliveryMethodType? DeliveryMethod { get; set; }

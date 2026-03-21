@@ -292,6 +292,18 @@ public partial class OrdersPage
             StateHasChanged();
         }
     }
+    private async Task DownloadExistingFile(OrderFileDto dto)
+    {
+        try
+        {
+            var response = await OrderService.DownloadFileResponseAsync(dto.Id);
+            await FileDownloader.DownloadFromResponseAsync(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd krytyczny pobierania: {ex.Message}");
+        }
+    }
     private void GoToInvoice(string invoiceName)
     {
         if (string.IsNullOrWhiteSpace(invoiceName)) return;
